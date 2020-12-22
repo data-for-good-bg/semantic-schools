@@ -1,0 +1,35 @@
+<School> <site> <Location>.
+
+<Location> <in> <District> , <Place> .
+<District> <in> <Municipality> .
+<Municipality> <in> <Region> .
+
+<Observation_nvo> <school> <School> ;
+              <measure_performance> 6 ;
+              <date>  "01-01-2020" ;
+              <subject> <Maths> ;
+              <dataset> <Dataset_nvo> ;
+.
+
+<Observation_pen> <municiplaity> <Municipality> ;
+              <measure_count> 100 ;
+              <date>  "01-01-2020" ;
+              <subject> <Maths> ;
+              <dataset> <Dataset_pens> ;
+.
+
+<Observation_pop> <place> <Place> ;
+              <measure_count> 1000 ;
+              <date>  "01-01-2019" ;
+              <dataset> <Dataset_pop> ;
+.
+
+<Dataset_pop>  rdfs:label "GRAO population" .
+<Dataset_nvo> rdfs:label "NVO 2020" .
+<Dataset_pens> rdfs:label "Teachers retire mun level" .
+
+#PUML
+
+<School> puml:left <Location>.
+<Observation_pen> puml:up <Dataset_pens> .
+<Observation_nvo> puml:up <Dataset_nvo> .

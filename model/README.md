@@ -1,0 +1,1 @@
+This folder contains the semantic model and diagrams
