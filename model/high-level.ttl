@@ -33,3 +33,8 @@
 <School> puml:left <Location>.
 <Observation_pen> puml:up <Dataset_pens> .
 <Observation_nvo> puml:up <Dataset_nvo> .
+<Observation_pop> puml:up <Dataset_pop> ;
+                  puml:right-hidden <Location> .
+<Location> puml:down <District> , <Place> .
+<Place>  puml:down <Municipality> .
+<Municipality> puml:down <Region> .
