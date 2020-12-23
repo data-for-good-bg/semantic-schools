@@ -22,9 +22,9 @@
               <dataset> <Dataset_pop> ;
 .
 
-<Dataset_pop>  rdfs:label "GRAO population" .
-<Dataset_nvo> rdfs:label "NVO 2020" .
-<Dataset_pens> rdfs:label "Teachers retire mun level" .
+<Dataset_pop>  rdfs:label "Population at place level" .
+<Dataset_nvo> rdfs:label "External evaluation for each school" .
+<Dataset_pens> rdfs:label "Age brackets for teachers \n per subject at municipality level" .
 
 #PUML
 
