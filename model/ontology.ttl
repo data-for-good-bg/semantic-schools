@@ -9,6 +9,6 @@ schema:School rdfs:subClassOf geo:Feature .
 schema:Place rdfs:subClassOf  geo:Feature .
 
 :District rdfs:subClassOf schema:AdministrativeArea .
-:Municiplaity rdfs:subClassOf schema:AdministrativeArea .
+:Municipality rdfs:subClassOf schema:AdministrativeArea .
 :Region rdfs:subClassOf schema:AdministrativeArea .
 
