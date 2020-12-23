@@ -1,28 +1,49 @@
 @base <http://edu.ontotext.com/resource/> .
 @prefix : <http://edu.ontotext.com/resource/ontology/> .
 
-@prefix qb4st: <http://www.w3.org/ns/qb4st/> .
-@prefix qudt:  <http://qudt.org/schema/qudt/> .
-@prefix bdg:   <http://data.bigdatagrapes.eu/resource/ontology/> .
-@prefix owl:   <http://www.w3.org/2002/07/owl#> .
-@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
-@prefix sdmx:  <http://purl.org/linked-data/sdmx#> .
-@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix wd:    <http://www.wikidata.org/entity/> .
-@prefix graph: <http://data.bigdatagrapes.eu/resource/graph/> .
-@prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
-@prefix qb:    <http://purl.org/linked-data/cube#> .
-@prefix unit:  <http://qudt.org/vocab/unit/> .
-@prefix oeev:  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#> .
-@prefix dct:   <http://purl.org/dc/terms/> .
-@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix sdmx-concept: <http://purl.org/linked-data/sdmx/2009/concept#> .
-@prefix bdg-unit: <http://data.bigdatagrapes.eu/resource/unit/> .
-@prefix vann:  <http://purl.org/vocab/vann/> .
-@prefix sdmx-attribute: <http://purl.org/linked-data/sdmx/2009/attribute#> .
-@prefix obo:   <http://purl.obolibrary.org/obo/> .
-@prefix prov:  <http://www.w3.org/ns/prov#> .
-@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix graph: <http://edu.ontotext.com/resource/graph/> .
+@prefix school: <http://edu.ontotext.com/resource/school/> .
+@prefix place: <http://edu.ontotext.com/resource/place/> .
+@prefix subject: <http://edu.ontotext.com/resource/subject/> .
+
+
 @prefix dc:    <http://purl.org/dc/elements/1.1/> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix geo:   <http://www.opengis.net/ont/geosparql#> .
+@prefix obo:   <http://purl.obolibrary.org/obo/> .
+@prefix oeev:  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix qb4st: <http://www.w3.org/ns/qb4st/> .
+@prefix qb:    <http://purl.org/linked-data/cube#> .
+@prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
+@prefix qudt:  <http://qudt.org/schema/qudt/> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema: <http://schema.org/>.
+@prefix sdmx-attribute: <http://purl.org/linked-data/sdmx/2009/attribute#> .
+@prefix sdmx-concept: <http://purl.org/linked-data/sdmx/2009/concept#> .
+@prefix sdmx:  <http://purl.org/linked-data/sdmx#> .
+@prefix sf:    <http://www.opengis.net/ont/sf#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
 @prefix sosa:  <http://www.w3.org/ns/sosa/> .
+@prefix unit:  <http://qudt.org/vocab/unit/> .
+@prefix vann:  <http://purl.org/vocab/vann/> .
+@prefix wd:    <http://www.wikidata.org/entity/> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+
+#PUML
+
+schema:url a puml:InlineProperty .
+
+schema:School puml:stereotype "(O,orange)" .
+
+schema:City puml:stereotype "(P,green)" .
+:District puml:stereotype "(P,green)" .
+:Municipality puml:stereotype "(P,green)" .
+:Region puml:stereotype "(P,green)" .
+
+sf:Point puml:stereotype "(G,lightblue)" .
+sf:Polygon puml:stereotype "(G,lightblue)" .
+

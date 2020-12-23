@@ -1,0 +1,48 @@
+<school/2222009> a schema:School ;
+    schema:name "9 Френска езикова гимназия Алфонс дьо Ламартин"@bg ;
+    schema:url wd:Q12270548 ;
+    :hasPoint <school/2222009/point> ;
+    geo:sfWithin <place/Q7582432> , <place/Q472> #partially overlapping, therefore we need both
+.
+
+<school/2222009/point> a sf:Point ;
+    geo:asWKT "WKT"^^geo:wktLiteral ;
+.
+
+<place/Q7582432> a :District ;
+    schema:name "Sredets District" ;
+    geo:sfWithin <place/Q4442915> ;
+    schema:url wd:Q7582432 ;
+    :hasPoint <place/Q7582432/point> ;
+    :hasShape <place/Q7582432/shape> ;
+.
+
+<place/Q7582432/point> a sf:Point ;
+    geo:asWKT "WKT"^^geo:wktLiteral ;
+.
+
+<place/Q7582432/shape> a sf:Polygon ;
+    geo:asWKT "WKT"^^geo:wktLiteral ;
+.
+
+<place/Q4442915> a :Municipality ;
+    schema:name "Sofia Capital Municipality " ;
+    geo:sfWithin <place/Q1585725> ;
+
+.
+
+<place/Q1585725> a :Region ;
+    schema:name "Sofia City Province" ;
+.
+
+<place/Q472> a schema:City ;
+    schema:name "Sofia" ;
+    geo:sfWithin <place/Q4442915> ;
+.
+
+## PUML
+
+<place/Q7582432> puml:left-hidden  <place/Q472> .
+<place/Q7582432> puml:right <place/Q7582432/point> , <place/Q7582432/shape> .
+<school/2222009> puml:right <school/2222009/point> .
+<place/Q7582432/point> puml:down-hidden <place/Q7582432/shape> .

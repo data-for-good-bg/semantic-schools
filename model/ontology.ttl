@@ -1,0 +1,14 @@
+: a owl:Ontology;
+    owl:imports sf: , schema: , qb:
+.
+
+:hasPoint  a  rdf:Property ; rdfs:subPropertyOf  geo:hasDefaultGeometry, geo:hasGeometry .
+:hasShape  a  rdf:Property ; rdfs:subPropertyOf  geo:hasGeometry .
+
+schema:School rdfs:subClassOf geo:Feature .
+schema:Place rdfs:subClassOf  geo:Feature .
+
+:District rdfs:subClassOf schema:AdministrativeArea .
+:Municiplaity rdfs:subClassOf schema:AdministrativeArea .
+:Region rdfs:subClassOf schema:AdministrativeArea .
+
