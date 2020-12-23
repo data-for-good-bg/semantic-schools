@@ -1,24 +1,22 @@
-<School> <site> <Location>.
-
-<Location> <in> <District> , <Place> .
+<School> <in> <District> , <Place> .
 <District> <in> <Municipality> .
 <Municipality> <in> <Region> .
 
-<Observation_nvo> <school> <School> ;
+<Observation_nvo> <dimension> <School> ;
               <measure_performance> 6 ;
               <date>  "01-01-2020" ;
-              <subject> <Maths> ;
+              <dimension> <Maths> ;
               <dataset> <Dataset_nvo> ;
 .
 
-<Observation_pen> <municiplaity> <Municipality> ;
+<Observation_pen> <dimension> <Municipality> ;
               <measure_count> 100 ;
               <date>  "01-01-2020" ;
-              <subject> <Maths> ;
+              <dimension> <Maths> ;
               <dataset> <Dataset_pens> ;
 .
 
-<Observation_pop> <place> <Place> ;
+<Observation_pop> <dimension> <Place> ;
               <measure_count> 1000 ;
               <date>  "01-01-2019" ;
               <dataset> <Dataset_pop> ;
@@ -30,11 +28,10 @@
 
 #PUML
 
-<School> puml:left <Location>.
 <Observation_pen> puml:up <Dataset_pens> .
 <Observation_nvo> puml:up <Dataset_nvo> .
 <Observation_pop> puml:up <Dataset_pop> ;
-                  puml:right-hidden <Location> .
-<Location> puml:down <District> , <Place> .
+                  puml:right-hidden <Observation_nvo> .
+<School> puml:down <District> , <Place> .
 <Place>  puml:down <Municipality> .
 <Municipality> puml:down <Region> .
