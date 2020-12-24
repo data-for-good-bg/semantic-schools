@@ -16,9 +16,7 @@ This public [GSheet](https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2
 We use the chart tools data source protocol to convert them to *CSV* and serve them over *HTTP*. 
 The syntax is as follows:
 
-`https://docs.google.com/spreadsheets/d/{{DOC_ID}}/gviz/tq?tqx=out:csv&gid={{SHEET_ID}}` where `DOC_ID` and `SHEET_ID` are both available form the sheet's url. For example the grapeVariety [sheet](https://docs.google.com/spreadsheets/d/19fdrdisQqihUN68_lb-VEGVgxxEock-IIdDWUPfVUMA/edit#gid=1834822338) has
- * `DOC_ID=19fdrdisQqihUN68_lb-VEGVgxxEock-IIdDWUPfVUMA` and 
- * `sheet=grapeVariety`
+`https://docs.google.com/spreadsheets/d/{{DOC_ID}}/gviz/tq?tqx=out:csv&gid={{SHEET_ID}}` where `DOC_ID` and `SHEET_ID` are both available form the sheet's url.
 
 ## my-tarql 
 
@@ -31,4 +29,4 @@ All generated .ttl files in that folder, as well as any hand-written ones (such 
 
 Note that we reuse [codedValues.tarql](codedValues.tarql) several times to generate *RDF* from different sheets following the same pattern. 
 
-We commit [semantic-schools.ttl] to the repository so that we can consume it directly over https here.
+We commit [semantic-schools.ttl] to the repository so that we can consume it [raw](https://raw.githubusercontent.com/data-for-good-bg/semantic-schools/main/vocab/semantic-schools.ttl) over http. 
