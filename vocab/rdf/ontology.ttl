@@ -1,0 +1,24 @@
+: a owl:Ontology;
+    owl:imports sf: , schema: , qb: .
+
+:hasPoint a  rdf:Property ;
+    rdfs:subPropertyOf geo:hasDefaultGeometry, geo:hasGeometry .
+
+:hasShape a  rdf:Property ;
+    rdfs:subPropertyOf geo:hasGeometry .
+
+schema:School rdfs:subClassOf geo:Feature .
+
+schema:Place rdfs:subClassOf  geo:Feature .
+
+:District rdfs:subClassOf schema:AdministrativeArea .
+:Municipality rdfs:subClassOf schema:AdministrativeArea .
+:Region rdfs:subClassOf schema:AdministrativeArea .
+
+schema:School rdfs:subClassOf skos:Concept ;
+        rdfs:seeAlso base:school ;
+.
+
+base:school  a skos:ConceptScheme ;
+        rdfs:label    "School concept scheme" ;
+        rdfs:seeAlso  schema:School .

@@ -1,4 +1,5 @@
 @base <http://edu.ontotext.com/resource/> .
+@prefix base: <http://edu.ontotext.com/resource/> .
 @prefix : <http://edu.ontotext.com/resource/ontology/> .
 
 @prefix graph: <http://edu.ontotext.com/resource/graph/> .
@@ -33,17 +34,5 @@
 @prefix wd:    <http://www.wikidata.org/entity/> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
 
-#PUML
 
-schema:url a puml:InlineProperty .
-
-schema:School puml:stereotype "(O,orange)" .
-
-schema:City puml:stereotype "(P,green)" .
-:District puml:stereotype "(P,green)" .
-:Municipality puml:stereotype "(P,green)" .
-:Region puml:stereotype "(P,green)" .
-
-sf:Point puml:stereotype "(G,lightblue)" .
-sf:Polygon puml:stereotype "(G,lightblue)" .
 
