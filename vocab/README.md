@@ -29,4 +29,4 @@ All generated .ttl files in that folder, as well as any hand-written ones (such 
 
 Note that we reuse [codedValues.tarql](codedValues.tarql) several times to generate *RDF* from different sheets following the same pattern. 
 
-We commit [semantic-schools.ttl] to the repository so that we can consume it [raw](https://raw.githubusercontent.com/data-for-good-bg/semantic-schools/main/vocab/semantic-schools.ttl) over http. 
+We commit [semantic-schools.ttl](semantic-schools.ttl) to the repository so that we can consume it [raw](https://raw.githubusercontent.com/data-for-good-bg/semantic-schools/main/vocab/semantic-schools.ttl) over http. 
