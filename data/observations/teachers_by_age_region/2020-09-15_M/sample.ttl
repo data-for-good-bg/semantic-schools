@@ -1,0 +1,10 @@
+<cube/teachers_by_age_region/2020-09-15/M/MD5-OF-DIMENSION-VALUES> a qb:Observation ;
+    qb:dataSet <cube/teachers_by_age_region/2020-09-15_M> ;
+    :place place:Q804311   ;
+    :subject subject:nmb_4 ;
+    :age  66               ;
+    :years_working 46      ;
+    :years_teaching 46     ;
+    :years_spec 46         ;
+    :quantity_people 2     ;
+.
