@@ -15,8 +15,8 @@ curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4
 #Subject coded list values
 curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4eE_rDKAUs/gviz/tq?tqx=out:csv&sheet=subject" | ../bin/my-tarql "-d , --stdin" ../model/prefixes.ttl tarql/codedValues.tarql > rdf/subject.ttl
 
-#Statistical Summary
-#curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4eE_rDKAUs/gviz/tq?tqx=out:csv&sheet=measurementContext" | ../bin/my-tarql "-d , --stdin" ../model/prefixes.ttl  tarql/measurementContexts.tarql > rdf/measurementContext.ttl
+#Subject coded list values
+curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4eE_rDKAUs/gviz/tq?tqx=out:csv&sheet=sex" | ../bin/my-tarql "-d , --stdin" ../model/prefixes.ttl tarql/codedValues.tarql > rdf/sex.ttl
 
 #Concatenate vocabulary
 cat rdf/*.ttl | riot --syntax=ttl --formatted=ttl> semantic-schools.ttl

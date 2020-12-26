@@ -1,6 +1,6 @@
 CONSTRUCT {
     ?URI a qb:MeasureProperty, sosa:ObservableProperty, ?CODED_PROP_TYPE;
-        rdfs:label                  ?label ;
+        rdfs:label                  ?label , ?LABEL_BG ;
         rdfs:comment                ?description ;
         sdmx-attribute:unitMeasure  ?UNIT ;
         :derivedFrom                ?DERIVED_FROM ;
@@ -28,6 +28,7 @@ WHERE
     bind(coalesce(?derivedFrom,"") as ?derivedFromNotNull)
     ?derivedFrom_split apf:strSplit (?derivedFromNotNull ",")
     bind(if(bound(?derivedFrom),uri(concat(str(:),?derivedFrom_split)),?UNDEF) as ?DERIVED_FROM)
+    bind(strlang(?label_bg, 'bg') AS ?LABEL_BG)
 }
 
 

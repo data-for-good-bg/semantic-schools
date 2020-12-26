@@ -21,6 +21,7 @@
 @prefix prov:  <http://www.w3.org/ns/prov#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 @prefix sosa:  <http://www.w3.org/ns/sosa/> .
+@prefix sex:   <http://edu.ontotext.com/resource/sex/> .
 @prefix graph: <http://edu.ontotext.com/resource/graph/> .
 @prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
 @prefix unit:  <http://qudt.org/vocab/unit/> .
@@ -35,7 +36,7 @@ subject:nmb_30  a         :Subject , skos:Concept ;
         skos:prefLabel    "Арабски езици"@bg .
 
 :count  a                           sosa:ObservableProperty , qb:MeasureProperty ;
-        rdfs:comment                "Number of individuals" ;
+        rdfs:comment                "Count of something" ;
         rdfs:isDefinedBy            : ;
         rdfs:label                  "Count" ;
         qb:concept                  sdmx-concept:obsValue ;
@@ -142,10 +143,25 @@ subject:nmb_89  a         :Subject , skos:Concept ;
         rdfs:range        xsd:date ;
         qb:concept        sdmx-concept:timePeriod .
 
+:years  a                           sosa:ObservableProperty , qb:MeasureProperty ;
+        rdfs:comment                "Duration in years of something" ;
+        rdfs:isDefinedBy            : ;
+        rdfs:label                  "Years" ;
+        qb:concept                  sdmx-concept:obsValue ;
+        sdmx-attribute:unitMeasure  unit:YR .
+
 subject:nmb_70  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Обща професионална подготовка"@bg .
+
+:years_working  a                   sosa:ObservableProperty , qb:MeasureProperty ;
+        rdfs:comment                "Total time working" ;
+        rdfs:isDefinedBy            : ;
+        rdfs:label                  "Общ трудов стаж в години"@bg , "Years Working " ;
+        :derivedFrom                :years ;
+        qb:concept                  sdmx-concept:obsValue ;
+        sdmx-attribute:unitMeasure  unit:YR .
 
 subject:nmb_42  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -201,6 +217,16 @@ subject:nmb_62  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Религия"@bg .
+
+sex:    a             skos:ConceptScheme ;
+        rdfs:label    "Sex scheme" ;
+        rdfs:seeAlso  :Sex .
+
+sex:M   a                 :Sex , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:exactMatch   wd:Q6581097 ;
+        skos:inScheme     sex: ;
+        skos:prefLabel    "Мъжки"@bg , "Male" .
 
 :Subject  a               rdfs:Class ;
         rdfs:isDefinedBy  : ;
@@ -299,18 +325,38 @@ subject:nmb_59  a         :Subject , skos:Concept ;
         rdfs:range        schema:School , :School ;
         qb:codeList       school: .
 
-:hasShape  a                rdf:Property ;
-        rdfs:subPropertyOf  geo:hasGeometry .
+:sex    a                 qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Sex" ;
+        rdfs:range        :Sex ;
+        qb:codeList       sex: .
+
+sex:F   a                 :Sex , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:exactMatch   wd:Q6581072 ;
+        skos:inScheme     sex: ;
+        skos:prefLabel    "Женски"@bg , "Female" .
 
 subject:nmb_100  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Хранителни технологии"@bg .
 
+:hasShape  a                rdf:Property ;
+        rdfs:subPropertyOf  geo:hasGeometry .
+
 subject:nmb_81  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Моторни превозни средства кораби и въздухоплавателни средства"@bg .
+
+:years_spec  a                      sosa:ObservableProperty , qb:MeasureProperty ;
+        rdfs:comment                "Total time teaching at specialty subject  " ;
+        rdfs:isDefinedBy            : ;
+        rdfs:label                  "Трудов стаж по специалността в години"@bg , "Years Specialization " ;
+        :derivedFrom                :years ;
+        qb:concept                  sdmx-concept:obsValue ;
+        sdmx-attribute:unitMeasure  unit:YR .
 
 subject:nmb_25  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -350,7 +396,7 @@ subject:nmb_32  a         :Subject , skos:Concept ;
 :grade_6  a                         sosa:ObservableProperty , qb:MeasureProperty ;
         rdfs:comment                "Grade in the Bulgarian grading system" ;
         rdfs:isDefinedBy            : ;
-        rdfs:label                  "Grade over 6" ;
+        rdfs:label                  "Оценка по шестобалната система"@bg , "Grade over 6" ;
         qb:concept                  sdmx-concept:obsValue ;
         sdmx-attribute:unitMeasure  unit:NUM .
 
@@ -383,6 +429,12 @@ subject:nmb_86  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Производствени технологии-дървесина хартия пластмаси и стъкло"@bg .
 
+:Sex    a                 rdfs:Class ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Sex class" ;
+        rdfs:seeAlso      sex: ;
+        rdfs:subClassOf   skos:Concept .
+
 subject:nmb_58  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
@@ -396,6 +448,11 @@ subject:nmb_99  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Приложна информатика"@bg .
+
+:place  a                 sosa:ObservableProperty , qb:DimensionProperty ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Place" ;
+        rdfs:range        schema:Place .
 
 subject:nmb_80  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -432,16 +489,32 @@ subject:nmb_72  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Изящни изкуства"@bg .
 
+subject:nmb_44  a         :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:prefLabel    "Физика и астрономия"@bg .
+
 :dateTime  a              sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Date-time" ;
         rdfs:range        xsd:dateTime ;
         qb:concept        sdmx-concept:timePeriod .
 
-subject:nmb_44  a         :Subject , skos:Concept ;
-        rdfs:isDefinedBy  : ;
-        skos:inScheme     subject: ;
-        skos:prefLabel    "Физика и астрономия"@bg .
+:years_teaching  a                  sosa:ObservableProperty , qb:MeasureProperty ;
+        rdfs:comment                "Total time teaching" ;
+        rdfs:isDefinedBy            : ;
+        rdfs:label                  "Педагогически трудов стаж в години"@bg , "Years Teaching " ;
+        :derivedFrom                :years ;
+        qb:concept                  sdmx-concept:obsValue ;
+        sdmx-attribute:unitMeasure  unit:YR .
+
+:count_people  a                    sosa:ObservableProperty , qb:MeasureProperty ;
+        rdfs:comment                "Number of people " ;
+        rdfs:isDefinedBy            : ;
+        rdfs:label                  "Count People" ;
+        :derivedFrom                :count ;
+        qb:concept                  sdmx-concept:obsValue ;
+        sdmx-attribute:unitMeasure  unit:NUM .
 
 subject:nmb_104  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -458,16 +531,16 @@ subject:nmb_57  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Технологии"@bg .
 
+subject:nmb_29  a         :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:prefLabel    "Източни езици"@bg .
+
 :subject  a               qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Subject" ;
         rdfs:range        :Subject ;
         qb:codeList       subject: .
-
-subject:nmb_29  a         :Subject , skos:Concept ;
-        rdfs:isDefinedBy  : ;
-        skos:inScheme     subject: ;
-        skos:prefLabel    "Източни езици"@bg .
 
 subject:nmb_117  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;

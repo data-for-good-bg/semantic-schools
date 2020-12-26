@@ -2,12 +2,14 @@
 @prefix : <http://edu.ontotext.com/resource/ontology/> .
 
 @prefix graph: <http://edu.ontotext.com/resource/graph/> .
+@prefix mapper: <http://www.ontotext.com/mapper/> .
 
 #Concept prefixes and schemes
 
 @prefix school: <http://edu.ontotext.com/resource/school/> .
 @prefix place: <http://edu.ontotext.com/resource/place/> .
 @prefix subject: <http://edu.ontotext.com/resource/subject/> .
+@prefix sex: <http://edu.ontotext.com/resource/sex/> .
 
 @prefix dc:    <http://purl.org/dc/elements/1.1/> .
 @prefix dct:   <http://purl.org/dc/terms/> .
