@@ -19,7 +19,7 @@ WHERE
     bind(uri(tarql:expandPrefixedName(?unitMeasure)) as ?UNIT)
     bind(uri(tarql:expandPrefixedName(?range)) as ?RANGE)
     bind(uri(if(bound(?codedList),qb:CodedProperty,?codedList)) as ?CODED_PROP_TYPE)
-    bind(uri(?codedList) as ?CODEDLIST)
+    bind(uri(concat(?codedList,"/")) as ?CODEDLIST)
     bind(uri(concat(str(:),ucase(substr(?codedList,1,1)),substr(?codedList,2))) as ?CODEDCLASS)
     bind(uri(tarql:expandPrefixedName(?extra_p)) as ?EXTRA_P)
     bind(uri(?extra_o) as ?EXTRA_O)

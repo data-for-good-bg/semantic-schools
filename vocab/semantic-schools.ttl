@@ -297,7 +297,7 @@ subject:nmb_59  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "School " ;
         rdfs:range        schema:School , :School ;
-        qb:codeList       <http://edu.ontotext.com/resource/school> .
+        qb:codeList       school: .
 
 :hasShape  a                rdf:Property ;
         rdfs:subPropertyOf  geo:hasGeometry .
@@ -462,7 +462,7 @@ subject:nmb_57  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Subject" ;
         rdfs:range        :Subject ;
-        qb:codeList       <http://edu.ontotext.com/resource/subject> .
+        qb:codeList       subject: .
 
 subject:nmb_29  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
