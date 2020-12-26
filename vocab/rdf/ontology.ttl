@@ -16,9 +16,9 @@ schema:Place rdfs:subClassOf  geo:Feature .
 :Region rdfs:subClassOf schema:AdministrativeArea .
 
 schema:School rdfs:subClassOf skos:Concept ;
-        rdfs:seeAlso base:school ;
+        rdfs:seeAlso school: ;
 .
 
-base:school  a skos:ConceptScheme ;
-        rdfs:label    "School concept scheme" ;
-        rdfs:seeAlso  schema:School .
+school:  a skos:ConceptScheme ;
+         rdfs:label    "School concept scheme" ;
+         rdfs:seeAlso  schema:School .

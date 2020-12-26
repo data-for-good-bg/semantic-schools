@@ -1,12 +1,13 @@
 @base <http://edu.ontotext.com/resource/> .
-@prefix base: <http://edu.ontotext.com/resource/> .
 @prefix : <http://edu.ontotext.com/resource/ontology/> .
 
 @prefix graph: <http://edu.ontotext.com/resource/graph/> .
+
+#Concept prefixes and schemes
+
 @prefix school: <http://edu.ontotext.com/resource/school/> .
 @prefix place: <http://edu.ontotext.com/resource/place/> .
 @prefix subject: <http://edu.ontotext.com/resource/subject/> .
-
 
 @prefix dc:    <http://purl.org/dc/elements/1.1/> .
 @prefix dct:   <http://purl.org/dc/terms/> .
@@ -33,6 +34,5 @@
 @prefix vann:  <http://purl.org/vocab/vann/> .
 @prefix wd:    <http://www.wikidata.org/entity/> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-
 
 

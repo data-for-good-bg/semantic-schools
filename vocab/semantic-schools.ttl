@@ -27,12 +27,11 @@
 @prefix oeev:  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#> .
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix obo:   <http://purl.obolibrary.org/obo/> .
-@prefix base:  <http://edu.ontotext.com/resource/> .
 @prefix dc:    <http://purl.org/dc/elements/1.1/> .
 
 subject:nmb_30  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Арабски езици"@bg .
 
 :count  a                           sosa:ObservableProperty , qb:MeasureProperty ;
@@ -44,17 +43,17 @@ subject:nmb_30  a         :Subject , skos:Concept ;
 
 subject:nmb_43  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Биология и здравно образование"@bg .
 
 subject:nmb_1  a          :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Български език и литература"@bg .
 
 subject:nmb_103  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Градинарство (паркове и градини)"@bg .
 
 :hasPoint  a                rdf:Property ;
@@ -62,83 +61,79 @@ subject:nmb_103  a        :Subject , skos:Concept ;
 
 subject:nmb_84  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Религия"@bg .
 
 subject:nmb_56  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Изобразително изкуство"@bg .
 
 :Municipality  rdfs:subClassOf  schema:AdministrativeArea .
 
 subject:nmb_28  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Майчин език"@bg .
 
 subject:nmb_116  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Минно дело проучване и добив на полезни изкопаеми"@bg .
 
 subject:nmb_97  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Науки за земята"@bg .
 
 subject:nmb_69  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Общообразователни - други"@bg .
 
 subject:nmb_50  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Обществени науки"@bg .
 
 subject:nmb_22  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Немски език"@bg .
 
 subject:nmb_110  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Спорт"@bg .
 
 subject:nmb_91  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Счетоводство и данъчно облагане"@bg .
-
-base:school  a        skos:ConceptScheme ;
-        rdfs:label    "School concept scheme" ;
-        rdfs:seeAlso  schema:School .
 
 subject:nmb_35  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Математика"@bg .
 
 subject:nmb_76  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Дизайн"@bg .
 
 subject:nmb_6  a          :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Дейности по ресурсно подпомагане"@bg .
 
 subject:nmb_108  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Хотелиерство ресторантьорство и кетеринг"@bg .
 
 subject:nmb_89  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Производствени технологии-текстил облекло обувки и кожи"@bg .
 
 :date   a                 sosa:ObservableProperty , qb:DimensionProperty ;
@@ -149,205 +144,205 @@ subject:nmb_89  a         :Subject , skos:Concept ;
 
 subject:nmb_70  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Обща професионална подготовка"@bg .
 
 subject:nmb_42  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "География и икономика"@bg .
 
 subject:nmb_102  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Растениевъдство и животновъдство"@bg .
 
 subject:nmb_83  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Строителство"@bg .
 
 subject:nmb_55  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Музика"@bg .
 
 subject:nmb_27  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Руски език"@bg .
 
 subject:nmb_115  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Сигурност"@bg .
 
 subject:nmb_96  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Проф. обр. - производствена практика"@bg .
 
 subject:nmb_68  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Общообразователни - други профилиращи предмети"@bg .
 
 subject:nmb_21  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Английски език"@bg .
 
 subject:nmb_90  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Финанси банково и застрахователно дело"@bg .
 
 subject:nmb_62  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Религия"@bg .
 
 :Subject  a               rdfs:Class ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Subject class" ;
-        rdfs:seeAlso      base:subject ;
+        rdfs:seeAlso      subject: ;
         rdfs:subClassOf   skos:Concept .
 
 subject:nmb_5  a          :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Дейности в общежитие"@bg .
 
 subject:nmb_107  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Социална работа и консултиране"@bg .
 
 subject:nmb_88  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Маркетинг и реклама"@bg .
 
 subject:nmb_41  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "История и цивилизация"@bg .
 
 subject:nmb_101  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Архитектура урбанизъм и геодезия"@bg .
 
 subject:nmb_82  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Химични продукти и технологии"@bg .
 
 subject:nmb_26  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Португалски език"@bg .
 
 subject:nmb_114  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Технологии за опазване на околната среда"@bg .
 
 subject:nmb_95  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Проф. обр. - учебна практика"@bg .
 
 subject:nmb_67  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Специални предмети в спец. училища"@bg .
 
 subject:nmb_61  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Дейности в ПГ/ДГ"@bg .
 
 subject:nmb_33  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Древни езици"@bg .
 
 subject:nmb_74  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Аудио-визуални изкуства и техники; производство на медийни продукти"@bg .
 
 subject:nmb_4  a          :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Дейности в целодневна организация"@bg .
 
 subject:nmb_106  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Медицинска диагностика и лечебни технологии"@bg .
 
 subject:nmb_87  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Търговия на еднро и дребно"@bg .
 
 subject:nmb_59  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Хореография"@bg .
 
 :school  a                qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "School " ;
         rdfs:range        schema:School , :School ;
-        qb:codeList       base:school .
+        qb:codeList       <http://edu.ontotext.com/resource/school> .
 
 :hasShape  a                rdf:Property ;
         rdfs:subPropertyOf  geo:hasGeometry .
 
 subject:nmb_100  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Хранителни технологии"@bg .
 
 subject:nmb_81  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Моторни превозни средства кораби и въздухоплавателни средства"@bg .
 
 subject:nmb_25  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Италиански език"@bg .
 
 subject:nmb_113  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Транспортни услуги"@bg .
 
 subject:nmb_94  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Секретарски и административни офис дейности"@bg .
 
 subject:nmb_79  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Електротехника и енергетика"@bg .
 
-schema:School  rdfs:seeAlso  base:school ;
+schema:School  rdfs:seeAlso  school: ;
         rdfs:subClassOf  skos:Concept , geo:Feature .
 
 subject:nmb_60  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Корепетиция"@bg .
 
 subject:nmb_32  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Други европейски езици"@bg .
 
 :District  rdfs:subClassOf  schema:AdministrativeArea .
@@ -361,76 +356,80 @@ subject:nmb_32  a         :Subject , skos:Concept ;
 
 subject:nmb_73  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Музикални и сценични изкуства"@bg .
 
 subject:nmb_45  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Химия и опазване на околната среда"@bg .
 
 subject:nmb_3  a          :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Учебни предмети в начален етап"@bg .
+
+school:  a            skos:ConceptScheme ;
+        rdfs:label    "School concept scheme" ;
+        rdfs:seeAlso  schema:School .
 
 subject:nmb_105  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Ветеринарна медицина"@bg .
 
 subject:nmb_86  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Производствени технологии-дървесина хартия пластмаси и стъкло"@bg .
 
 subject:nmb_58  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Физическа култура и спорт"@bg .
 
-subject:nmb_99  a         :Subject , skos:Concept ;
-        rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
-        skos:prefLabel    "ПН - Приложна информатика"@bg .
-
-base:subject  a       skos:ConceptScheme ;
+subject:  a           skos:ConceptScheme ;
         rdfs:label    "Subject scheme" ;
         rdfs:seeAlso  :Subject .
 
+subject:nmb_99  a         :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:prefLabel    "ПН - Приложна информатика"@bg .
+
 subject:nmb_80  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Електроника автоматика комуникационна и компютърна техника"@bg .
 
 subject:nmb_24  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Испански език"@bg .
 
 subject:nmb_112  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Фризьорски и козметични услуги"@bg .
 
 subject:nmb_93  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Военно дело и отбрана"@bg .
 
 subject:nmb_78  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Машиностроене металообработване и металургия"@bg .
 
 subject:nmb_31  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Други славянски езици"@bg .
 
 subject:nmb_72  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Изящни изкуства"@bg .
 
 :dateTime  a              sosa:ObservableProperty , qb:DimensionProperty ;
@@ -441,43 +440,43 @@ subject:nmb_72  a         :Subject , skos:Concept ;
 
 subject:nmb_44  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Физика и астрономия"@bg .
 
 subject:nmb_104  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Рибно стопанство"@bg .
 
 subject:nmb_85  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Горско стопанство"@bg .
 
 subject:nmb_57  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Технологии"@bg .
 
 :subject  a               qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Subject" ;
         rdfs:range        :Subject ;
-        qb:codeList       base:subject .
+        qb:codeList       <http://edu.ontotext.com/resource/subject> .
 
 subject:nmb_29  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Източни езици"@bg .
 
 subject:nmb_117  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Терапия и рехабилитация"@bg .
 
 subject:nmb_98  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Компютърни науки"@bg .
 
 :Region  rdfs:subClassOf  schema:AdministrativeArea .
@@ -486,7 +485,7 @@ schema:Place  rdfs:subClassOf  geo:Feature .
 
 subject:nmb_51  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Природни науки"@bg .
 
 :       a            owl:Ontology ;
@@ -494,30 +493,30 @@ subject:nmb_51  a         :Subject , skos:Concept ;
 
 subject:nmb_23  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Френски език"@bg .
 
 subject:nmb_111  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Услуги за дома"@bg .
 
 subject:nmb_92  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Администрация и управление"@bg .
 
 subject:nmb_36  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "Информатика и информационни технологии"@bg .
 
 subject:nmb_77  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Приложни изкуства и занаяти"@bg .
 
 subject:nmb_109  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     base:subject ;
+        skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Пътувания туризъм и свободно време"@bg .
