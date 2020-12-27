@@ -11,14 +11,26 @@ schema:School rdfs:subClassOf geo:Feature .
 
 schema:Place rdfs:subClassOf  geo:Feature .
 
-:District rdfs:subClassOf schema:AdministrativeArea .
-:Municipality rdfs:subClassOf schema:AdministrativeArea .
-:Region rdfs:subClassOf schema:AdministrativeArea .
+:District rdfs:subClassOf schema:AdministrativeArea ;
+          rdfs:label "Municipal District Of Bulgaria", "Градски Район"@bg ;
+          rdfs:seeAlso wd:Q7553685 .
+
+:Municipality rdfs:subClassOf schema:AdministrativeArea ;
+          rdfs:label "Municipality", "Община"@bg ;
+          rdfs:seeAlso  wd:Q1906268 .
+
+:Region rdfs:subClassOf schema:AdministrativeArea ;
+          rdfs:label "Region", "Област"@bg ;
+          rdfs:seeAlso wd:Q209824 .
 
 schema:School rdfs:subClassOf skos:Concept ;
         rdfs:seeAlso school: ;
 .
 
+place:Q219 a schema:Country ; rdfs:label "Bulgaria" .
+
 school:  a skos:ConceptScheme ;
          rdfs:label    "School concept scheme" ;
          rdfs:seeAlso  schema:School .
+
+

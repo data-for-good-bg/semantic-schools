@@ -109,7 +109,9 @@ subject:nmb_1  a          :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Български език и литература"@bg .
 
-:Region  rdfs:subClassOf  schema:AdministrativeArea .
+:Region  rdfs:label      "Област"@bg , "Region" ;
+        rdfs:seeAlso     wd:Q209824 ;
+        rdfs:subClassOf  schema:AdministrativeArea .
 
 subject:nmb_22  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -127,6 +129,9 @@ occupation:f33de9e52ea9eae00d212392d2fcf08b
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Психолог, училищен"@bg .
+
+place:Q219  a       schema:Country ;
+        rdfs:label  "Bulgaria" .
 
 age_bracket:Over63  a     :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -296,7 +301,9 @@ subject:nmb_25  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Италиански език"@bg .
 
-:Municipality  rdfs:subClassOf  schema:AdministrativeArea .
+:Municipality  rdfs:label  "Община"@bg , "Municipality" ;
+        rdfs:seeAlso     wd:Q1906268 ;
+        rdfs:subClassOf  schema:AdministrativeArea .
 
 occupation:83fd3b5e99ffd217b7af82e9d4293014
         a                 :Occupation , skos:Concept ;
@@ -470,7 +477,9 @@ subject:nmb_103  a        :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Градинарство (паркове и градини)"@bg .
 
-:District  rdfs:subClassOf  schema:AdministrativeArea .
+:District  rdfs:label    "Градски Район"@bg , "Municipal District Of Bulgaria" ;
+        rdfs:seeAlso     wd:Q7553685 ;
+        rdfs:subClassOf  schema:AdministrativeArea .
 
 subject:nmb_28  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
