@@ -10,6 +10,8 @@
 @prefix place: <http://edu.ontotext.com/resource/place/> .
 @prefix subject: <http://edu.ontotext.com/resource/subject/> .
 @prefix sex: <http://edu.ontotext.com/resource/sex/> .
+@prefix age_bracket: <http://edu.ontotext.com/resource/age_bracket/> .
+@prefix occupation: <http://edu.ontotext.com/resource/occupation/> .
 
 @prefix dc:    <http://purl.org/dc/elements/1.1/> .
 @prefix dct:   <http://purl.org/dc/terms/> .

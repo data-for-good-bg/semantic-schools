@@ -2,11 +2,13 @@
 @prefix schema: <http://schema.org/> .
 @prefix qb4st: <http://www.w3.org/ns/qb4st/> .
 @prefix qudt:  <http://qudt.org/schema/qudt/> .
+@prefix occupation: <http://edu.ontotext.com/resource/occupation/> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 @prefix subject: <http://edu.ontotext.com/resource/subject/> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
 @prefix sdmx:  <http://purl.org/linked-data/sdmx#> .
 @prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix mapper: <http://www.ontotext.com/mapper/> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix wd:    <http://www.wikidata.org/entity/> .
 @prefix geo:   <http://www.opengis.net/ont/geosparql#> .
@@ -16,6 +18,7 @@
 @prefix school: <http://edu.ontotext.com/resource/school/> .
 @prefix sdmx-concept: <http://purl.org/linked-data/sdmx/2009/concept#> .
 @prefix place: <http://edu.ontotext.com/resource/place/> .
+@prefix age_bracket: <http://edu.ontotext.com/resource/age_bracket/> .
 @prefix sdmx-attribute: <http://purl.org/linked-data/sdmx/2009/attribute#> .
 @prefix vann:  <http://purl.org/vocab/vann/> .
 @prefix prov:  <http://www.w3.org/ns/prov#> .
@@ -34,13 +37,6 @@ subject:nmb_30  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Арабски езици"@bg .
-
-:count  a                           sosa:ObservableProperty , qb:MeasureProperty ;
-        rdfs:comment                "Count of something" ;
-        rdfs:isDefinedBy            : ;
-        rdfs:label                  "Count" ;
-        qb:concept                  sdmx-concept:obsValue ;
-        sdmx-attribute:unitMeasure  unit:NUM .
 
 subject:nmb_43  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -92,6 +88,11 @@ subject:nmb_69  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Общообразователни - други"@bg .
 
+subject:nmb_110  a        :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:prefLabel    "ПН - Спорт"@bg .
+
 subject:nmb_50  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
@@ -102,10 +103,15 @@ subject:nmb_22  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Немски език"@bg .
 
-subject:nmb_110  a        :Subject , skos:Concept ;
+age_bracket:56-60  a      :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     subject: ;
-        skos:prefLabel    "ПН - Спорт"@bg .
+        skos:inScheme     age_bracket: ;
+        skos:prefLabel    "56-60" .
+
+age_bracket:36-40  a      :Age_bracket , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     age_bracket: ;
+        skos:prefLabel    "36-40" .
 
 subject:nmb_91  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -137,9 +143,17 @@ subject:nmb_89  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Производствени технологии-текстил облекло обувки и кожи"@bg .
 
+:quantity_retired  a                sosa:ObservableProperty , qb:MeasureProperty ;
+        rdfs:comment                "Number of retired people " ;
+        rdfs:isDefinedBy            : ;
+        rdfs:label                  "Брой пенсионери"@bg , "Count Retired" ;
+        :derivedFrom                :quantity_people ;
+        qb:concept                  sdmx-concept:obsValue ;
+        sdmx-attribute:unitMeasure  unit:NUM .
+
 :date   a                 sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
-        rdfs:label        "Date-time" ;
+        rdfs:label        "Дата"@bg , "Date-time" ;
         rdfs:range        xsd:date ;
         qb:concept        sdmx-concept:timePeriod .
 
@@ -155,13 +169,10 @@ subject:nmb_70  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Обща професионална подготовка"@bg .
 
-:years_working  a                   sosa:ObservableProperty , qb:MeasureProperty ;
-        rdfs:comment                "Total time working" ;
-        rdfs:isDefinedBy            : ;
-        rdfs:label                  "Общ трудов стаж в години"@bg , "Years Working " ;
-        :derivedFrom                :years ;
-        qb:concept                  sdmx-concept:obsValue ;
-        sdmx-attribute:unitMeasure  unit:YR .
+:years_working  a         sosa:ObservableProperty , qb:DimensionProperty ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Общ трудов стаж в години"@bg , "Years Working " ;
+        rdfs:range        xsd:integer .
 
 subject:nmb_42  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -183,20 +194,30 @@ subject:nmb_55  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Музика"@bg .
 
-subject:nmb_27  a         :Subject , skos:Concept ;
-        rdfs:isDefinedBy  : ;
-        skos:inScheme     subject: ;
-        skos:prefLabel    "Руски език"@bg .
-
 subject:nmb_115  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Сигурност"@bg .
 
+subject:nmb_27  a         :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:prefLabel    "Руски език"@bg .
+
 subject:nmb_96  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Проф. обр. - производствена практика"@bg .
+
+age_bracket:51-55  a      :Age_bracket , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     age_bracket: ;
+        skos:prefLabel    "51-55" .
+
+age_bracket:31-35  a      :Age_bracket , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     age_bracket: ;
+        skos:prefLabel    "31-35" .
 
 subject:nmb_68  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -213,14 +234,24 @@ subject:nmb_90  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Финанси банково и застрахователно дело"@bg .
 
+:quantity_people  a                 sosa:ObservableProperty , qb:MeasureProperty ;
+        rdfs:comment                "Number of people " ;
+        rdfs:isDefinedBy            : ;
+        rdfs:label                  "Count People" ;
+        :derivedFrom                :quantity ;
+        qb:concept                  sdmx-concept:obsValue ;
+        sdmx-attribute:unitMeasure  unit:NUM .
+
 subject:nmb_62  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Религия"@bg .
 
-sex:    a             skos:ConceptScheme ;
-        rdfs:label    "Sex scheme" ;
-        rdfs:seeAlso  :Sex .
+:age_bracket  a           qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Възрастова група"@bg , "Age Bracket" ;
+        rdfs:range        :Age_bracket ;
+        qb:codeList       age_bracket: .
 
 sex:M   a                 :Sex , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -228,16 +259,15 @@ sex:M   a                 :Sex , skos:Concept ;
         skos:inScheme     sex: ;
         skos:prefLabel    "Мъжки"@bg , "Male" .
 
-:Subject  a               rdfs:Class ;
-        rdfs:isDefinedBy  : ;
-        rdfs:label        "Subject class" ;
-        rdfs:seeAlso      subject: ;
-        rdfs:subClassOf   skos:Concept .
-
 subject:nmb_5  a          :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Дейности в общежитие"@bg .
+
+age_bracket:60-63  a      :Age_bracket , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     age_bracket: ;
+        skos:prefLabel    "60-63" .
 
 subject:nmb_107  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -248,6 +278,11 @@ subject:nmb_88  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Маркетинг и реклама"@bg .
+
+age_bracket:Over63  a     :Age_bracket , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     age_bracket: ;
+        skos:prefLabel    "Over 63" .
 
 subject:nmb_41  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -284,6 +319,12 @@ subject:nmb_67  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Специални предмети в спец. училища"@bg .
 
+:occupation  a            qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Длъжност по НКПД"@bg , "Occupation NKPD" ;
+        rdfs:range        :Occupation ;
+        qb:codeList       occupation: .
+
 subject:nmb_61  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
@@ -293,6 +334,11 @@ subject:nmb_33  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Древни езици"@bg .
+
+age_bracket:46-50  a      :Age_bracket , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     age_bracket: ;
+        skos:prefLabel    "46-50" .
 
 subject:nmb_74  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -321,13 +367,13 @@ subject:nmb_59  a         :Subject , skos:Concept ;
 
 :school  a                qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
-        rdfs:label        "School " ;
+        rdfs:label        "Учебно Заведение"@bg , "School " ;
         rdfs:range        schema:School , :School ;
         qb:codeList       school: .
 
 :sex    a                 qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
-        rdfs:label        "Sex" ;
+        rdfs:label        "Пол"@bg , "Sex" ;
         rdfs:range        :Sex ;
         qb:codeList       sex: .
 
@@ -350,13 +396,10 @@ subject:nmb_81  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Моторни превозни средства кораби и въздухоплавателни средства"@bg .
 
-:years_spec  a                      sosa:ObservableProperty , qb:MeasureProperty ;
-        rdfs:comment                "Total time teaching at specialty subject  " ;
-        rdfs:isDefinedBy            : ;
-        rdfs:label                  "Трудов стаж по специалността в години"@bg , "Years Specialization " ;
-        :derivedFrom                :years ;
-        qb:concept                  sdmx-concept:obsValue ;
-        sdmx-attribute:unitMeasure  unit:YR .
+:years_spec  a            sosa:ObservableProperty , qb:DimensionProperty ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Трудов стаж по специалността в години"@bg , "Years Specialization " ;
+        rdfs:range        xsd:integer .
 
 subject:nmb_25  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -373,13 +416,28 @@ subject:nmb_94  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Секретарски и административни офис дейности"@bg .
 
+age_bracket:25-30  a      :Age_bracket , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     age_bracket: ;
+        skos:prefLabel    "25-30" .
+
 subject:nmb_79  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Електротехника и енергетика"@bg .
 
+age_bracket:41-45  a      :Age_bracket , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     age_bracket: ;
+        skos:prefLabel    "41-45" .
+
 schema:School  rdfs:seeAlso  school: ;
         rdfs:subClassOf  skos:Concept , geo:Feature .
+
+:age    a                 sosa:ObservableProperty , qb:DimensionProperty ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Възраст"@bg , "Age" ;
+        rdfs:range        xsd:integer .
 
 subject:nmb_60  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -429,20 +487,10 @@ subject:nmb_86  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Производствени технологии-дървесина хартия пластмаси и стъкло"@bg .
 
-:Sex    a                 rdfs:Class ;
-        rdfs:isDefinedBy  : ;
-        rdfs:label        "Sex class" ;
-        rdfs:seeAlso      sex: ;
-        rdfs:subClassOf   skos:Concept .
-
 subject:nmb_58  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Физическа култура и спорт"@bg .
-
-subject:  a           skos:ConceptScheme ;
-        rdfs:label    "Subject scheme" ;
-        rdfs:seeAlso  :Subject .
 
 subject:nmb_99  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -451,7 +499,7 @@ subject:nmb_99  a         :Subject , skos:Concept ;
 
 :place  a                 sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
-        rdfs:label        "Place" ;
+        rdfs:label        "Място"@bg , "Place" ;
         rdfs:range        schema:Place .
 
 subject:nmb_80  a         :Subject , skos:Concept ;
@@ -496,25 +544,19 @@ subject:nmb_44  a         :Subject , skos:Concept ;
 
 :dateTime  a              sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
-        rdfs:label        "Date-time" ;
+        rdfs:label        "Дата-Час"@bg , "Date-time" ;
         rdfs:range        xsd:dateTime ;
         qb:concept        sdmx-concept:timePeriod .
 
-:years_teaching  a                  sosa:ObservableProperty , qb:MeasureProperty ;
-        rdfs:comment                "Total time teaching" ;
-        rdfs:isDefinedBy            : ;
-        rdfs:label                  "Педагогически трудов стаж в години"@bg , "Years Teaching " ;
-        :derivedFrom                :years ;
-        qb:concept                  sdmx-concept:obsValue ;
-        sdmx-attribute:unitMeasure  unit:YR .
+:years_teaching  a        sosa:ObservableProperty , qb:DimensionProperty ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Педагогически трудов стаж в години"@bg , "Years Teaching " ;
+        rdfs:range        xsd:integer .
 
-:count_people  a                    sosa:ObservableProperty , qb:MeasureProperty ;
-        rdfs:comment                "Number of people " ;
-        rdfs:isDefinedBy            : ;
-        rdfs:label                  "Count People" ;
-        :derivedFrom                :count ;
-        qb:concept                  sdmx-concept:obsValue ;
-        sdmx-attribute:unitMeasure  unit:NUM .
+age_bracket:Under25  a    :Age_bracket , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     age_bracket: ;
+        skos:prefLabel    "Under 25" .
 
 subject:nmb_104  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -538,7 +580,7 @@ subject:nmb_29  a         :Subject , skos:Concept ;
 
 :subject  a               qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
-        rdfs:label        "Subject" ;
+        rdfs:label        "Предмет"@bg , "Subject" ;
         rdfs:range        :Subject ;
         qb:codeList       subject: .
 
@@ -583,6 +625,13 @@ subject:nmb_36  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Информатика и информационни технологии"@bg .
+
+:quantity  a                        sosa:ObservableProperty , qb:MeasureProperty ;
+        rdfs:comment                "Count of something" ;
+        rdfs:isDefinedBy            : ;
+        rdfs:label                  "Count" ;
+        qb:concept                  sdmx-concept:obsValue ;
+        sdmx-attribute:unitMeasure  unit:NUM .
 
 subject:nmb_77  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
