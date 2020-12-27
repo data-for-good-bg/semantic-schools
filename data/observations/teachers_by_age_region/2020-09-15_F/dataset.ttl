@@ -1,5 +1,5 @@
 <cube/teachers_by_age_region/2020-09-15_F> a qb:DataSet ;
-    rdfs:label "Teachers over 61 by region - Female" ;
+    rdfs:label "Teachers over 61 by region - Female - 2020" ;
     rdfs:comment "Справка за педагогическите специалисти - жени на възраст 61 и повече години, назначени на щатно място предмети във всички български образователни институции, разпределени по области, по възраст, по пол (общ брой и от тях пенсионери) и по стаж (общ, по специалността и педагогически), за учебната 2020/2021 година с данни към 15.09.2020 г"@bg ;
     qb:structure <cube/teachers_by_age_region> ;
     :sex sex:F ;
