@@ -182,11 +182,11 @@ occupation:094942f0fb81abc00c2d906a3dc9b670
         skos:inScheme     occupation: ;
         skos:prefLabel    "Педагогически съветник"@bg .
 
-sex:M   a                 :Sex , skos:Concept ;
+:age_bracket  a           qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
-        skos:exactMatch   wd:Q6581097 ;
-        skos:inScheme     sex: ;
-        skos:prefLabel    "Мъжки"@bg , "Male" .
+        rdfs:label        "Възрастова група"@bg , "Age Bracket" ;
+        rdfs:range        :Age_bracket ;
+        qb:codeList       age_bracket: .
 
 :quantity_retired  a                sosa:ObservableProperty , qb:MeasureProperty ;
         rdfs:comment                "Number of retired people " ;
@@ -196,11 +196,11 @@ sex:M   a                 :Sex , skos:Concept ;
         qb:concept                  sdmx-concept:obsValue ;
         sdmx-attribute:unitMeasure  unit:NUM .
 
-:age_bracket  a           qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+sex:M   a                 :Sex , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        rdfs:label        "Възрастова група"@bg , "Age Bracket" ;
-        rdfs:range        :Age_bracket ;
-        qb:codeList       age_bracket: .
+        skos:exactMatch   wd:Q6581097 ;
+        skos:inScheme     sex: ;
+        skos:prefLabel    "Мъжки"@bg , "Male" .
 
 occupation:cc4ab3bfe3f8f86d1664dd573412a519
         a                 :Occupation , skos:Concept ;
@@ -267,6 +267,14 @@ subject:nmb_67  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Специални предмети в спец. училища"@bg .
+
+subject:  a           skos:ConceptScheme ;
+        rdfs:label    "Subject scheme" ;
+        rdfs:seeAlso  :Subject .
+
+sex:    a             skos:ConceptScheme ;
+        rdfs:label    "Sex scheme" ;
+        rdfs:seeAlso  :Sex .
 
 age_bracket:41-45  a      :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -481,6 +489,12 @@ occupation:5b4a70e36380a706b479670779c31f10
         skos:inScheme     occupation: ;
         skos:prefLabel    "Музикален ръководител"@bg .
 
+:Sex    a                 rdfs:Class ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Sex class" ;
+        rdfs:seeAlso      sex: ;
+        rdfs:subClassOf   skos:Concept .
+
 occupation:2edd5c0c4b721adf48a749c76e416e87
         a                 :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -567,6 +581,10 @@ subject:nmb_23  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Френски език"@bg .
+
+age_bracket:  a       skos:ConceptScheme ;
+        rdfs:label    "Age Bracket scheme" ;
+        rdfs:seeAlso  :Age_bracket .
 
 sex:F   a                 :Sex , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -713,15 +731,19 @@ subject:nmb_68  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Общообразователни - други профилиращи предмети"@bg .
 
+subject:nmb_101  a        :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:prefLabel    "ПН - Архитектура урбанизъм и геодезия"@bg .
+
 subject:nmb_5  a          :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Дейности в общежитие"@bg .
 
-subject:nmb_101  a        :Subject , skos:Concept ;
-        rdfs:isDefinedBy  : ;
-        skos:inScheme     subject: ;
-        skos:prefLabel    "ПН - Архитектура урбанизъм и геодезия"@bg .
+occupation:  a        skos:ConceptScheme ;
+        rdfs:label    "Occupation  scheme" ;
+        rdfs:seeAlso  :Occupation .
 
 subject:nmb_26  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -750,6 +772,12 @@ subject:nmb_97  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Науки за земята"@bg .
+
+:Occupation  a            rdfs:Class ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Occupation  class" ;
+        rdfs:seeAlso      occupation: ;
+        rdfs:subClassOf   skos:Concept .
 
 subject:nmb_76  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -853,6 +881,12 @@ subject:nmb_50  a         :Subject , skos:Concept ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Обществени науки"@bg .
 
+:Age_bracket  a           rdfs:Class ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Age Bracket class" ;
+        rdfs:seeAlso      age_bracket: ;
+        rdfs:subClassOf   skos:Concept .
+
 subject:nmb_104  a        :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
@@ -890,6 +924,12 @@ subject:nmb_58  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Физическа култура и спорт"@bg .
+
+:Subject  a               rdfs:Class ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Subject class" ;
+        rdfs:seeAlso      subject: ;
+        rdfs:subClassOf   skos:Concept .
 
 :years_working  a         sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
