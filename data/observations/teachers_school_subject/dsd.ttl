@@ -3,5 +3,5 @@
         [qb:dimension  :date   ;   qb:componentAttachment qb:DataSet],
         [qb:dimension  :subject ],
         [qb:measure    :quantity_people  ],
-        [qb:measure    :school  ]
+        [qb:dimension  :school  ]
  .
