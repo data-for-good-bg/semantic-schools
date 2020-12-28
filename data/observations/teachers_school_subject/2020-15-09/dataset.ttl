@@ -1,0 +1,7 @@
+<cube/teachers_school_subject/2020-09-15> a qb:DataSet ;
+    rdfs:label "Teachers by school by subject - 2020" ;
+    rdfs:comment "Справка за броя на педагогическите специалисти, назначени на щатно място по предмет в общинските, държавните и частните училища, през учебната 2020/2021 година към 15.09.2020 г."@bg ;
+    qb:structure <cube/teachers_school_subject> ;
+    :date "2020-09-15"^^xsd:date ;
+.
+

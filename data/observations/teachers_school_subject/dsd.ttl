@@ -1,0 +1,7 @@
+<cube/teachers_school_subject> a qb:DSD ;
+    qb:component
+        [qb:dimension  :date   ;   qb:componentAttachment qb:DataSet],
+        [qb:dimension  :subject ],
+        [qb:measure    :quantity_people  ],
+        [qb:measure    :school  ]
+ .
