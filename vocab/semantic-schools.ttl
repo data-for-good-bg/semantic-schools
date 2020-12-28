@@ -41,6 +41,7 @@ subject:nmb_110  a        :Subject , skos:Concept ;
 subject:nmb_35  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "МАТ"@bg ;
         skos:prefLabel    "Математика"@bg .
 
 occupation:5b1a88a4840083e48d54c6339ef16b10
