@@ -1,4 +1,4 @@
-vBASE <http://edu.ontotext.com/resource/>
+BASE <http://edu.ontotext.com/resource/>
 PREFIX mapper: <http://www.ontotext.com/mapper/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -20,6 +20,8 @@ INSERT {
   .
   }
 } WHERE {
+    #http://edu.ontotext.com/orefine/project?project=2507564030891 - 2019
+    #http://edu.ontotext.com/orefine/project?project=2190454123408 - 2020
     SERVICE <rdf-mapper:ontorefine:2507564030891> {
         BIND(<cube/dzi/2019> as ?DataSet)
         # Columns as variables:
