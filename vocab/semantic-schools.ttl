@@ -102,11 +102,13 @@ occupation:06c9463ef597cb5b8c5ba38998190658
 subject:nmb_43  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "БЗО"@bg ;
         skos:prefLabel    "Биология и здравно образование"@bg .
 
 subject:nmb_1  a          :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "БЕЛ"@bg ;
         skos:prefLabel    "Български език и литература"@bg .
 
 :Region  rdfs:label      "Област"@bg , "Region" ;
@@ -116,6 +118,7 @@ subject:nmb_1  a          :Subject , skos:Concept ;
 subject:nmb_22  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "НЕ"@bg ;
         skos:prefLabel    "Немски език"@bg .
 
 :dateTime  a              sosa:ObservableProperty , qb:DimensionProperty ;
@@ -299,6 +302,7 @@ subject:nmb_100  a        :Subject , skos:Concept ;
 subject:nmb_25  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "ИтЕ"@bg ;
         skos:prefLabel    "Италиански език"@bg .
 
 :Municipality  rdfs:label  "Община"@bg , "Municipality" ;
@@ -402,6 +406,7 @@ subject:nmb_116  a        :Subject , skos:Concept ;
 subject:nmb_41  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "ИСТ"@bg ;
         skos:prefLabel    "История и цивилизация"@bg .
 
 occupation:02a89208aed8eab7f542aa587f8f712e
@@ -578,6 +583,7 @@ occupation:9f6ee6b5e133bb712f5e7f10e35d2f33
 subject:nmb_44  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "ФА"@bg ;
         skos:prefLabel    "Физика и астрономия"@bg .
 
 occupation:e853dd6515c1707fe9e48d5d3b4acee8
@@ -589,6 +595,7 @@ occupation:e853dd6515c1707fe9e48d5d3b4acee8
 subject:nmb_23  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "ФрЕ"@bg ;
         skos:prefLabel    "Френски език"@bg .
 
 age_bracket:  a       skos:ConceptScheme ;
@@ -857,11 +864,13 @@ subject:nmb_117  a        :Subject , skos:Concept ;
 subject:nmb_42  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "ГЕО"@bg ;
         skos:prefLabel    "География и икономика"@bg .
 
 subject:nmb_21  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "АЕ"@bg ;
         skos:prefLabel    "Английски език"@bg .
 
 age_bracket:60-63  a      :Age_bracket , skos:Concept ;
@@ -970,6 +979,7 @@ occupation:b9e858c8e211e7e1cabdb99b2b181fe7
 subject:nmb_45  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "ХООС"@bg ;
         skos:prefLabel    "Химия и опазване на околната среда"@bg .
 
 occupation:c0b02eccd79a0a4f0fda3a5b4eaeaded
@@ -986,6 +996,7 @@ subject:nmb_3  a          :Subject , skos:Concept ;
 subject:nmb_24  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "ИспЕ"@bg ;
         skos:prefLabel    "Испански език"@bg .
 
 :place  a                 sosa:ObservableProperty , qb:DimensionProperty ;
@@ -1167,6 +1178,7 @@ subject:nmb_102  a        :Subject , skos:Concept ;
 subject:nmb_27  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "РЕ"@bg ;
         skos:prefLabel    "Руски език"@bg .
 
 subject:nmb_98  a         :Subject , skos:Concept ;

@@ -5,6 +5,7 @@ CONSTRUCT {
     skos:inScheme ?SCHEME         ;
     skos:exactMatch ?EXACT_MATCH  ;
     skos:definition ?description  ;
+    skos:notation ?NOTATION_BG ;
     rdfs:isDefinedBy     : ;
 .
 }
@@ -15,4 +16,5 @@ WHERE {
     bind(uri(concat(str(:),ucase(substr(?scheme,1,1)),substr(?scheme,2))) as ?CLASS)
     bind(uri(?exactMatch) as ?EXACT_MATCH)
     bind(strlang(?label_bg, 'bg') AS ?LABEL_BG)
+    bind(strlang(?notation_bg, 'bg') AS ?NOTATION_BG)
 }
