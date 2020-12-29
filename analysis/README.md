@@ -33,5 +33,5 @@ select ?region ?region_label ?subj ?subj_label ?total_teachers (sum(?old_teacher
     ?subj skos:prefLabel ?subj_label . 
     filter(lang(?region_label)="bg")
 } group by ?region ?region_label ?subj ?subj_label ?total_teachers 
-
 ```
+
