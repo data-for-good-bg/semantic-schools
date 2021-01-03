@@ -1,0 +1,5 @@
+PREFIX : <http://edu.ontotext.com/resource/ontology/>
+select * where {
+	?s :osmID ?osm .
+}
+#duhh

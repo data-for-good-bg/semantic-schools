@@ -51,3 +51,30 @@ select ?place ?place_label (sum(?death_20) as ?total_20) (sum(?death_19) as ?tot
 } group by ?place ?place_label order by desc(?ratio)
 ```
 
+Geo Demo - DZI mean by subj and by jurisdiction on YasGUY
+
+[YasGUY link to query](https://api.triplydb.com/s/DkUQTW-ut)
+
+```sparql
+PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX school: <http://edu.ontotext.com/resource/school/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+
+select ?subjectLabel (concat(?placeLab,"\n",?subjectLabel,"\n Средно: ",(str(avg(?grade))),"\n Общо Ученици: ",(str(sum(?num_students)))) as ?placeLabel) (concat("ranbow,",str((avg(?grade)-1)/5)) as ?placeColor) ?place where { 
+	bind(subject:nmb_1 as ?subj) 
+    ?p a :Region ; rdfs:label ?placeLab ; :hasShape/geo:asWKT ?place .
+    
+    ?o :grade_6 ?grade ; :school/geo:sfWithin+ ?p ; :subject ?subj ; :quantity_people ?num_students ; :date ?date .
+    
+    ?subj skos:prefLabel ?subjectLabel .  
+    filter(lang(?placeLab)="bg")
+#    filter(year(?date) = 2019)
+    filter(lang(?subjectLabel)="bg")
+} group by ?placeLab ?subjectLabel ?place 
+```
+
+
+
