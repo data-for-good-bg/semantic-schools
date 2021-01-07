@@ -1,0 +1,12 @@
+<cube/nsi_deaths> a qb:DSD ;
+    qb:component
+        [qb:dimension  :year    ],
+        [qb:dimension  :week_number  ],
+        [qb:dimension  :place ],
+        [qb:measure    :quantity_people  ]
+.
+
+<cube/nsi_deaths/data> a qb:DataSet ;
+    rdfs:label "NSI weekly deaths by region" ;
+    qb:structure <cube/nsi_deaths> ;
+.

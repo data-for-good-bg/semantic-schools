@@ -1,0 +1,13 @@
+<cube/teachers_by_age_region> a qb:DSD ;
+    qb:component
+        [qb:dimension  :sex    ;   qb:componentAttachment qb:DataSet],
+        [qb:dimension  :date   ;   qb:componentAttachment qb:DataSet],
+        [qb:dimension  :place   ],
+        [qb:dimension  :subject ],
+        [qb:dimension  :age ],
+        [qb:dimension  :years_working ],
+        [qb:dimension  :years_teaching ],
+        [qb:dimension  :years_spec ],
+        [qb:attribute  sdmx-attribute:unitMeasure ; qb:componentAttachment qb:MeasureProperty],
+        [qb:measure    :quantity_people  ]
+ .

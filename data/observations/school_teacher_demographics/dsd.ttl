@@ -1,0 +1,9 @@
+<cube/school_teacher_demographics> a qb:DSD ;
+    qb:component
+        [qb:dimension  :date   ;   qb:componentAttachment qb:DataSet],
+        [qb:dimension  :school   ],
+        [qb:dimension  :age_bracket ],
+        [qb:dimension  :occupation ],
+        [qb:attribute  sdmx-attribute:unitMeasure ; qb:componentAttachment qb:MeasureProperty],
+        [qb:measure    :quantity_people  ]
+.

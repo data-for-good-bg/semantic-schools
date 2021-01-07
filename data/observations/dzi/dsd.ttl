@@ -1,0 +1,8 @@
+<cube/dzi> a qb:DSD ;
+    qb:component
+        [qb:dimension  :date   ;   qb:componentAttachment qb:DataSet],
+        [qb:dimension  :school   ],
+        [qb:dimension  :subject ],
+        [qb:measure    :grade_6 ],
+        [qb:measure    :quantity_people  ]
+.

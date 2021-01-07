@@ -2,10 +2,16 @@
 @prefix : <http://edu.ontotext.com/resource/ontology/> .
 
 @prefix graph: <http://edu.ontotext.com/resource/graph/> .
+@prefix mapper: <http://www.ontotext.com/mapper/> .
+
+#Concept prefixes and schemes
+
 @prefix school: <http://edu.ontotext.com/resource/school/> .
 @prefix place: <http://edu.ontotext.com/resource/place/> .
 @prefix subject: <http://edu.ontotext.com/resource/subject/> .
-
+@prefix sex: <http://edu.ontotext.com/resource/sex/> .
+@prefix age_bracket: <http://edu.ontotext.com/resource/age_bracket/> .
+@prefix occupation: <http://edu.ontotext.com/resource/occupation/> .
 
 @prefix dc:    <http://purl.org/dc/elements/1.1/> .
 @prefix dct:   <http://purl.org/dc/terms/> .
@@ -33,17 +39,4 @@
 @prefix wd:    <http://www.wikidata.org/entity/> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
 
-#PUML
-
-schema:url a puml:InlineProperty .
-
-schema:School puml:stereotype "(O,orange)" .
-
-schema:City puml:stereotype "(P,green)" .
-:District puml:stereotype "(P,green)" .
-:Municipality puml:stereotype "(P,green)" .
-:Region puml:stereotype "(P,green)" .
-
-sf:Point puml:stereotype "(G,lightblue)" .
-sf:Polygon puml:stereotype "(G,lightblue)" .
 

@@ -1,0 +1,34 @@
+CONSTRUCT {
+    ?URI a qb:MeasureProperty, sosa:ObservableProperty, ?CODED_PROP_TYPE;
+        rdfs:label                  ?label , ?LABEL_BG ;
+        rdfs:comment                ?description ;
+        sdmx-attribute:unitMeasure  ?UNIT ;
+        :derivedFrom                ?DERIVED_FROM ;
+        qb:codeList                 ?CODEDLIST ;
+        qb:concept                  sdmx-concept:obsValue ;
+        rdfs:range                  ?CODEDCLASS ;
+        ?EXTRA_P                    ?EXTRA_O ;
+        rdfs:isDefinedBy            : ;
+.
+
+}
+WHERE
+{
+    bind(1+"" as ?UNDEF)
+    bind(uri(concat(str(:),?uri)) as ?URI)
+    bind(uri(tarql:expandPrefixedName(?unitMeasure)) as ?UNIT)
+    bind(uri(concat("feature/",?featureOfInterest)) as ?FEATURE)
+    bind(uri(?measurementContext) as ?MEASUREMENT_CONTEXT)
+    bind(uri(concat("statisticalSummary/",?statisticalSummary)) as ?STATSUM)
+    bind(uri(if(bound(?codedList),qb:CodedProperty,?codedList)) as ?CODED_PROP_TYPE)
+    bind(uri(?codedList) as ?CODEDLIST)
+    bind(uri(concat(str(:),ucase(substr(?codedList,1,1)),substr(?codedList,2))) as ?CODEDCLASS)
+    bind(uri(tarql:expandPrefixedName(?extra_p)) as ?EXTRA_P)
+    bind(if(bound(?extra_o),uri(?extra_o),if(bound(?extra_o_str),?extra_o_str,?UNDEF)) as ?EXTRA_O)
+    bind(coalesce(?derivedFrom,"") as ?derivedFromNotNull)
+    ?derivedFrom_split apf:strSplit (?derivedFromNotNull ",")
+    bind(if(bound(?derivedFrom),uri(concat(str(:),?derivedFrom_split)),?UNDEF) as ?DERIVED_FROM)
+    bind(strlang(?label_bg, 'bg') AS ?LABEL_BG)
+}
+
+

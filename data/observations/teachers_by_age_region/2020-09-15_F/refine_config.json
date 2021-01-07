@@ -1,0 +1,271 @@
+[
+  {
+    "op": "core/recon",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Obl Name",
+    "config": {
+      "mode": "standard-service",
+      "service": "https://wikidata.reconci.link/en/api",
+      "identifierSpace": "http://www.wikidata.org/entity/",
+      "schemaSpace": "http://www.wikidata.org/prop/direct/",
+      "type": {
+        "id": "Q209824",
+        "name": "oblast of Bulgaria"
+      },
+      "autoMatch": true,
+      "columnDetails": [],
+      "limit": 0
+    },
+    "description": "Reconcile cells in column Obl Name to type Q209824"
+  },
+  {
+    "op": "core/recon-judge-similar-cells",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "Obl Name: judgment",
+          "expression": "forNonBlank(cell.recon.judgment, v, v, if(isNonBlank(value), \"(unreconciled)\", \"(blank)\"))",
+          "columnName": "Obl Name",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "none",
+                "l": "none"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "row-based"
+    },
+    "columnName": "Obl Name",
+    "similarValue": "Кърджали",
+    "judgment": "matched",
+    "match": {
+      "id": "Q1104675",
+      "name": "Kardzhali Province",
+      "types": [
+        "Q209824"
+      ],
+      "score": 89
+    },
+    "shareNewTopics": false,
+    "description": "Match item Kardzhali Province (Q1104675) for cells containing \"Кърджали\" in column Obl Name"
+  },
+  {
+    "op": "core/recon-judge-similar-cells",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "Obl Name: judgment",
+          "expression": "forNonBlank(cell.recon.judgment, v, v, if(isNonBlank(value), \"(unreconciled)\", \"(blank)\"))",
+          "columnName": "Obl Name",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "none",
+                "l": "none"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "row-based"
+    },
+    "columnName": "Obl Name",
+    "similarValue": "София-област",
+    "judgment": "matched",
+    "match": {
+      "id": "Q202904",
+      "name": "Sofia Province",
+      "types": [
+        "Q209824"
+      ],
+      "score": 96
+    },
+    "shareNewTopics": false,
+    "description": "Match item Sofia Province (Q202904) for cells containing \"София-област\" in column Obl Name"
+  },
+  {
+    "op": "core/recon-judge-similar-cells",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "Obl Name: judgment",
+          "expression": "forNonBlank(cell.recon.judgment, v, v, if(isNonBlank(value), \"(unreconciled)\", \"(blank)\"))",
+          "columnName": "Obl Name",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "none",
+                "l": "none"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "row-based"
+    },
+    "columnName": "Obl Name",
+    "similarValue": "Търговище",
+    "judgment": "matched",
+    "match": {
+      "id": "Q2012589",
+      "name": "Targovishte Province",
+      "types": [
+        "Q209824"
+      ],
+      "score": 77
+    },
+    "shareNewTopics": false,
+    "description": "Match item Targovishte Province (Q2012589) for cells containing \"Търговище\" in column Obl Name"
+  },
+  {
+    "op": "core/recon-judge-similar-cells",
+    "engineConfig": {
+      "facets": [
+        {
+          "type": "list",
+          "name": "Obl Name: judgment",
+          "expression": "forNonBlank(cell.recon.judgment, v, v, if(isNonBlank(value), \"(unreconciled)\", \"(blank)\"))",
+          "columnName": "Obl Name",
+          "invert": false,
+          "omitBlank": false,
+          "omitError": false,
+          "selection": [
+            {
+              "v": {
+                "v": "none",
+                "l": "none"
+              }
+            }
+          ],
+          "selectBlank": false,
+          "selectError": false
+        }
+      ],
+      "mode": "row-based"
+    },
+    "columnName": "Obl Name",
+    "similarValue": "В чужбина",
+    "judgment": "matched",
+    "match": {
+      "id": "Q2",
+      "name": "Earth",
+      "types": [
+        ""
+      ],
+      "score": 100
+    },
+    "shareNewTopics": false,
+    "description": "Match item Earth (Q2) for cells containing \"В чужбина\" in column Obl Name"
+  },
+  {
+    "op": "core/transpose-columns-into-rows",
+    "startColumnName": "nmb_Bez",
+    "columnCount": -1,
+    "ignoreBlankCells": true,
+    "fillDown": false,
+    "separator": null,
+    "keyColumnName": "subj_code",
+    "valueColumnName": "quantity",
+    "description": "Transpose cells in columns starting with nmb_Bez into rows in two new columns named subj_code and quantity"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Obl Name",
+    "description": "Fill down cells in column Obl Name"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Age",
+    "description": "Fill down cells in column Age"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Teach_All",
+    "description": "Fill down cells in column Teach_All"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "pens",
+    "description": "Fill down cells in column pens"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Total years",
+    "description": "Fill down cells in column Total years"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Spec years",
+    "description": "Fill down cells in column Spec years"
+  },
+  {
+    "op": "core/fill-down",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "Teach years",
+    "description": "Fill down cells in column Teach years"
+  },
+  {
+    "op": "core/text-transform",
+    "engineConfig": {
+      "facets": [],
+      "mode": "row-based"
+    },
+    "columnName": "quantity",
+    "expression": "value.toNumber()",
+    "onError": "keep-original",
+    "repeat": false,
+    "repeatCount": 10,
+    "description": "Text transform on cells in column quantity using expression value.toNumber()"
+  }
+]
