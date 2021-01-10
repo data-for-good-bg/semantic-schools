@@ -5,4 +5,5 @@
         [qb:dimension  :subject ],
         [qb:measure    :grade_6 ],
         [qb:measure    :quantity_people  ]
+        [qb:measure    :rank_percentile  ]
 .
