@@ -76,5 +76,29 @@ select ?subjectLabel (concat(?placeLab,"\n",?subjectLabel,"\n Средно: ",(s
 } group by ?placeLab ?subjectLabel ?place 
 ```
 
+BEL DZI Mapped with Geosparql Nearby
 
+[YasGUY link to query](https://api.triplydb.com/s/xMWAb-JVA)
 
+```sparql
+PREFIX omgeo: <http://www.ontotext.com/owlim/geo#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT * WHERE {
+ bind(xsd:double("42.6799077") as ?my_lat) #MY LATITUDE
+ bind(xsd:double("23.3628094") as ?my_lon) #MY LONGITUDE
+ ?s a :School ; :hasPoint ?point ; rdfs:label ?schoolName .
+ ?point omgeo:nearby(?my_lat ?my_lon "3km") ; geo:asWKT ?school. # DISTANCE FROM ME
+    
+ ?obs :school ?s ; :rank_percentile ?percentile ; :grade_6 ?grade_dzi ; :date ?date ; :subject subject:nmb_1 .
+ 
+ bind(concat(?schoolName," БЕЛ:",?grade_dzi) as ?schoolLabel)
+ bind(concat("warm,",str(?percentile/100)) as ?schoolColor)
+ filter(year(?date) = 2020)
+    
+} order by desc(?percentile) 
+```
