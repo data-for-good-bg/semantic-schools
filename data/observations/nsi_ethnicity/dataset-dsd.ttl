@@ -1,0 +1,14 @@
+<cube/nsi_ethnicity> a qb:DSD ;
+    qb:component
+        [qb:dimension  :date ; qb:componentAttachment qb:DataSet ],
+        [qb:dimension  :ethnic_group  ],
+        [qb:dimension  :place ],
+        [qb:measure    :quantity_people  ]
+.
+
+<cube/nsi_ethnicity/2011> a qb:DataSet ;
+    rdfs:label "NSI 2011 census, ethnicity by self identification" ;
+    rdfs:label "НАСЕЛЕНИЕ ПО ОБЛАСТИ, ОБЩИНИ, НАСЕЛЕНИ МЕСТА И САМООПРЕДЕЛЕНИЕ ПО ЕТНИЧЕСКА ПРИНАДЛЕЖНОСТ КЪМ 1.02.2011 ГОДИНА"@bg ;
+    :date "2011-02-01"^^xsd:date ;
+    qb:structure <cube/nsi_deaths> ;
+.

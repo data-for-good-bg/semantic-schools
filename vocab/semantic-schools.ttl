@@ -94,17 +94,17 @@ occupation:b866564a4da63b724d1ee77cee818e77
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител/Преподавател, изобразително и/или приложно изкуство в занимания по интереси"@bg .
 
-occupation:06c9463ef597cb5b8c5ba38998190658
-        a                 :Occupation , skos:Concept ;
-        rdfs:isDefinedBy  : ;
-        skos:inScheme     occupation: ;
-        skos:prefLabel    "Старши учител спортна подготовка"@bg .
-
 subject:nmb_43  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "БЗО"@bg ;
         skos:prefLabel    "Биология и здравно образование"@bg .
+
+occupation:06c9463ef597cb5b8c5ba38998190658
+        a                 :Occupation , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     occupation: ;
+        skos:prefLabel    "Старши учител спортна подготовка"@bg .
 
 subject:nmb_1  a          :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -383,6 +383,13 @@ occupation:c8de49e5b3c8e9da2c6c8791625cb50c
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител на деца с нарушено зрение"@bg .
 
+<http://edu.ontotext.com/resource/ethnic_group/bg>
+        a                 :Ethnic_group , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:exactMatch   wd:Q133255 ;
+        skos:inScheme     <http://edu.ontotext.com/resource/ethnic_group/> ;
+        skos:prefLabel    "Българска"@bg , "Bulgarians" .
+
 subject:nmb_83  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
@@ -527,6 +534,13 @@ age_bracket:46-50  a      :Age_bracket , skos:Concept ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "46-50" .
 
+<http://edu.ontotext.com/resource/ethnic_group/roma>
+        a                 :Ethnic_group , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:exactMatch   wd:Q8060 ;
+        skos:inScheme     <http://edu.ontotext.com/resource/ethnic_group/> ;
+        skos:prefLabel    "Ромска"@bg , "Romani" .
+
 subject:nmb_99  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
@@ -580,6 +594,12 @@ occupation:9f6ee6b5e133bb712f5e7f10e35d2f33
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Корепетитор, в институциите в системата на предучилищното и училищното образование"@bg .
+
+:ethnic_group  a          qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Етнос"@bg , "Ethnic Group" ;
+        rdfs:range        :Ethnic_group ;
+        qb:codeList       <http://edu.ontotext.com/resource/ethnic_group/> .
 
 subject:nmb_44  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -874,6 +894,11 @@ subject:nmb_21  a         :Subject , skos:Concept ;
         skos:notation     "АЕ"@bg ;
         skos:prefLabel    "Английски език"@bg .
 
+<http://edu.ontotext.com/resource/ethnic_group/>
+        a             skos:ConceptScheme ;
+        rdfs:label    "Ethnic Group scheme" ;
+        rdfs:seeAlso  :Ethnic_group .
+
 age_bracket:60-63  a      :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
@@ -1069,6 +1094,11 @@ occupation:18a815bfc13c9c44b27fe6ed4468b758
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, детска градина"@bg .
 
+subject:nmb_82  a         :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:prefLabel    "ПН - Химични продукти и технологии"@bg .
+
 occupation:88594ba5114137fdc2e3da1568548ebf
         a                 :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -1081,10 +1111,11 @@ occupation:3d51a5c488e13e21ae44b442daf3e33e
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен възпитател"@bg .
 
-subject:nmb_82  a         :Subject , skos:Concept ;
+<http://edu.ontotext.com/resource/ethnic_group/dni>
+        a                 :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     subject: ;
-        skos:prefLabel    "ПН - Химични продукти и технологии"@bg .
+        skos:inScheme     <http://edu.ontotext.com/resource/ethnic_group/> ;
+        skos:prefLabel    "Не се идентифицира"@bg , "Does Not Identify " .
 
 subject:nmb_61  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -1155,6 +1186,12 @@ occupation:a0c0d0b679a523207c2cc46035017d89
 :hasPoint  a                rdf:Property ;
         rdfs:subPropertyOf  geo:hasGeometry , geo:hasDefaultGeometry .
 
+<http://edu.ontotext.com/resource/ethnic_group/othr>
+        a                 :Ethnic_group , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     <http://edu.ontotext.com/resource/ethnic_group/> ;
+        skos:prefLabel    "Друга"@bg , "Other " .
+
 subject:nmb_69  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
@@ -1182,6 +1219,13 @@ subject:nmb_27  a         :Subject , skos:Concept ;
         skos:notation     "РЕ"@bg ;
         skos:prefLabel    "Руски език"@bg .
 
+<http://edu.ontotext.com/resource/ethnic_group/tr>
+        a                 :Ethnic_group , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:exactMatch   wd:Q84072 ;
+        skos:inScheme     <http://edu.ontotext.com/resource/ethnic_group/> ;
+        skos:prefLabel    "Турска"@bg , "Turks" .
+
 subject:nmb_98  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
@@ -1192,6 +1236,12 @@ occupation:eb3dc99a637886af33350a8c49f90a47
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Заместник-директор, спортна дейност"@bg .
+
+:Ethnic_group  a          rdfs:Class ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Ethnic Group class" ;
+        rdfs:seeAlso      <http://edu.ontotext.com/resource/ethnic_group/> ;
+        rdfs:subClassOf   skos:Concept .
 
 subject:nmb_77  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
