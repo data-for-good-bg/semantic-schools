@@ -17,6 +17,7 @@
 @prefix dct:   <http://purl.org/dc/terms/> .
 @prefix school: <http://edu.ontotext.com/resource/school/> .
 @prefix sdmx-concept: <http://purl.org/linked-data/sdmx/2009/concept#> .
+@prefix ethnic_group: <http://edu.ontotext.com/resource/ethnic_group/> .
 @prefix place: <http://edu.ontotext.com/resource/place/> .
 @prefix age_bracket: <http://edu.ontotext.com/resource/age_bracket/> .
 @prefix sdmx-attribute: <http://purl.org/linked-data/sdmx/2009/attribute#> .
@@ -383,11 +384,10 @@ occupation:c8de49e5b3c8e9da2c6c8791625cb50c
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител на деца с нарушено зрение"@bg .
 
-<http://edu.ontotext.com/resource/ethnic_group/bg>
-        a                 :Ethnic_group , skos:Concept ;
+ethnic_group:bg  a        :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:exactMatch   wd:Q133255 ;
-        skos:inScheme     <http://edu.ontotext.com/resource/ethnic_group/> ;
+        skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Българска"@bg , "Bulgarians" .
 
 subject:nmb_83  a         :Subject , skos:Concept ;
@@ -534,11 +534,10 @@ age_bracket:46-50  a      :Age_bracket , skos:Concept ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "46-50" .
 
-<http://edu.ontotext.com/resource/ethnic_group/roma>
-        a                 :Ethnic_group , skos:Concept ;
+ethnic_group:roma  a      :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:exactMatch   wd:Q8060 ;
-        skos:inScheme     <http://edu.ontotext.com/resource/ethnic_group/> ;
+        skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Ромска"@bg , "Romani" .
 
 subject:nmb_99  a         :Subject , skos:Concept ;
@@ -599,7 +598,7 @@ occupation:9f6ee6b5e133bb712f5e7f10e35d2f33
         rdfs:isDefinedBy  : ;
         rdfs:label        "Етнос"@bg , "Ethnic Group" ;
         rdfs:range        :Ethnic_group ;
-        qb:codeList       <http://edu.ontotext.com/resource/ethnic_group/> .
+        qb:codeList       ethnic_group: .
 
 subject:nmb_44  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -894,8 +893,7 @@ subject:nmb_21  a         :Subject , skos:Concept ;
         skos:notation     "АЕ"@bg ;
         skos:prefLabel    "Английски език"@bg .
 
-<http://edu.ontotext.com/resource/ethnic_group/>
-        a             skos:ConceptScheme ;
+ethnic_group:  a      skos:ConceptScheme ;
         rdfs:label    "Ethnic Group scheme" ;
         rdfs:seeAlso  :Ethnic_group .
 
@@ -1111,10 +1109,9 @@ occupation:3d51a5c488e13e21ae44b442daf3e33e
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен възпитател"@bg .
 
-<http://edu.ontotext.com/resource/ethnic_group/dni>
-        a                 :Ethnic_group , skos:Concept ;
+ethnic_group:dni  a       :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     <http://edu.ontotext.com/resource/ethnic_group/> ;
+        skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Не се идентифицира"@bg , "Does Not Identify " .
 
 subject:nmb_61  a         :Subject , skos:Concept ;
@@ -1186,10 +1183,9 @@ occupation:a0c0d0b679a523207c2cc46035017d89
 :hasPoint  a                rdf:Property ;
         rdfs:subPropertyOf  geo:hasGeometry , geo:hasDefaultGeometry .
 
-<http://edu.ontotext.com/resource/ethnic_group/othr>
-        a                 :Ethnic_group , skos:Concept ;
+ethnic_group:othr  a      :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     <http://edu.ontotext.com/resource/ethnic_group/> ;
+        skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Друга"@bg , "Other " .
 
 subject:nmb_69  a         :Subject , skos:Concept ;
@@ -1219,11 +1215,10 @@ subject:nmb_27  a         :Subject , skos:Concept ;
         skos:notation     "РЕ"@bg ;
         skos:prefLabel    "Руски език"@bg .
 
-<http://edu.ontotext.com/resource/ethnic_group/tr>
-        a                 :Ethnic_group , skos:Concept ;
+ethnic_group:tr  a        :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:exactMatch   wd:Q84072 ;
-        skos:inScheme     <http://edu.ontotext.com/resource/ethnic_group/> ;
+        skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Турска"@bg , "Turks" .
 
 subject:nmb_98  a         :Subject , skos:Concept ;
@@ -1240,7 +1235,7 @@ occupation:eb3dc99a637886af33350a8c49f90a47
 :Ethnic_group  a          rdfs:Class ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Ethnic Group class" ;
-        rdfs:seeAlso      <http://edu.ontotext.com/resource/ethnic_group/> ;
+        rdfs:seeAlso      ethnic_group: ;
         rdfs:subClassOf   skos:Concept .
 
 subject:nmb_77  a         :Subject , skos:Concept ;

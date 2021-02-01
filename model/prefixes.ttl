@@ -12,6 +12,7 @@
 @prefix sex: <http://edu.ontotext.com/resource/sex/> .
 @prefix age_bracket: <http://edu.ontotext.com/resource/age_bracket/> .
 @prefix occupation: <http://edu.ontotext.com/resource/occupation/> .
+@prefix ethnic_group: <http://edu.ontotext.com/resource/ethnic_group/> .
 
 @prefix dc:    <http://purl.org/dc/elements/1.1/> .
 @prefix dct:   <http://purl.org/dc/terms/> .
