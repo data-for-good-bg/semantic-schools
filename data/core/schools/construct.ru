@@ -2,7 +2,7 @@ INSERT {
     GRAPH school: {
     ?s1 a schema:School ;
         schema:name ?o_name ;
-        geo:sfWithin ?o_sfWithin .
+        :place ?o_sfWithin .
     }
 } WHERE {
     SERVICE <rdf-mapper:ontorefine:2058181869306> {

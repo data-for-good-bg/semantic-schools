@@ -102,3 +102,9 @@ SELECT * WHERE {
     
 } order by desc(?percentile) 
 ```
+
+#ROMA villages
+
+https://api.triplydb.com/s/6zJ44Fxc0
+
+#Correl roma population / 
