@@ -107,4 +107,39 @@ SELECT * WHERE {
 
 https://api.triplydb.com/s/6zJ44Fxc0
 
-#Correl roma population / 
+#Correl roma population 
+
+```sparql
+PREFIX qb: <http://purl.org/linked-data/cube#>
+PREFIX : <http://edu.ontotext.com/resource/ontology/>
+BASE <http://edu.ontotext.com/resource/>
+PREFIX ethnic_group: <http://edu.ontotext.com/resource/ethnic_group/>
+PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+select ?place_lab ?population ?roma_pop ?roma_ratio ?avg_dzi
+where {
+    bind(?roma_pop/?population as ?roma_ratio)
+    ?place rdfs:label ?place_lab .
+    filter(lang(?place_lab)="bg")
+    {
+        select ?place (sum(?any) as ?population)  (sum(?roma) as ?roma_pop) {
+            ?o_eth qb:dataSet <cube/nsi_ethnicity/2011> ;
+                   :quantity_people ?any ;
+                   :place ?place ;
+                   :ethnic_group ?eg ;
+                   .
+            bind(if(sameterm(?eg,ethnic_group:roma),?any,0) as ?roma)
+        } group by ?place 
+    }
+    {
+        select ?place (avg(?grade) as ?avg_dzi) {
+            ?o_dzi qb:dataSet <cube/dzi/2020> ;
+                   :grade_6 ?grade ;
+#                   :subject subject:nmb_1 
+                   :school ?school ;
+                   .
+            ?school :place ?place .
+        } group by ?place 
+    }
+}
+```
