@@ -328,6 +328,12 @@ subject:nmb_25  a         :Subject , skos:Concept ;
         skos:notation     "ИтЕ"@bg ;
         skos:prefLabel    "Италиански език"@bg .
 
+subject:nmb_XX  a         :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:notation     "ФИЛ"@bg ;
+        skos:prefLabel    "Философия"@bg .
+
 :Municipality  rdfs:label  "Община"@bg , "Municipality" ;
         rdfs:seeAlso     wd:Q1906268 ;
         rdfs:subClassOf  schema:AdministrativeArea .
