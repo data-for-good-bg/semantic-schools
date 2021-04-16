@@ -1,0 +1,10 @@
+<cube/nvo> a qb:DSD ;
+    qb:component
+        [qb:dimension  :date   ;   qb:componentAttachment qb:DataSet],
+        [qb:dimension  :grade_level   ;   qb:componentAttachment qb:DataSet],
+        [qb:dimension  :school   ],
+        [qb:dimension  :subject ],
+        [qb:measure    :points_100 ],
+        [qb:measure    :quantity_people  ],
+        [qb:measure    :rank_percentile  ],
+.

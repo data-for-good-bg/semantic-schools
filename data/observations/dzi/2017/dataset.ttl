@@ -1,0 +1,6 @@
+<cube/dzi/2017> a qb:DataSet ;
+    rdfs:label "DZI - 2017" ;
+    rdfs:comment "Резултати от държавен зрелсотен изпит - 2017 "@bg ;
+    qb:structure <cube/dzi> ;
+    :date "2017-05-01"^^xsd:date ;
+.

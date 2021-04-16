@@ -170,6 +170,11 @@ occupation:dfac690656f144dda4004005a2b02b93
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител в група за целодневна организация на учебния ден I - IV клас"@bg .
 
+:grade_level  a           sosa:ObservableProperty , qb:DimensionProperty ;
+        rdfs:isDefinedBy  : ;
+        rdfs:label        "Клас "@bg , "Grade Level" ;
+        rdfs:range        xsd:integer .
+
 subject:nmb_93  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
@@ -328,12 +333,6 @@ subject:nmb_25  a         :Subject , skos:Concept ;
         skos:notation     "ИтЕ"@bg ;
         skos:prefLabel    "Италиански език"@bg .
 
-subject:nmb_XX  a         :Subject , skos:Concept ;
-        rdfs:isDefinedBy  : ;
-        skos:inScheme     subject: ;
-        skos:notation     "ФИЛ"@bg ;
-        skos:prefLabel    "Философия"@bg .
-
 :Municipality  rdfs:label  "Община"@bg , "Municipality" ;
         rdfs:seeAlso     wd:Q1906268 ;
         rdfs:subClassOf  schema:AdministrativeArea .
@@ -423,6 +422,12 @@ ethnic_group:bg  a        :Ethnic_group , skos:Concept ;
         skos:exactMatch   wd:Q133255 ;
         skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Българска"@bg , "Bulgarians" .
+
+subject:nmb_ab  a         :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:notation     "ЧП"@bg ;
+        skos:prefLabel    "Човекът и природата"@bg .
 
 subject:nmb_83  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -881,6 +886,12 @@ occupation:34b79d744a1fa157ecdece14f3a721a5
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител, подготвителна група"@bg .
 
+subject:nmb_ac  a         :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:notation     "ЧО"@bg ;
+        skos:prefLabel    "Човекът и обществото"@bg .
+
 occupation:346a872f8cd895262f89fa86da00428e
         a                 :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
@@ -1131,6 +1142,12 @@ sex:O   a                 :Sex , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     sex: ;
         skos:prefLabel    "Други"@bg , "Other" .
+
+subject:nmb_aa  a         :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:notation     "ФИЛ"@bg ;
+        skos:prefLabel    "Философия"@bg .
 
 subject:nmb_82  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
