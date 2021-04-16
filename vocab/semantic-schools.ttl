@@ -1,36 +1,57 @@
 @prefix :      <http://edu.ontotext.com/resource/ontology/> .
-@prefix schema: <http://schema.org/> .
 @prefix qb4st: <http://www.w3.org/ns/qb4st/> .
 @prefix qudt:  <http://qudt.org/schema/qudt/> .
+@prefix pq:    <http://www.wikidata.org/prop/qualifier/> .
+@prefix pr:    <http://www.wikidata.org/prop/reference/> .
 @prefix occupation: <http://edu.ontotext.com/resource/occupation/> .
+@prefix ps:    <http://www.wikidata.org/prop/statement/> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
 @prefix subject: <http://edu.ontotext.com/resource/subject/> .
-@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
 @prefix sdmx:  <http://purl.org/linked-data/sdmx#> .
 @prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
-@prefix mapper: <http://www.ontotext.com/mapper/> .
-@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix wd:    <http://www.wikidata.org/entity/> .
-@prefix geo:   <http://www.opengis.net/ont/geosparql#> .
+@prefix pqn:   <http://www.wikidata.org/prop/qualifier/value-normalized/> .
 @prefix qb:    <http://purl.org/linked-data/cube#> .
-@prefix sf:    <http://www.opengis.net/ont/sf#> .
-@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix pqv:   <http://www.wikidata.org/prop/qualifier/value/> .
 @prefix school: <http://edu.ontotext.com/resource/school/> .
 @prefix sdmx-concept: <http://purl.org/linked-data/sdmx/2009/concept#> .
-@prefix ethnic_group: <http://edu.ontotext.com/resource/ethnic_group/> .
-@prefix place: <http://edu.ontotext.com/resource/place/> .
+@prefix wdref: <http://www.wikidata.org/reference/> .
+@prefix wdata: <http://www.wikidata.org/wiki/Special:EntityData/> .
 @prefix age_bracket: <http://edu.ontotext.com/resource/age_bracket/> .
 @prefix sdmx-attribute: <http://purl.org/linked-data/sdmx/2009/attribute#> .
 @prefix vann:  <http://purl.org/vocab/vann/> .
-@prefix prov:  <http://www.w3.org/ns/prov#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 @prefix sosa:  <http://www.w3.org/ns/sosa/> .
-@prefix sex:   <http://edu.ontotext.com/resource/sex/> .
+@prefix wikibase: <http://wikiba.se/ontology#> .
+@prefix prn:   <http://www.wikidata.org/prop/reference/value-normalized/> .
 @prefix graph: <http://edu.ontotext.com/resource/graph/> .
-@prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
 @prefix unit:  <http://qudt.org/vocab/unit/> .
 @prefix oeev:  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#> .
+@prefix prv:   <http://www.wikidata.org/prop/reference/value/> .
+@prefix hint:  <http://www.bigdata.com/queryHints#> .
+@prefix schema: <http://schema.org/> .
+@prefix bd:    <http://www.bigdata.com/rdf#> .
+@prefix wdt:   <http://www.wikidata.org/prop/direct/> .
+@prefix wds:   <http://www.wikidata.org/entity/statement/> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix wdv:   <http://www.wikidata.org/value/> .
+@prefix mapper: <http://www.ontotext.com/mapper/> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix psn:   <http://www.wikidata.org/prop/statement/value-normalized/> .
+@prefix wd:    <http://www.wikidata.org/entity/> .
+@prefix geo:   <http://www.opengis.net/ont/geosparql#> .
+@prefix psv:   <http://www.wikidata.org/prop/statement/value/> .
+@prefix sf:    <http://www.opengis.net/ont/sf#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix gas:   <http://www.bigdata.com/rdf/gas#> .
+@prefix ethnic_group: <http://edu.ontotext.com/resource/ethnic_group/> .
+@prefix place: <http://edu.ontotext.com/resource/place/> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix sex:   <http://edu.ontotext.com/resource/sex/> .
+@prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
+@prefix p:     <http://www.wikidata.org/prop/> .
+@prefix bds:   <http://www.bigdata.com/rdf/search#> .
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix wdno:  <http://www.wikidata.org/prop/novalue/> .
 @prefix obo:   <http://purl.obolibrary.org/obo/> .
 @prefix dc:    <http://purl.org/dc/elements/1.1/> .
 
@@ -316,6 +337,13 @@ occupation:83fd3b5e99ffd217b7af82e9d4293014
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител на деца с умствена изостаналост"@bg .
+
+:points_100  a                      sosa:ObservableProperty , qb:MeasureProperty ;
+        rdfs:comment                "Grade out of 100 " ;
+        rdfs:isDefinedBy            : ;
+        rdfs:label                  "Точки от 100"@bg , "Point 100" ;
+        qb:concept                  sdmx-concept:obsValue ;
+        sdmx-attribute:unitMeasure  unit:NUM .
 
 occupation:3aca749b93173f8563684a11ae35b1c7
         a                 :Occupation , skos:Concept ;
@@ -784,6 +812,7 @@ occupation:  a        skos:ConceptScheme ;
 subject:nmb_26  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "ПЕ"@bg ;
         skos:prefLabel    "Португалски език"@bg .
 
 occupation:36324354560c17e5d2ec80dac94fa9cd
@@ -1091,6 +1120,11 @@ occupation:18a815bfc13c9c44b27fe6ed4468b758
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, детска градина"@bg .
+
+sex:O   a                 :Sex , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     sex: ;
+        skos:prefLabel    "Други"@bg , "Other" .
 
 subject:nmb_82  a         :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
