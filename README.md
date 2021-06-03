@@ -2,5 +2,11 @@
 
 Semantic data model and data integration specs for schools in Bulgaria
 
-* endpoint url: <http://edu.ontotext.com/>
-* repository: semantic-schools
+* Endpoint URL: <http://edu.ontotext.com/>
+* Repository: semantic-schools
+
+Analysis of the ethnic population correlation with matura results can be found in the analysis folder.
+Vocab generation can be found in the bin folder.
+Data processing can be found in the data folder.
+The semantic model is visualized with graphs and diagrams in the model folder.
+Vocabulary generation happens in the vocabulary folder.
