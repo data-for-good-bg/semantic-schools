@@ -1,6 +1,6 @@
 # semantic-schools
 
-Semantic data model and data integration specs for schools in Bulgaria
+Semantic data model and data integration specs for schools in Bulgaria.
 
 * Endpoint URL: <http://edu.ontotext.com/>
 * Repository: semantic-schools
