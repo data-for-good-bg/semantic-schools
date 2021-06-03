@@ -1,0 +1,1 @@
+This folder contains information on the number of pedagogical specialists, appointed on a full-time basis by subject in the municipal, state and private schools, during the academic year 2020/2021 as of 15.09.2020
