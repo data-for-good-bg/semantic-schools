@@ -1,0 +1,7 @@
+<cube/nvo4/2018> a qb:DataSet ;
+    rdfs:label "NVO - 4 - 2018" ;
+    rdfs:comment "Резултати от национално външно оценяване - 4ти клас - 2018 "@bg ;
+    qb:structure <cube/nvo> ;
+    :date "2018-05-01"^^xsd:date ;
+    :grade_level 4 ;
+.
