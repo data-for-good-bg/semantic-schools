@@ -1,0 +1,1 @@
+This folder contains NSI census by 2011, ethnicity by self identification.

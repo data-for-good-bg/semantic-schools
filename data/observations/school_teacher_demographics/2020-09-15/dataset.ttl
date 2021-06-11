@@ -1,6 +1,6 @@
 <cube/school_teacher_demographics/2020-09-15> a qb:DataSet ;
     rdfs:label "Teachers demographics - by school and age bracket - 2020" ;
-    rdfs:comment "Брой на педагогическите специалисти по длъжност, по възрастoва група за учебната 2020/20121година към 15.09.2020 г."@bg ;
+    rdfs:comment "Брой на педагогическите специалисти по длъжност, по възрастoва група за учебната 2020/2021година към 15.09.2020 г."@bg ;
     qb:structure <cube/school_teacher_demographics> ;
     :date "2020-09-15"^^xsd:date ;
 .

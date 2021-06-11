@@ -1,3 +1,5 @@
+This folder contains analysis of the ethnic population correlation with matura results.
+
 # SPARQL Queries 
 
 Per subject and oblast count old teachers compared to all the teachers 
