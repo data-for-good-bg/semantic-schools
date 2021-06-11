@@ -1,0 +1,18 @@
+@prefix nkpd: <http://edu.ontotext.com/resource/nkpd/> .
+
+nkpd: a skos:ConceptScheme ;
+    skos:prefLabel "Национална класификация на професиите и длъжностите"@bg ;
+    skos:hasTopConcept nkpd:1, nkpd:2, nkpd:3 ;
+.
+
+nkpd:1111 a skos:Concept ;
+    skos:prefLabel "Законодатели и висши представители"@bg ;
+    skos:broader nkpd:111 ;
+    skos:inScheme nkpd: ;
+.
+
+nkpd:11113024 a skos:Concept ;
+    skos:prefLabel "Кметски наместник, община"@bg ;
+    skos:broader nkpd:1111 ;
+    skos:inScheme nkpd: ;
+.
