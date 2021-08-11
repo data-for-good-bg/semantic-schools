@@ -144,9 +144,10 @@ where {
 }
 ```
 
-#Rank schools by number of observations
+Rank schools by number of observations
 
-```select ?school ?school_label (COUNT(?obs) AS ?num_obs) 
+```sparql 
+select ?school ?school_label (COUNT(?obs) AS ?num_obs) 
 where { 
 	?obs a qb:Observation .
 	?obs :school ?school .
@@ -154,9 +155,9 @@ where {
 } group by ?school ?school_label order by desc (?num_obs)
 ```
 
-#Rank schools by percentile on all subject all years
+Rank schools by percentile on all subject all years
 
-```
+```sparql
 select  
 ?school ?school_label (avg(?perc) as ?avg_perc) (sum(?kids) as ?KIDS)
 where { 
@@ -166,9 +167,9 @@ where {
 group by ?school ?school_label order by desc(?avg_grade) 
 ```
 
-#Rank schools by percentile on 1 subject all years
+Rank schools by percentile on 1 subject all years
 
-```
+```sparql
 PREFIX : <http://edu.ontotext.com/resource/ontology/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX subject: <http://edu.ontotext.com/resource/subject/>
