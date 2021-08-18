@@ -22,8 +22,9 @@ INSERT {
 } WHERE {
     #http://edu.ontotext.com/orefine/project?project=2507564030891 - 2019
     #http://edu.ontotext.com/orefine/project?project=2190454123408 - 2020
-    SERVICE <rdf-mapper:ontorefine:2507564030891> {
-        BIND(<cube/dzi/2019> as ?DataSet)
+    #http://edu.ontotext.com/orefine/project?project=1798404355799 - 2021
+    SERVICE <rdf-mapper:ontorefine:1798404355799> {
+        BIND(<cube/dzi/2021> as ?DataSet)
         # Columns as variables:
         #   ?c_school_id, ?c_subject_code, ?c_prop, ?c_value
         # Metadata as variables:
