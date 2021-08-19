@@ -32,5 +32,3 @@ place:Q219 a schema:Country ; rdfs:label "Bulgaria" .
 school:  a skos:ConceptScheme ;
          rdfs:label    "School concept scheme" ;
          rdfs:seeAlso  schema:School .
-
-

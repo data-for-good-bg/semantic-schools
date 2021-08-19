@@ -16,6 +16,7 @@
 @prefix sdmx-concept: <http://purl.org/linked-data/sdmx/2009/concept#> .
 @prefix wdref: <http://www.wikidata.org/reference/> .
 @prefix wdata: <http://www.wikidata.org/wiki/Special:EntityData/> .
+@prefix cube:  <http://edu.ontotext.com/resource/cube/> .
 @prefix age_bracket: <http://edu.ontotext.com/resource/age_bracket/> .
 @prefix sdmx-attribute: <http://purl.org/linked-data/sdmx/2009/attribute#> .
 @prefix vann:  <http://purl.org/vocab/vann/> .
@@ -55,35 +56,35 @@
 @prefix obo:   <http://purl.obolibrary.org/obo/> .
 @prefix dc:    <http://purl.org/dc/elements/1.1/> .
 
-subject:nmb_110  a        :Subject , skos:Concept ;
+subject:nmb_110  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Спорт"@bg .
 
-subject:nmb_35  a         :Subject , skos:Concept ;
+subject:nmb_35  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "МАТ"@bg ;
         skos:prefLabel    "Математика"@bg .
 
 occupation:5b1a88a4840083e48d54c6339ef16b10
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, общообразователен учебен предмет в прогимназиален етап"@bg .
 
-:age    a                 sosa:ObservableProperty , qb:DimensionProperty ;
+:age    rdf:type          sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Възраст"@bg , "Age" ;
         rdfs:range        xsd:integer .
 
-:sex    a                 qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+:sex    rdf:type          qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Пол"@bg , "Sex" ;
         rdfs:range        :Sex ;
         qb:codeList       sex: .
 
-:quantity_people  a                 sosa:ObservableProperty , qb:MeasureProperty ;
+:quantity_people  rdf:type          sosa:ObservableProperty , qb:MeasureProperty ;
         rdfs:comment                "Number of people " ;
         rdfs:isDefinedBy            : ;
         rdfs:label                  "Count People" ;
@@ -92,43 +93,43 @@ occupation:5b1a88a4840083e48d54c6339ef16b10
         sdmx-attribute:unitMeasure  unit:NUM .
 
 occupation:9541176b1aa6f245871f01d1f09b68bf
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Логопед"@bg .
 
 occupation:6d69e661c9b23fb7861a4bee3492637f
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител/Преподавател, танцово изкуство в занимания по интереси"@bg .
 
 schema:Place  rdfs:subClassOf  geo:Feature .
 
-subject:nmb_85  a         :Subject , skos:Concept ;
+subject:nmb_85  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Горско стопанство"@bg .
 
 occupation:b866564a4da63b724d1ee77cee818e77
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител/Преподавател, изобразително и/или приложно изкуство в занимания по интереси"@bg .
 
-subject:nmb_43  a         :Subject , skos:Concept ;
+subject:nmb_43  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "БЗО"@bg ;
         skos:prefLabel    "Биология и здравно образование"@bg .
 
 occupation:06c9463ef597cb5b8c5ba38998190658
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител спортна подготовка"@bg .
 
-subject:nmb_1  a          :Subject , skos:Concept ;
+subject:nmb_1  rdf:type   :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "БЕЛ"@bg ;
@@ -138,93 +139,93 @@ subject:nmb_1  a          :Subject , skos:Concept ;
         rdfs:seeAlso     wd:Q209824 ;
         rdfs:subClassOf  schema:AdministrativeArea .
 
-subject:nmb_22  a         :Subject , skos:Concept ;
+subject:nmb_22  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "НЕ"@bg ;
         skos:prefLabel    "Немски език"@bg .
 
-:dateTime  a              sosa:ObservableProperty , qb:DimensionProperty ;
+:dateTime  rdf:type       sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Дата-Час"@bg , "Date-time" ;
         rdfs:range        xsd:dateTime ;
         qb:concept        sdmx-concept:timePeriod .
 
 occupation:f33de9e52ea9eae00d212392d2fcf08b
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Психолог, училищен"@bg .
 
-place:Q219  a       schema:Country ;
+place:Q219  rdf:type  schema:Country ;
         rdfs:label  "Bulgaria" .
 
-age_bracket:Over63  a     :Age_bracket , skos:Concept ;
+age_bracket:Over63  rdf:type  :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "Over 63" .
 
 occupation:dfac690656f144dda4004005a2b02b93
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител в група за целодневна организация на учебния ден I - IV клас"@bg .
 
-:grade_level  a           sosa:ObservableProperty , qb:DimensionProperty ;
+:grade_level  rdf:type    sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Клас "@bg , "Grade Level" ;
         rdfs:range        xsd:integer .
 
-subject:nmb_93  a         :Subject , skos:Concept ;
+subject:nmb_93  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Военно дело и отбрана"@bg .
 
 occupation:38680c7e5aaefad52abe00a3c747dacf
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, чужд език в начален етап на основното образование (I-IV клас) "@bg .
 
-subject:nmb_72  a         :Subject , skos:Concept ;
+subject:nmb_72  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Изящни изкуства"@bg .
 
 occupation:a5de39c38b816f8f2f668f49f1dbb8a8
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител, детска градина"@bg .
 
-subject:nmb_51  a         :Subject , skos:Concept ;
+subject:nmb_51  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Природни науки"@bg .
 
-subject:nmb_105  a        :Subject , skos:Concept ;
+subject:nmb_105  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Ветеринарна медицина"@bg .
 
-subject:nmb_30  a         :Subject , skos:Concept ;
+subject:nmb_30  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Арабски езици"@bg .
 
 occupation:094942f0fb81abc00c2d906a3dc9b670
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Педагогически съветник"@bg .
 
-:age_bracket  a           qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+:age_bracket  rdf:type    qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Възрастова група"@bg , "Age Bracket" ;
         rdfs:range        :Age_bracket ;
         qb:codeList       age_bracket: .
 
-:quantity_retired  a                sosa:ObservableProperty , qb:MeasureProperty ;
+:quantity_retired  rdf:type         sosa:ObservableProperty , qb:MeasureProperty ;
         rdfs:comment                "Number of retired people " ;
         rdfs:isDefinedBy            : ;
         rdfs:label                  "Брой пенсионери"@bg , "Count Retired" ;
@@ -232,102 +233,102 @@ occupation:094942f0fb81abc00c2d906a3dc9b670
         qb:concept                  sdmx-concept:obsValue ;
         sdmx-attribute:unitMeasure  unit:NUM .
 
-sex:M   a                 :Sex , skos:Concept ;
+sex:M   rdf:type          :Sex , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:exactMatch   wd:Q6581097 ;
         skos:inScheme     sex: ;
         skos:prefLabel    "Мъжки"@bg , "Male" .
 
 occupation:cc4ab3bfe3f8f86d1664dd573412a519
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител методик"@bg .
 
-subject:nmb_80  a         :Subject , skos:Concept ;
+subject:nmb_80  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Електроника автоматика комуникационна и компютърна техника"@bg .
 
-subject:nmb_59  a         :Subject , skos:Concept ;
+subject:nmb_59  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Хореография"@bg .
 
-age_bracket:51-55  a      :Age_bracket , skos:Concept ;
+age_bracket:51-55  rdf:type  :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "51-55" .
 
-subject:nmb_113  a        :Subject , skos:Concept ;
+subject:nmb_113  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Транспортни услуги"@bg .
 
 occupation:469fe343f0e6a83f20ac219bd03cbf69
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Хореограф"@bg .
 
 occupation:8908507d3bc248d704a15b9bf9367356
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, начален етап на основното образование (I-IV клас) "@bg .
 
 occupation:1e83e41433fec0b103c82aee0b1e5265
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Заместник-директор, учебна дейност"@bg .
 
 occupation:3c69d2f8a9d9888b0444fcce890a7da3
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител, общообразователен учебен предмет в гимназиален етап"@bg .
 
 occupation:0493b5f7fa45bd86b62a7075dd5ce2d3
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител по религия в начален етап на основното образование (I - IV клас)"@bg .
 
-subject:nmb_88  a         :Subject , skos:Concept ;
+subject:nmb_88  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Маркетинг и реклама"@bg .
 
-subject:nmb_67  a         :Subject , skos:Concept ;
+subject:nmb_67  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Специални предмети в спец. училища"@bg .
 
-subject:  a           skos:ConceptScheme ;
+subject:  rdf:type    skos:ConceptScheme ;
         rdfs:label    "Subject scheme" ;
         rdfs:seeAlso  :Subject .
 
-sex:    a             skos:ConceptScheme ;
+sex:    rdf:type      skos:ConceptScheme ;
         rdfs:label    "Sex scheme" ;
         rdfs:seeAlso  :Sex .
 
-age_bracket:41-45  a      :Age_bracket , skos:Concept ;
+age_bracket:41-45  rdf:type  :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "41-45" .
 
-subject:nmb_4  a          :Subject , skos:Concept ;
+subject:nmb_4  rdf:type   :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Дейности в целодневна организация"@bg .
 
-subject:nmb_100  a        :Subject , skos:Concept ;
+subject:nmb_100  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Хранителни технологии"@bg .
 
-subject:nmb_25  a         :Subject , skos:Concept ;
+subject:nmb_25  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ИтЕ"@bg ;
@@ -338,193 +339,194 @@ subject:nmb_25  a         :Subject , skos:Concept ;
         rdfs:subClassOf  schema:AdministrativeArea .
 
 occupation:83fd3b5e99ffd217b7af82e9d4293014
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител на деца с умствена изостаналост"@bg .
 
-:points_100  a                      sosa:ObservableProperty , qb:MeasureProperty ;
+:points_100  rdf:type               sosa:ObservableProperty , qb:MeasureProperty ;
         rdfs:comment                "Grade out of 100 " ;
         rdfs:isDefinedBy            : ;
         rdfs:label                  "Точки от 100"@bg , "Point 100" ;
+        rdfs:subPropertyOf          :eval_score ;
         qb:concept                  sdmx-concept:obsValue ;
         sdmx-attribute:unitMeasure  unit:NUM .
 
 occupation:3aca749b93173f8563684a11ae35b1c7
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Заместник-директор, учебно-производствена дейност"@bg .
 
-age_bracket:Under25  a    :Age_bracket , skos:Concept ;
+age_bracket:Under25  rdf:type  :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "Under 25" .
 
 occupation:c1b6a7e628f755b38a28ceba48bc08da
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител по религия в начален етап на основното образование (I - IV клас)"@bg .
 
-subject:nmb_96  a         :Subject , skos:Concept ;
+subject:nmb_96  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Проф. обр. - производствена практика"@bg .
 
 occupation:b64750c2a1b5d3d25469ccf6d3111152
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител/Преподавател, чужд език в занимания по интереси"@bg .
 
-subject:nmb_108  a        :Subject , skos:Concept ;
+subject:nmb_108  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Хотелиерство ресторантьорство и кетеринг"@bg .
 
-subject:nmb_33  a         :Subject , skos:Concept ;
+subject:nmb_33  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Древни езици"@bg .
 
 occupation:808ce1b19ffe113fbeab6d52552c951b
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител в начален етап на основното образование по компютърно моделиране"@bg .
 
 occupation:5217e478f8098f4d0d1934ef0865ac73
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, подготвителна група"@bg .
 
-age_bracket:25-30  a      :Age_bracket , skos:Concept ;
+age_bracket:25-30  rdf:type  :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "25-30" .
 
 occupation:37d21326919acb9642a0afa781d08850
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Треньор"@bg .
 
 occupation:c8de49e5b3c8e9da2c6c8791625cb50c
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител на деца с нарушено зрение"@bg .
 
-ethnic_group:bg  a        :Ethnic_group , skos:Concept ;
+ethnic_group:bg  rdf:type  :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:exactMatch   wd:Q133255 ;
         skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Българска"@bg , "Bulgarians" .
 
-subject:nmb_ab  a         :Subject , skos:Concept ;
+subject:nmb_ab  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ЧП"@bg ;
         skos:prefLabel    "Човекът и природата"@bg .
 
-subject:nmb_83  a         :Subject , skos:Concept ;
+subject:nmb_83  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Строителство"@bg .
 
 occupation:7470bb8ab93198de81f02835bca18c7f
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител в група за целодневна организация на учебния ден V- VII клас"@bg .
 
-subject:nmb_62  a         :Subject , skos:Concept ;
+subject:nmb_62  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Религия"@bg .
 
-subject:nmb_116  a        :Subject , skos:Concept ;
+subject:nmb_116  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Минно дело проучване и добив на полезни изкопаеми"@bg .
 
-subject:nmb_41  a         :Subject , skos:Concept ;
+subject:nmb_41  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ИСТ"@bg ;
         skos:prefLabel    "История и цивилизация"@bg .
 
 occupation:02a89208aed8eab7f542aa587f8f712e
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, общообразователен учебен предмет в гимназиален етап"@bg .
 
 occupation:53228c51f68e95e1526d07103b94a9fb
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител в група за целодневна организация на учебния ден I - IV клас"@bg .
 
 occupation:57c326075e06509994f2431f24bff7ab
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, общообразователен учебен предмет в прогимназиален етап"@bg .
 
-:subject  a               qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+:subject  rdf:type        qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Предмет"@bg , "Subject" ;
         rdfs:range        :Subject ;
         qb:codeList       subject: .
 
 occupation:cfdf4883cdccaea779ac4712f3aa580f
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител спортна подготовка"@bg .
 
 occupation:3636447e33576363c476553d58cc592f
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Възпитател"@bg .
 
-age_bracket:56-60  a      :Age_bracket , skos:Concept ;
+age_bracket:56-60  rdf:type  :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "56-60" .
 
-:years_spec  a            sosa:ObservableProperty , qb:DimensionProperty ;
+:years_spec  rdf:type     sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Трудов стаж по специалността в години"@bg , "Years Specialization " ;
         rdfs:range        xsd:integer .
 
-subject:nmb_91  a         :Subject , skos:Concept ;
+subject:nmb_91  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Счетоводство и данъчно облагане"@bg .
 
 occupation:6f57aaf254020ca5ece3b7756042670c
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител/Преподавател, театрално изкуство в занимания по интереси"@bg .
 
 occupation:87984b62f0988b251756a1bf2c8372e0
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител на деца с нарушено зрение"@bg .
 
-subject:nmb_70  a         :Subject , skos:Concept ;
+subject:nmb_70  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Обща професионална подготовка"@bg .
 
-subject:nmb_103  a        :Subject , skos:Concept ;
+subject:nmb_103  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Градинарство (паркове и градини)"@bg .
@@ -533,565 +535,573 @@ subject:nmb_103  a        :Subject , skos:Concept ;
         rdfs:seeAlso     wd:Q7553685 ;
         rdfs:subClassOf  schema:AdministrativeArea .
 
-subject:nmb_28  a         :Subject , skos:Concept ;
+subject:nmb_28  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Майчин език"@bg .
 
 occupation:5b02c5177d9a524aba6a44a52fc04f10
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител, общообразователен учебен предмет в прогимназиален етап"@bg .
 
+:eval_score  rdf:type               sosa:ObservableProperty , qb:MeasureProperty ;
+        rdfs:comment                "Generic Grade" ;
+        rdfs:isDefinedBy            : ;
+        rdfs:label                  "Оценка"@bg , "Evaluation score " ;
+        qb:concept                  sdmx-concept:obsValue ;
+        sdmx-attribute:unitMeasure  unit:NUM .
+
 occupation:5b4a70e36380a706b479670779c31f10
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Музикален ръководител"@bg .
 
-:Sex    a                 rdfs:Class ;
+:Sex    rdf:type          rdfs:Class ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Sex class" ;
         rdfs:seeAlso      sex: ;
         rdfs:subClassOf   skos:Concept .
 
 occupation:2edd5c0c4b721adf48a749c76e416e87
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, практическо обучение"@bg .
 
 occupation:8d0ac8ef391220c345ddebc94b273157
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, изобразително изкуство в обслужващи звена в системата на народната просвета"@bg .
 
-age_bracket:46-50  a      :Age_bracket , skos:Concept ;
+age_bracket:46-50  rdf:type  :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "46-50" .
 
-ethnic_group:roma  a      :Ethnic_group , skos:Concept ;
+ethnic_group:roma  rdf:type  :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:exactMatch   wd:Q8060 ;
         skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Ромска"@bg , "Romani" .
 
-subject:nmb_99  a         :Subject , skos:Concept ;
+subject:nmb_99  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Приложна информатика"@bg .
 
-subject:nmb_78  a         :Subject , skos:Concept ;
+subject:nmb_78  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Машиностроене металообработване и металургия"@bg .
 
 occupation:278d45ac9ef1793cf9dcfe8e42f2b356
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Вокален педагог"@bg .
 
-subject:nmb_57  a         :Subject , skos:Concept ;
+subject:nmb_57  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Технологии"@bg .
 
-subject:nmb_111  a        :Subject , skos:Concept ;
+subject:nmb_111  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Услуги за дома"@bg .
 
 occupation:a50e36ea4668ed6fda68c951db72df36
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, теоретично обучение"@bg .
 
-subject:nmb_36  a         :Subject , skos:Concept ;
+subject:nmb_36  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Информатика и информационни технологии"@bg .
 
 occupation:34fbd67a8543c07ab2c332293e69cbc3
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, чужд език в начален етап на основното образование (I-IV клас) "@bg .
 
-subject:nmb_86  a         :Subject , skos:Concept ;
+subject:nmb_86  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Производствени технологии-дървесина хартия пластмаси и стъкло"@bg .
 
 occupation:9f6ee6b5e133bb712f5e7f10e35d2f33
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Корепетитор, в институциите в системата на предучилищното и училищното образование"@bg .
 
-:ethnic_group  a          qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+:ethnic_group  rdf:type   qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Етнос"@bg , "Ethnic Group" ;
         rdfs:range        :Ethnic_group ;
         qb:codeList       ethnic_group: .
 
-subject:nmb_44  a         :Subject , skos:Concept ;
+subject:nmb_44  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ФА"@bg ;
         skos:prefLabel    "Физика и астрономия"@bg .
 
 occupation:e853dd6515c1707fe9e48d5d3b4acee8
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Логопед в институция в системата на предучилищното и училищното образование"@bg .
 
-subject:nmb_23  a         :Subject , skos:Concept ;
+subject:nmb_23  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ФрЕ"@bg ;
         skos:prefLabel    "Френски език"@bg .
 
-age_bracket:  a       skos:ConceptScheme ;
+age_bracket:  rdf:type  skos:ConceptScheme ;
         rdfs:label    "Age Bracket scheme" ;
         rdfs:seeAlso  :Age_bracket .
 
-sex:F   a                 :Sex , skos:Concept ;
+sex:F   rdf:type          :Sex , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:exactMatch   wd:Q6581072 ;
         skos:inScheme     sex: ;
         skos:prefLabel    "Женски"@bg , "Female" .
 
-subject:nmb_94  a         :Subject , skos:Concept ;
+subject:nmb_94  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Секретарски и административни офис дейности"@bg .
 
 occupation:0d1e938b3db9f1b1e731975279134aa4
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител, начален етап на основното образование (I-IV клас) "@bg .
 
 occupation:b90a2afea9322ef39e53bc82006ed090
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, подготвителна група"@bg .
 
 occupation:1aeffcda0d8c81bc7cc19cca73dece28
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител в начален етап на основното образование по компютърно моделиране"@bg .
 
-subject:nmb_73  a         :Subject , skos:Concept ;
+subject:nmb_73  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Музикални и сценични изкуства"@bg .
 
 occupation:d195cc1d22ce50bab0c2855c1fe5f53b
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, начален етап на основното образование (I-IV клас) "@bg .
 
-subject:nmb_106  a        :Subject , skos:Concept ;
+subject:nmb_106  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Медицинска диагностика и лечебни технологии"@bg .
 
-subject:nmb_31  a         :Subject , skos:Concept ;
+subject:nmb_31  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Други славянски езици"@bg .
 
-:school  a                qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+:school  rdf:type         qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Учебно Заведение"@bg , "School " ;
         rdfs:range        schema:School , :School ;
         qb:codeList       school: .
 
 occupation:79cef317f9660a40b97ac7b33d370c6d
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител, теоретично обучение"@bg .
 
 occupation:46554eb14b6176ec53e27d637335fe92
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител на деца и ученици с увреден слух"@bg .
 
 occupation:954976313a6736d0be9d4dff3d8247be
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, ресурсен"@bg .
 
 occupation:7002fa749516fc8a2ca734139fa218c4
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител в група за целодневна организация на учебния ден V- VII клас"@bg .
 
 occupation:d1764c2b52e2840ab211a7d2198c55bc
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши възпитател"@bg .
 
-:       a            owl:Ontology ;
+:       rdf:type     owl:Ontology ;
         owl:imports  qb: , schema: , sf: .
 
-subject:nmb_81  a         :Subject , skos:Concept ;
+subject:nmb_81  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Моторни превозни средства кораби и въздухоплавателни средства"@bg .
 
 occupation:fb0d550ddc83ee3aef0245d31816a726
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Корепетитор"@bg .
 
 occupation:81b3f285e41702c57511fed94f48e0fe
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител по религия в гимназиален етап"@bg .
 
-subject:nmb_60  a         :Subject , skos:Concept ;
+subject:nmb_60  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Корепетиция"@bg .
 
-subject:nmb_114  a        :Subject , skos:Concept ;
+subject:nmb_114  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Технологии за опазване на околната среда"@bg .
 
-:grade_6  a                         sosa:ObservableProperty , qb:MeasureProperty ;
+:grade_6  rdf:type                  sosa:ObservableProperty , qb:MeasureProperty ;
         rdfs:comment                "Grade in the Bulgarian grading system" ;
         rdfs:isDefinedBy            : ;
         rdfs:label                  "Оценка по шестобалната система"@bg , "Grade over 6" ;
+        rdfs:subPropertyOf          :eval_score ;
         qb:concept                  sdmx-concept:obsValue ;
         sdmx-attribute:unitMeasure  unit:NUM .
 
 occupation:c6614b982693bdde2ef3814ee1f73ae0
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, музика в детска градина"@bg .
 
 occupation:0f956f274e17a7f06c5820516f1150a3
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител на деца с нарушено зрение"@bg .
 
-subject:nmb_89  a         :Subject , skos:Concept ;
+subject:nmb_89  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Производствени технологии-текстил облекло обувки и кожи"@bg .
 
-subject:nmb_68  a         :Subject , skos:Concept ;
+subject:nmb_68  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Общообразователни - други профилиращи предмети"@bg .
 
-subject:nmb_101  a        :Subject , skos:Concept ;
+subject:nmb_101  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Архитектура урбанизъм и геодезия"@bg .
 
-subject:nmb_5  a          :Subject , skos:Concept ;
+subject:nmb_5  rdf:type   :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Дейности в общежитие"@bg .
 
-occupation:  a        skos:ConceptScheme ;
+occupation:  rdf:type  skos:ConceptScheme ;
         rdfs:label    "Occupation  scheme" ;
         rdfs:seeAlso  :Occupation .
 
-subject:nmb_26  a         :Subject , skos:Concept ;
+subject:nmb_26  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ПЕ"@bg ;
         skos:prefLabel    "Португалски език"@bg .
 
 occupation:36324354560c17e5d2ec80dac94fa9cd
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител в група за целодневна организация на учебния ден V- VII клас"@bg .
 
 occupation:e18411c47de608b40b95493a1cc6d50a
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Ръководител на направление \"Информационни и комуникационни технологии\""@bg .
 
 occupation:87da8114f87631702b837098b9823b93
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, детска градина"@bg .
 
-subject:nmb_97  a         :Subject , skos:Concept ;
+subject:nmb_97  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Науки за земята"@bg .
 
-:Occupation  a            rdfs:Class ;
+:Occupation  rdf:type     rdfs:Class ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Occupation  class" ;
         rdfs:seeAlso      occupation: ;
         rdfs:subClassOf   skos:Concept .
 
-subject:nmb_76  a         :Subject , skos:Concept ;
+subject:nmb_76  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Дизайн"@bg .
 
-subject:nmb_55  a         :Subject , skos:Concept ;
+subject:nmb_55  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Музика"@bg .
 
-subject:nmb_109  a        :Subject , skos:Concept ;
+subject:nmb_109  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Пътувания туризъм и свободно време"@bg .
 
-:quantity  a                        sosa:ObservableProperty , qb:MeasureProperty ;
+:quantity  rdf:type                 sosa:ObservableProperty , qb:MeasureProperty ;
         rdfs:comment                "Count of something" ;
         rdfs:isDefinedBy            : ;
         rdfs:label                  "Count" ;
         qb:concept                  sdmx-concept:obsValue ;
         sdmx-attribute:unitMeasure  unit:NUM .
 
-:hasShape  a                rdf:Property ;
+:hasShape  rdf:type         rdf:Property ;
         rdfs:subPropertyOf  geo:hasGeometry .
 
 occupation:34b79d744a1fa157ecdece14f3a721a5
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител, подготвителна група"@bg .
 
-subject:nmb_ac  a         :Subject , skos:Concept ;
+subject:nmb_ac  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ЧО"@bg ;
         skos:prefLabel    "Човекът и обществото"@bg .
 
 occupation:346a872f8cd895262f89fa86da00428e
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител, чужд език в начален етап на основното образование (I-IV клас) "@bg .
 
-subject:nmb_84  a         :Subject , skos:Concept ;
+subject:nmb_84  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Религия"@bg .
 
 occupation:cfde025a6a8bf1ba829e97c0457d9ee9
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител/Преподавател, природо-математически учебни предмети в занимания по интереси"@bg .
 
 occupation:6a15a2b2bb02b6b6ffcd1d0d1380213f
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител/Преподавател, спортни дейности и туризъм в занимания по интереси"@bg .
 
-:years  a                           sosa:ObservableProperty , qb:MeasureProperty ;
+:years  rdf:type                    sosa:ObservableProperty , qb:MeasureProperty ;
         rdfs:comment                "Duration in years of something" ;
         rdfs:isDefinedBy            : ;
         rdfs:label                  "Years" ;
         qb:concept                  sdmx-concept:obsValue ;
         sdmx-attribute:unitMeasure  unit:YR .
 
-subject:nmb_117  a        :Subject , skos:Concept ;
+subject:nmb_117  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Терапия и рехабилитация"@bg .
 
-subject:nmb_42  a         :Subject , skos:Concept ;
+subject:nmb_42  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ГЕО"@bg ;
         skos:prefLabel    "География и икономика"@bg .
 
-subject:nmb_21  a         :Subject , skos:Concept ;
+subject:nmb_21  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "АЕ"@bg ;
         skos:prefLabel    "Английски език"@bg .
 
-ethnic_group:  a      skos:ConceptScheme ;
+ethnic_group:  rdf:type  skos:ConceptScheme ;
         rdfs:label    "Ethnic Group scheme" ;
         rdfs:seeAlso  :Ethnic_group .
 
-age_bracket:60-63  a      :Age_bracket , skos:Concept ;
+age_bracket:60-63  rdf:type  :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "60-63" .
 
-age_bracket:31-35  a      :Age_bracket , skos:Concept ;
+age_bracket:31-35  rdf:type  :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "31-35" .
 
 occupation:88cd430574a2589bd9c57b13ed777e14
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, общообразователен учебен предмет в гимназиален етап"@bg .
 
-subject:nmb_92  a         :Subject , skos:Concept ;
+subject:nmb_92  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Администрация и управление"@bg .
 
-subject:nmb_50  a         :Subject , skos:Concept ;
+subject:nmb_50  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Обществени науки"@bg .
 
-:Age_bracket  a           rdfs:Class ;
+:Age_bracket  rdf:type    rdfs:Class ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Age Bracket class" ;
         rdfs:seeAlso      age_bracket: ;
         rdfs:subClassOf   skos:Concept .
 
-subject:nmb_104  a        :Subject , skos:Concept ;
+subject:nmb_104  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Рибно стопанство"@bg .
 
-subject:nmb_29  a         :Subject , skos:Concept ;
+subject:nmb_29  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Източни езици"@bg .
 
 occupation:7da493e663177e98fe4164190918bc47
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Рехабилитатор на слуха и говора в институция в системата на предучилищното и училищното образование"@bg .
 
 occupation:84e1519e2a2dc17c50ef1d8a61154692
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител на деца с умствена изостаналост"@bg .
 
-subject:nmb_79  a         :Subject , skos:Concept ;
+subject:nmb_79  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Електротехника и енергетика"@bg .
 
 occupation:30d558de60a806b33780b232cd00cd47
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител спортна подготовка"@bg .
 
-subject:nmb_58  a         :Subject , skos:Concept ;
+subject:nmb_58  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Физическа култура и спорт"@bg .
 
-:Subject  a               rdfs:Class ;
+:Subject  rdf:type        rdfs:Class ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Subject class" ;
         rdfs:seeAlso      subject: ;
         rdfs:subClassOf   skos:Concept .
 
-:years_working  a         sosa:ObservableProperty , qb:DimensionProperty ;
+:years_working  rdf:type  sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Общ трудов стаж в години"@bg , "Years Working " ;
         rdfs:range        xsd:integer .
 
-subject:nmb_112  a        :Subject , skos:Concept ;
+subject:nmb_112  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Фризьорски и козметични услуги"@bg .
 
-:occupation  a            qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
+:occupation  rdf:type     qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Длъжност по НКПД"@bg , "Occupation NKPD" ;
         rdfs:range        :Occupation ;
         qb:codeList       occupation: .
 
-subject:nmb_87  a         :Subject , skos:Concept ;
+subject:nmb_87  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Търговия на еднро и дребно"@bg .
 
 occupation:b9e858c8e211e7e1cabdb99b2b181fe7
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител, практическо обучение"@bg .
 
-subject:nmb_45  a         :Subject , skos:Concept ;
+subject:nmb_45  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ХООС"@bg ;
         skos:prefLabel    "Химия и опазване на околната среда"@bg .
 
 occupation:c0b02eccd79a0a4f0fda3a5b4eaeaded
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител на деца и ученици с увреден слух"@bg .
 
-subject:nmb_3  a          :Subject , skos:Concept ;
+subject:nmb_3  rdf:type   :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Учебни предмети в начален етап"@bg .
 
-subject:nmb_24  a         :Subject , skos:Concept ;
+subject:nmb_24  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ИспЕ"@bg ;
         skos:prefLabel    "Испански език"@bg .
 
-:place  a                 sosa:ObservableProperty , qb:DimensionProperty ;
+:place  rdf:type          sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Място"@bg , "Place" ;
         rdfs:range        schema:Place .
 
 occupation:e5e72721fcd815c227ff8a3d22e85533
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, теоретично обучение"@bg .
 
 occupation:fe5885ee1453aecd08f81fd5e89aa3fa
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Преподавател - инструктор на водачи на моторно превозно средство"@bg .
 
-subject:nmb_95  a         :Subject , skos:Concept ;
+subject:nmb_95  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Проф. обр. - учебна практика"@bg .
 
-subject:nmb_74  a         :Subject , skos:Concept ;
+subject:nmb_74  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Аудио-визуални изкуства и техники; производство на медийни продукти"@bg .
@@ -1099,208 +1109,208 @@ subject:nmb_74  a         :Subject , skos:Concept ;
 schema:School  rdfs:seeAlso  school: ;
         rdfs:subClassOf  skos:Concept , geo:Feature .
 
-age_bracket:36-40  a      :Age_bracket , skos:Concept ;
+age_bracket:36-40  rdf:type  :Age_bracket , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     age_bracket: ;
         skos:prefLabel    "36-40" .
 
-subject:nmb_107  a        :Subject , skos:Concept ;
+subject:nmb_107  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Социална работа и консултиране"@bg .
 
-subject:nmb_32  a         :Subject , skos:Concept ;
+subject:nmb_32  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Други европейски езици"@bg .
 
 occupation:f134b3ac84e31ca87d1e94a74c88554b
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Слухово-речев рехабилитатор на деца с увреден слух"@bg .
 
 occupation:4efa8f2340307c34b01317c277f0b396
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител в група за целодневна организация на учебния ден I - IV клас"@bg .
 
 occupation:bc48d9205e49f6b6d9a8124d431a4a2c
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Хореограф, в институциите в системата на предучилищното и училищното образование"@bg .
 
 occupation:18a815bfc13c9c44b27fe6ed4468b758
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, детска градина"@bg .
 
-sex:O   a                 :Sex , skos:Concept ;
+sex:O   rdf:type          :Sex , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     sex: ;
         skos:prefLabel    "Други"@bg , "Other" .
 
-subject:nmb_aa  a         :Subject , skos:Concept ;
+subject:nmb_aa  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "ФИЛ"@bg ;
         skos:prefLabel    "Философия"@bg .
 
-subject:nmb_82  a         :Subject , skos:Concept ;
+subject:nmb_82  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Химични продукти и технологии"@bg .
 
 occupation:88594ba5114137fdc2e3da1568548ebf
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител на деца и ученици с увреден слух"@bg .
 
 occupation:3d51a5c488e13e21ae44b442daf3e33e
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен възпитател"@bg .
 
-ethnic_group:dni  a       :Ethnic_group , skos:Concept ;
+ethnic_group:dni  rdf:type  :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Не се идентифицира"@bg , "Does Not Identify " .
 
-subject:nmb_61  a         :Subject , skos:Concept ;
+subject:nmb_61  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Дейности в ПГ/ДГ"@bg .
 
-subject:nmb_115  a        :Subject , skos:Concept ;
+subject:nmb_115  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Сигурност"@bg .
 
 occupation:012d503c3382e28f16773b99d2e1ca61
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Директор, училище"@bg .
 
 occupation:3c0a33b78cfb7d327bcb1b49433e5bd1
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Заместник-директор, учебно творческа дейност"@bg .
 
-:years_teaching  a        sosa:ObservableProperty , qb:DimensionProperty ;
+:years_teaching  rdf:type  sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Педагогически трудов стаж в години"@bg , "Years Teaching " ;
         rdfs:range        xsd:integer .
 
 occupation:45dba98cb92fb2c10057a53e49c8d4f4
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител/Преподавател, хуманитарни и обществени дисциплини в занимания по интереси"@bg .
 
-school:  a            skos:ConceptScheme ;
+school:  rdf:type     skos:ConceptScheme ;
         rdfs:label    "School concept scheme" ;
         rdfs:seeAlso  schema:School .
 
 occupation:b081867783b9b0b45c91e2a2a2e1cbef
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Заместник-директор, административно-стопанската дейност"@bg .
 
-subject:nmb_90  a         :Subject , skos:Concept ;
+subject:nmb_90  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Финанси банково и застрахователно дело"@bg .
 
 occupation:d9ea64daf2d09d394e800a880161ca7e
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Ръководител, учебно-методичен център"@bg .
 
 occupation:a0c0d0b679a523207c2cc46035017d89
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител, практическо обучение"@bg .
 
-:date   a                 sosa:ObservableProperty , qb:DimensionProperty ;
+:date   rdf:type          sosa:ObservableProperty , qb:DimensionProperty ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Дата"@bg , "Date-time" ;
         rdfs:range        xsd:date ;
         qb:concept        sdmx-concept:timePeriod .
 
-:hasPoint  a                rdf:Property ;
+:hasPoint  rdf:type         rdf:Property ;
         rdfs:subPropertyOf  geo:hasGeometry , geo:hasDefaultGeometry .
 
-ethnic_group:othr  a      :Ethnic_group , skos:Concept ;
+ethnic_group:othr  rdf:type  :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Друга"@bg , "Other " .
 
-subject:nmb_69  a         :Subject , skos:Concept ;
+subject:nmb_69  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Общообразователни - други"@bg .
 
 occupation:84b87c050d9827b78963b9f3b2c5c8f0
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Старши учител, ресурсен"@bg .
 
-subject:nmb_6  a          :Subject , skos:Concept ;
+subject:nmb_6  rdf:type   :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Дейности по ресурсно подпомагане"@bg .
 
-subject:nmb_102  a        :Subject , skos:Concept ;
+subject:nmb_102  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Растениевъдство и животновъдство"@bg .
 
-subject:nmb_27  a         :Subject , skos:Concept ;
+subject:nmb_27  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:notation     "РЕ"@bg ;
         skos:prefLabel    "Руски език"@bg .
 
-ethnic_group:tr  a        :Ethnic_group , skos:Concept ;
+ethnic_group:tr  rdf:type  :Ethnic_group , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:exactMatch   wd:Q84072 ;
         skos:inScheme     ethnic_group: ;
         skos:prefLabel    "Турска"@bg , "Turks" .
 
-subject:nmb_98  a         :Subject , skos:Concept ;
+subject:nmb_98  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Компютърни науки"@bg .
 
 occupation:eb3dc99a637886af33350a8c49f90a47
-        a                 :Occupation , skos:Concept ;
+        rdf:type          :Occupation , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Заместник-директор, спортна дейност"@bg .
 
-:Ethnic_group  a          rdfs:Class ;
+:Ethnic_group  rdf:type   rdfs:Class ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Ethnic Group class" ;
         rdfs:seeAlso      ethnic_group: ;
         rdfs:subClassOf   skos:Concept .
 
-subject:nmb_77  a         :Subject , skos:Concept ;
+subject:nmb_77  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "ПН - Приложни изкуства и занаяти"@bg .
 
-subject:nmb_56  a         :Subject , skos:Concept ;
+subject:nmb_56  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
         skos:prefLabel    "Изобразително изкуство"@bg .
