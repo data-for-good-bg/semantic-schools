@@ -15,10 +15,12 @@ INSERT {
                   :hasPoint ?PLACE_ID_POINT ;
                   geo:sfWithin ?PARENT ;
                   :osmID ?osm_id ;
+                  :wikidata_entity ?x;
                   .
         ?PLACE_ID_POINT a sf:Point ;
                         geo:asWKT ?COORDS ;
                         .
+        ?CAP_ID :capital_of ?PLACE_ID .
     }
 }
 WHERE {
@@ -36,6 +38,9 @@ WHERE {
         optional{
             ?x wdt:P402 ?osm_id
         }
+        optional{
+            ?x wdt:P36 ?cap .
+        }
         SERVICE wikibase:label {
             bd:serviceParam wikibase:language "en".
             ?x rdfs:label ?label .
@@ -45,9 +50,11 @@ WHERE {
             ?x rdfs:label ?label_bg .
         }
     }
+    BIND(strafter(str(?cap),str(wd:)) as ?cap_id)
     BIND(strafter(str(?x),str(wd:)) as ?x_id)
     BIND(strafter(str(?parent),str(wd:)) as ?parent_id)
     BIND(uri(concat(str(place:),?x_id)) as ?PLACE_ID)
+    BIND(uri(concat(str(place:),?cap_id)) as ?CAP_ID)
     BIND(uri(concat(str(place:),?x_id,"/point")) as ?PLACE_ID_POINT)
     BIND(uri(concat(str(place:),?parent_id)) as ?PARENT)
 }
