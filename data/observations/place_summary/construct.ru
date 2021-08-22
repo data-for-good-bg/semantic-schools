@@ -10,7 +10,7 @@ INSERT {
                 :place ?place ;
                 :grade_level ?grade ;
                 :subject ?subj ;
-                :eval_score ?avg_score ;
+                ?pred_score ?avg_score ;
                 :date ?date ;
                 :quantity_people ?sum_kids ;
                 :score_type ?pred_score ;
