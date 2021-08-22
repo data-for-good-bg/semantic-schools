@@ -10,7 +10,7 @@ INSERT {
             SELECT  * where {
                 GRAPH ?G {
                     #bind(subject:nmb_35 as ?subj)
-                    ?o1 :grade_6 ?grade ;
+                    ?o1 :eval_score ?grade ;
                         :school ?school ;
                         :subject ?subj ;
                         :quantity_people ?num_students ;
@@ -18,7 +18,7 @@ INSERT {
                 }
             }
         }
-        ?o2 :grade_6 ?grade2 ;
+        ?o2 :eval_score ?grade2 ;
             :school ?school2 ;
             :subject ?subj ;
             :date ?date .

@@ -1,0 +1,16 @@
+<cube/place_summary> a qb:DSD ;
+    qb:component
+        [qb:dimension  :date ],
+        [qb:dimension  :grade_level ],
+        [qb:dimension  :place ],
+        [qb:dimension  :subject ],
+        [qb:measure    :eval_score ],
+        [qb:measure    :quantity_people  ],
+        [qb:measure    :rank_percentile  ],
+        [qb:attribute  :score_type  ],
+.
+
+<cube/place_summary/data> a qb:DataSet ;
+    rdfs:label "Aggregate evaluation scores by place" ;
+    qb:structure <cube/place_summary> ;
+.
