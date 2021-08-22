@@ -2,5 +2,6 @@
     rdfs:label "DZI - 2021" ;
     rdfs:comment "Резултати от държавен зрелсотен изпит - 2021 "@bg ;
     qb:structure <cube/dzi> ;
-    :date "2020-05-19"^^xsd:date ;
+    :date "2021-05-19"^^xsd:date ;
+    :grade_level 12 ;
 .

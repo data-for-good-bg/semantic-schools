@@ -3,4 +3,5 @@
     rdfs:comment "Резултати от държавен зрелсотен изпит - 2020 "@bg ;
     qb:structure <cube/dzi> ;
     :date "2020-06-04"^^xsd:date ;
+    :grade_level 12 ;
 .
