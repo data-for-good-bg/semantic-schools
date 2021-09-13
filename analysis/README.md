@@ -184,3 +184,34 @@ where {
 } 
 group by ?school ?school_label order by desc(?avg_perc) 
 ```
+
+# Debug
+
+```sparql
+PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX place: <http://edu.ontotext.com/resource/place/>
+PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+select * where {
+#    values ?mun {
+#        place:Q2401780 #dupnica
+#    	place:Q628050  #blagoevgrad  
+#    }
+?s a :School; :place/geo:sfWithin ?mun ; rdfs:label ?school_name .
+  
+    ?mun rdfs:label ?mun_label ; 
+         geo:sfWithin place:Q804311 ;
+    .
+    
+       ?o2 :school ?s ;
+       :grade_level 12 ;
+       :subject subject:nmb_1 ;
+       :date "2021-05-19"^^xsd:date ;
+       :eval_score ?score ;
+       :quantity_people ?n_kids ;
+    .
+    filter(lang(?mun_label)="bg")
+} 
+```
