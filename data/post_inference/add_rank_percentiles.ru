@@ -7,7 +7,7 @@ INSERT {
 {
     SELECT ?o1 ?G (sum(?lower) as ?LOWER) (sum(?higher) as ?HIGHER) ((?LOWER/(?LOWER+?HIGHER))*100 as ?PERC) {
         {
-            SELECT  * where {
+            SELECT * where {
                 GRAPH ?G {
                     #bind(subject:nmb_35 as ?subj)
                     ?o1 :eval_score ?grade ;

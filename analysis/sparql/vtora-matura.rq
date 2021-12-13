@@ -1,0 +1,23 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX schema: <http://schema.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX school: <http://edu.ontotext.com/resource/school/>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+select ?oblLabel ?munLabel ?placeLabel ?school_id ?school_wd ?school_label ?subject_label ?score_21 ?kids_21
+where {
+
+	?o21 :eval_score ?score_21 ; :school ?school ; :subject  ?subject ; :quantity_people ?kids_21 ; :date "2021-05-19"^^xsd:date .
+    ?subject skos:prefLabel ?subject_label
+    filter(!sameterm(subject:nmb_1,?subject))
+    ?school rdfs:label ?school_label ; :place ?place ; :wikidata_entity ?school_wd .
+    bind(strafter(str(?school),str(school:)) as ?school_id)
+    ?place 	a schema:City ; rdfs:label ?placeLabel ; geo:sfWithin ?mun .
+    ?mun 	rdfs:label ?munLabel ; geo:sfWithin ?obl .
+    ?obl 	rdfs:label ?oblLabel ;
+          filter(lang(?placeLabel)="bg")
+          filter(lang(?munLabel)="bg")
+          filter(lang(?oblLabel)="bg")
+} order by ?school desc(?kids_21)

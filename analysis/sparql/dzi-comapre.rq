@@ -1,0 +1,22 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX schema: <http://schema.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX school: <http://edu.ontotext.com/resource/school/>
+select ?oblLabel ?munLabel ?placeLabel ?school_id ?school_wd ?school_label ?score_21 ?kids_21 ?score_20 ?kids_20 ?score_19 ?kids_19
+where {
+
+	?o21 :eval_score ?score_21 ; :school ?school ; :subject subject:nmb_1 ; :quantity_people ?kids_21 ; :date "2021-05-19"^^xsd:date .
+	?o20 :eval_score ?score_20 ; :school ?school ; :subject subject:nmb_1 ; :quantity_people ?kids_20 ; :date "2020-06-04"^^xsd:date .
+	?o19 :eval_score ?score_19 ; :school ?school ; :subject subject:nmb_1 ; :quantity_people ?kids_19 ; :date "2019-05-31"^^xsd:date .
+    ?school rdfs:label ?school_label ; :place ?place ; :wikidata_entity ?school_wd .
+    bind(strafter(str(?school),str(school:)) as ?school_id)
+    ?place 	a schema:City ; rdfs:label ?placeLabel ; geo:sfWithin ?mun .
+    ?mun 	rdfs:label ?munLabel ; geo:sfWithin ?obl .
+    ?obl 	rdfs:label ?oblLabel ;
+          filter(lang(?placeLabel)="bg")
+          filter(lang(?munLabel)="bg")
+          filter(lang(?oblLabel)="bg")
+}
