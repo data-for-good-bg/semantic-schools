@@ -1,44 +1,51 @@
 <school/2222009> a schema:School , skos:Concept;
     skos:inScheme <school> ;
     schema:name "9 Френска езикова гимназия Алфонс дьо Ламартин"@bg ;
-    schema:url wd:Q12270548 ;
+    :wikidata_entity wd:Q12270548 ;
     :hasPoint <school/2222009/point> ;
     geo:sfWithin <place/Q7582432> , <place/Q472> #partially overlapping, therefore we need both
 .
 
 <school/2222009/point> a sf:Point ;
-    geo:asWKT "WKT"^^geo:wktLiteral ;
+    geo:asWKT "Point(23.323287 42.688458)"^^geo:wktLiteral ;
+    wgs:lat "42.68"^^xsd:float ;
+    wgs:long "23.32"^^xsd:float ;
+
 .
 
 <place/Q7582432> a :District ;
     schema:name "Sredets District" ;
     geo:sfWithin <place/Q4442915> ;
-    schema:url wd:Q7582432 ;
+    :wikidata_entity  wd:Q7582432 ;
     :hasPoint <place/Q7582432/point> ;
     :hasShape <place/Q7582432/shape> ;
 .
 
 <place/Q7582432/point> a sf:Point ;
-    geo:asWKT "WKT"^^geo:wktLiteral ;
+    geo:asWKT "WKT_COORDS"^^geo:wktLiteral ;
 .
 
 <place/Q7582432/shape> a sf:Polygon ;
-    geo:asWKT "WKT"^^geo:wktLiteral ;
+    geo:asWKT "WKT_POLYGON"^^geo:wktLiteral ;
 .
 
 <place/Q4442915> a :Municipality ;
-    schema:name "Sofia Capital Municipality " ;
+    rdfs:label	"Столична община"@bg, "Sofia Capital Municipality"@en ;
     geo:sfWithin <place/Q1585725> ;
+    :wikidata_entity wd:Q4442915
 
 .
 
 <place/Q1585725> a :Region ;
-    schema:name "Sofia City Province" ;
+    rdfs:label  "Област София Град"@bg, "Sofia City Province"@en ;
+    :wikidata_entity wd:Q1585725 ;
 .
 
 <place/Q472> a schema:City ;
-    schema:name "Sofia" ;
+    rdfs:label "София"@bg, "Sofia"@en ;
     geo:sfWithin <place/Q4442915> ;
+    :wikidata_entity wd:Q472 ;
+    :capital_of	place:Q1585725, place:Q202904, place:Q4442915
 .
 
 ## PUML
@@ -48,15 +55,3 @@
 <school/2222009> puml:right <school/2222009/point> .
 <place/Q7582432/point> puml:down-hidden <place/Q7582432/shape> .
 
-schema:url a puml:InlineProperty .
-skos:inScheme a puml:InlineProperty .
-
-schema:School puml:stereotype "(O,orange)" .
-
-schema:City puml:stereotype "(P,green)" .
-:District puml:stereotype "(P,green)" .
-:Municipality puml:stereotype "(P,green)" .
-:Region puml:stereotype "(P,green)" .
-
-sf:Point puml:stereotype "(G,lightblue)" .
-sf:Polygon puml:stereotype "(G,lightblue)" .
