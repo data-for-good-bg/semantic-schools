@@ -3,7 +3,7 @@
     schema:name "9 Френска езикова гимназия Алфонс дьо Ламартин"@bg ;
     :wikidata_entity wd:Q12270548 ;
     :hasPoint <school/2222009/point> ;
-    geo:sfWithin <place/Q7582432> , <place/Q472> #partially overlapping, therefore we need both
+    :place <place/Q7582432> , <place/Q472> #partially overlapping, therefore we need both
 .
 
 <school/2222009/point> a sf:Point ;
