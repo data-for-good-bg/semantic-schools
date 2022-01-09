@@ -1,0 +1,163 @@
+@prefix :      <http://edu.ontotext.com/resource/ontology/> .
+@prefix qb4st: <http://www.w3.org/ns/qb4st/> .
+@prefix qudt:  <http://qudt.org/schema/qudt/> .
+@prefix pq:    <http://www.wikidata.org/prop/qualifier/> .
+@prefix pr:    <http://www.wikidata.org/prop/reference/> .
+@prefix occupation: <http://edu.ontotext.com/resource/occupation/> .
+@prefix ps:    <http://www.wikidata.org/prop/statement/> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix subject: <http://edu.ontotext.com/resource/subject/> .
+@prefix sdmx:  <http://purl.org/linked-data/sdmx#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix pqn:   <http://www.wikidata.org/prop/qualifier/value-normalized/> .
+@prefix qb:    <http://purl.org/linked-data/cube#> .
+@prefix pqv:   <http://www.wikidata.org/prop/qualifier/value/> .
+@prefix school: <http://edu.ontotext.com/resource/school/> .
+@prefix sdmx-concept: <http://purl.org/linked-data/sdmx/2009/concept#> .
+@prefix wdref: <http://www.wikidata.org/reference/> .
+@prefix wdata: <http://www.wikidata.org/wiki/Special:EntityData/> .
+@prefix cube:  <http://edu.ontotext.com/resource/cube/> .
+@prefix age_bracket: <http://edu.ontotext.com/resource/age_bracket/> .
+@prefix sdmx-attribute: <http://purl.org/linked-data/sdmx/2009/attribute#> .
+@prefix vann:  <http://purl.org/vocab/vann/> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+@prefix sosa:  <http://www.w3.org/ns/sosa/> .
+@prefix wgs:   <http://www.w3.org/2003/01/geo/wgs84_pos#> .
+@prefix wikibase: <http://wikiba.se/ontology#> .
+@prefix prn:   <http://www.wikidata.org/prop/reference/value-normalized/> .
+@prefix graph: <http://edu.ontotext.com/resource/graph/> .
+@prefix unit:  <http://qudt.org/vocab/unit/> .
+@prefix oeev:  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#> .
+@prefix prv:   <http://www.wikidata.org/prop/reference/value/> .
+@prefix hint:  <http://www.bigdata.com/queryHints#> .
+@prefix schema: <http://schema.org/> .
+@prefix bd:    <http://www.bigdata.com/rdf#> .
+@prefix wdt:   <http://www.wikidata.org/prop/direct/> .
+@prefix wds:   <http://www.wikidata.org/entity/statement/> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix wdv:   <http://www.wikidata.org/value/> .
+@prefix mapper: <http://www.ontotext.com/mapper/> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix psn:   <http://www.wikidata.org/prop/statement/value-normalized/> .
+@prefix wd:    <http://www.wikidata.org/entity/> .
+@prefix geo:   <http://www.opengis.net/ont/geosparql#> .
+@prefix psv:   <http://www.wikidata.org/prop/statement/value/> .
+@prefix sf:    <http://www.opengis.net/ont/sf#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix gas:   <http://www.bigdata.com/rdf/gas#> .
+@prefix ethnic_group: <http://edu.ontotext.com/resource/ethnic_group/> .
+@prefix place: <http://edu.ontotext.com/resource/place/> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix sex:   <http://edu.ontotext.com/resource/sex/> .
+@prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
+@prefix p:     <http://www.wikidata.org/prop/> .
+@prefix bds:   <http://www.bigdata.com/rdf/search#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix wdno:  <http://www.wikidata.org/prop/novalue/> .
+@prefix obo:   <http://purl.obolibrary.org/obo/> .
+@prefix dc:    <http://purl.org/dc/elements/1.1/> .
+
+<http://edu.ontotext.com/resource/cube/dzi/2020>
+        rdf:type      qb:DataSet ;
+        rdfs:comment  "Резултати от държавен зрелсотен изпит - 2020 "@bg ;
+        rdfs:label    "DZI - 2020" ;
+        :date         "2020-06-04"^^xsd:date ;
+        :grade_level  12 ;
+        qb:structure  cube:dzi .
+
+<http://edu.ontotext.com/resource/cube/dzi/2021/10c6935ff73c4985e23cc314a6e9ec87>
+        rdf:type          qb:Observation ;
+        :date             "2021-05-19"^^xsd:date ;
+        :eval_score       4.3E0 ;
+        :grade_6          4.3E0 ;
+        :grade_level      12 ;
+        :quantity_people  26 ;
+        :rank_percentile  54.96 ;
+        :school           school:2222009 ;
+        :subject          subject:nmb_35 ;
+        qb:dataSet        <http://edu.ontotext.com/resource/cube/dzi/2021> .
+
+subject:nmb_1  rdf:type   skos:Concept , :Subject ;
+        skos:inScheme     subject: ;
+        skos:notation     "БЕЛ"@bg ;
+        skos:prefLabel    "Български език и литература"@bg .
+
+<http://edu.ontotext.com/resource/cube/dzi/2020/10c6935ff73c4985e23cc314a6e9ec87>
+        rdf:type          qb:Observation ;
+        :date             "2020-06-04"^^xsd:date ;
+        :eval_score       4.54E0 ;
+        :grade_6          4.54E0 ;
+        :grade_level      12 ;
+        :quantity_people  15 ;
+        :rank_percentile  57.76 ;
+        :school           school:2222009 ;
+        :subject          subject:nmb_35 ;
+        qb:dataSet        <http://edu.ontotext.com/resource/cube/dzi/2020> .
+
+subject:nmb_35  rdf:type  skos:Concept , :Subject ;
+        skos:inScheme     subject: ;
+        skos:notation     "МАТ"@bg ;
+        skos:prefLabel    "Математика"@bg .
+
+<http://edu.ontotext.com/resource/cube/dzi/2021>
+        rdf:type      qb:DataSet ;
+        rdfs:comment  "Резултати от държавен зрелсотен изпит - 2021 "@bg ;
+        rdfs:label    "DZI - 2021" ;
+        :date         "2021-05-19"^^xsd:date ;
+        :grade_level  12 ;
+        qb:structure  cube:dzi .
+
+<http://edu.ontotext.com/resource/cube/dzi/2020/53bf3915670608ee06714f9ac828c8a2>
+        rdf:type          qb:Observation ;
+        :date             "2020-06-04"^^xsd:date ;
+        :eval_score       5.45E0 ;
+        :grade_6          5.45E0 ;
+        :grade_level      12 ;
+        :quantity_people  196 ;
+        :rank_percentile  99.16;
+        :school           school:2222009 ;
+        :subject          subject:nmb_1 ;
+        qb:dataSet        <http://edu.ontotext.com/resource/cube/dzi/2020> .
+
+<http://edu.ontotext.com/resource/cube/dzi/2021/53bf3915670608ee06714f9ac828c8a2>
+        rdf:type          qb:Observation ;
+        :date             "2021-05-19"^^xsd:date ;
+        :eval_score       5.26E0 ;
+        :grade_6          5.26E0 ;
+        :grade_level      12 ;
+        :quantity_people  202 ;
+        :rank_percentile  97.8947368421052631578947 ;
+        :school           school:2222009 ;
+        :subject          subject:nmb_1 ;
+        qb:dataSet        <http://edu.ontotext.com/resource/cube/dzi/2021> .
+
+<school/2222009> a schema:School ;
+    schema:name "9 Френска езикова гимназия Алфонс дьо Ламартин"@bg ;
+.
+
+#PUML
+
+<http://edu.ontotext.com/resource/cube/dzi/2021/53bf3915670608ee06714f9ac828c8a2> puml:up <school/2222009> .
+<http://edu.ontotext.com/resource/cube/dzi/2020/53bf3915670608ee06714f9ac828c8a2> puml:up <school/2222009> .
+<http://edu.ontotext.com/resource/cube/dzi/2020/10c6935ff73c4985e23cc314a6e9ec87> puml:up <school/2222009> .
+<http://edu.ontotext.com/resource/cube/dzi/2021/10c6935ff73c4985e23cc314a6e9ec87> puml:up <school/2222009> .
+
+# PUML
+
+:wikidata_entity a puml:InlineProperty .
+skos:inScheme a puml:InlineProperty .
+
+schema:School puml:stereotype "(C,orange)" .
+
+:Subject  puml:stereotype "(C,orange)" .
+
+qb:Observation puml:stereotype "(O,lightblue)" .
+qb:DataSet puml:stereotype "(D,lightblue)" .
+
+schema:City puml:stereotype "(P,green)" .
+:District puml:stereotype "(P,green)" .
+:Municipality puml:stereotype "(P,green)" .
+:Region puml:stereotype "(P,green)" .
+
+sf:Point puml:stereotype "(G,lightblue)" .
+sf:Polygon puml:stereotype "(G,lightblue)" .
