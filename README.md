@@ -7,10 +7,10 @@ This project aims at building and maintaining a [RDF Knowledge Graph](https://ww
 The project is structured as follows 
 
 * The SPARQL Endpoint is situated at: <http://edu.ontotext.com/> `repository:semantic-schools-new`
-* The [model] folder contains the semantic data model, and illustrates the structure of the Knowledge Graph.
-* The [vocab] folder contains the ontology and vocabulary building.
-* The [data] folder contains the data processing and the cube dataset definitions.
-* The [analysis] folder contains queries and analytics on top of the KG. 
+* The [model](model) folder contains the semantic data model, and illustrates the structure of the Knowledge Graph.
+* The [vocab](vocab) folder contains the ontology and vocabulary building.
+* The [data](data) folder contains the data processing and the cube dataset definitions.
+* The [analysis](analysis) folder contains queries and analytics on top of the KG. 
 
 # Objectives
 
