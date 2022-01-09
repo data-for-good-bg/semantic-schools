@@ -76,24 +76,3 @@
 @prefix gas: <http://www.bigdata.com/rdf/gas#>.
 @prefix hint: <http://www.bigdata.com/queryHints#>.
 @prefix wgs: <http://www.w3.org/2003/01/geo/wgs84_pos#>.
-
-# PUML
-
-:wikidata_entity a puml:InlineProperty .
-skos:inScheme a puml:InlineProperty .
-
-schema:School puml:stereotype "(C,orange)" .
-
-:Subject  puml:stereotype "(C,orange)" .
-
-qb:Observation puml:stereotype "(O,lightblue)" .
-qb:DataSet puml:stereotype "(D,lightblue)" .
-
-schema:City puml:stereotype "(P,green)" .
-:District puml:stereotype "(P,green)" .
-:Municipality puml:stereotype "(P,green)" .
-:Region puml:stereotype "(P,green)" .
-
-sf:Point puml:stereotype "(G,lightblue)" .
-sf:Polygon puml:stereotype "(G,lightblue)" .
-

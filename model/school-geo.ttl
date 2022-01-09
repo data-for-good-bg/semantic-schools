@@ -55,3 +55,22 @@
 <school/2222009> puml:right <school/2222009/point> .
 <place/Q7582432/point> puml:down-hidden <place/Q7582432/shape> .
 
+# PUML
+
+:wikidata_entity a puml:InlineProperty .
+skos:inScheme a puml:InlineProperty .
+
+schema:School puml:stereotype "(C,orange)" .
+
+:Subject  puml:stereotype "(C,orange)" .
+
+qb:Observation puml:stereotype "(O,lightblue)" .
+qb:DataSet puml:stereotype "(D,lightblue)" .
+
+schema:City puml:stereotype "(P,green)" .
+:District puml:stereotype "(P,green)" .
+:Municipality puml:stereotype "(P,green)" .
+:Region puml:stereotype "(P,green)" .
+
+sf:Point puml:stereotype "(G,lightblue)" .
+sf:Polygon puml:stereotype "(G,lightblue)" .
