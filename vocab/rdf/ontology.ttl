@@ -32,3 +32,8 @@ place:Q219 a schema:Country ; rdfs:label "Bulgaria" .
 school:  a skos:ConceptScheme ;
          rdfs:label    "School concept scheme" ;
          rdfs:seeAlso  schema:School .
+
+subject:nmb_35 :isSTEM true . #MAT
+subject:nmb_44 :isSTEM true . #FA
+subject:nmb_45 :isSTEM true . #HOOS
+subject:nmb_43 :isSTEM true . #BZO
