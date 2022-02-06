@@ -64,6 +64,7 @@ subject:nmb_110  rdf:type  :Subject , skos:Concept ;
 
 subject:nmb_35  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
+        :isSTEM           true ;
         skos:inScheme     subject: ;
         skos:notation     "МАТ"@bg ;
         skos:prefLabel    "Математика"@bg .
@@ -120,6 +121,7 @@ occupation:b866564a4da63b724d1ee77cee818e77
 
 subject:nmb_43  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
+        :isSTEM           true ;
         skos:inScheme     subject: ;
         skos:notation     "БЗО"@bg ;
         skos:prefLabel    "Биология и здравно образование"@bg .
@@ -651,6 +653,7 @@ occupation:9f6ee6b5e133bb712f5e7f10e35d2f33
 
 subject:nmb_44  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
+        :isSTEM           true ;
         skos:inScheme     subject: ;
         skos:notation     "ФА"@bg ;
         skos:prefLabel    "Физика и астрономия"@bg .
@@ -1059,6 +1062,7 @@ occupation:b9e858c8e211e7e1cabdb99b2b181fe7
 
 subject:nmb_45  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
+        :isSTEM           true ;
         skos:inScheme     subject: ;
         skos:notation     "ХООС"@bg ;
         skos:prefLabel    "Химия и опазване на околната среда"@bg .

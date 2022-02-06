@@ -6,6 +6,7 @@ CONSTRUCT {
     skos:exactMatch ?EXACT_MATCH  ;
     skos:definition ?description  ;
     skos:notation ?NOTATION_BG ;
+    ?EXTRA_P                    ?EXTRA_O ;
     rdfs:isDefinedBy     : ;
 .
 }
@@ -17,4 +18,9 @@ WHERE {
     bind(uri(?exactMatch) as ?EXACT_MATCH)
     bind(strlang(?label_bg, 'bg') AS ?LABEL_BG)
     bind(strlang(?notation_bg, 'bg') AS ?NOTATION_BG)
+    bind(uri(tarql:expandPrefixedName(?extra_p)) as ?EXTRA_P)
+    bind(if(?extra_dt != "URI",
+        strdt(?extra_o,uri(tarql:expandPrefixedName(?extra_dt))),
+        uri(?extra_o)
+        ) as ?EXTRA_O)
 }
