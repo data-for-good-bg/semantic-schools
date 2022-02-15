@@ -1,0 +1,31 @@
+PREFIX qb: <http://purl.org/linked-data/cube#>
+PREFIX : <http://edu.ontotext.com/resource/ontology/>
+BASE <http://edu.ontotext.com/resource/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX schema: <http://schema.org/>
+select ?province ?town ?school_wiki_id ?school ?year ?sub_group (sum(?num_pup) as ?tot_pup) (sum(?grade*?num_pup)/?tot_pup as ?average_grade) where { 
+        ?s rdf:type qb:Observation;
+           :date ?date;
+           :grade_6 ?grade;
+           :quantity_people ?num_pup;
+           :school ?sch;
+           :subject ?subject.
+        ?sch schema:name ?school;
+             :wikidata_entity ?school_wiki_id;
+             :place ?place.
+        ?subject skos:notation ?sub_abbr.
+        ?place rdfs:label ?town;
+               geo:sfWithin ?mun.
+        ?mun geo:sfWithin ?prov.
+        ?prov rdfs:label ?province;
+        filter(:grade_level="12")
+        filter(lang(?town)="bg")
+        filter(lang(?province)="bg")
+        filter(year(?date)=2021)
+        bind (year(?date) as ?year)
+        bind (if (?sub_abbr in ("МАТ"@bg, "БЗО"@bg, "ФА"@bg, "ХООС"@bg), "СТЕМ"@bg, if (?sub_abbr in ("БЕЛ"@bg), "БЕЛ"@bg, "ДРУГИ"@bg)) as ?sub_group)
+} group by ?province ?town ?school_wiki_id ?school ?year ?sub_group
+order by ?province ?town ?school_wiki_id ?school ?year
