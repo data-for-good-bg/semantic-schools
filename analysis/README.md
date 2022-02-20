@@ -215,3 +215,14 @@ select * where {
     filter(lang(?mun_label)="bg")
 } 
 ```
+
+## Haskovo School QCs
+
+- attendance NVO MAT vs BG
+- timeline avg percentile per school
+- scatter plot schools compare attendance/score
+ - correlation (small schools <20 attendance)
+
+
+
+

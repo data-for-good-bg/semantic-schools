@@ -1,0 +1,53 @@
+BASE  <http://edu.ontotext.com/resource/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX schema: <http://schema.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX place: <http://edu.ontotext.com/resource/place/>
+PREFIX qb: <http://purl.org/linked-data/cube#>
+PREFIX cube: <http://edu.ontotext.com/resource/cube/>
+select
+?oblLabel
+?munLabel
+?placeLabel
+?school
+?school_label
+?score_21_bel
+?kids_21_bel
+?percentil_21_bel
+?score_21_mat
+?kids_21_mat
+?percentil_21_mat
+?score_19_bel
+?kids_19_bel
+?percentil_19_bel
+?score_19_mat
+?kids_19_mat
+?percentil_19_mat
+?score_18_bel
+?kids_18_bel
+?percentil_18_bel
+?score_18_mat
+?kids_18_mat
+?percentil_18_mat
+
+where {
+    bind(place:Q2454587 as ?mun)
+	?o21_bel :eval_score ?score_21_bel ; :school ?school ; :subject subject:nmb_1 ; :quantity_people ?kids_21_bel ; :rank_percentile ?percentil_21_bel ; qb:dataSet	<cube/nvo4/2021> .
+	?o18_bel :eval_score ?score_18_bel ; :school ?school ; :subject subject:nmb_1 ; :quantity_people ?kids_18_bel ; :rank_percentile ?percentil_18_bel ; qb:dataSet	<cube/nvo4/2018> .
+	?o19_bel :eval_score ?score_19_bel ; :school ?school ; :subject subject:nmb_1 ; :quantity_people ?kids_19_bel ; :rank_percentile ?percentil_19_bel ; qb:dataSet	<cube/nvo4/2019> .
+    ?o21_mat :eval_score ?score_21_mat ; :school ?school ; :subject subject:nmb_35 ; :quantity_people ?kids_21_mat ;:rank_percentile ?percentil_21_mat ; qb:dataSet	<cube/nvo4/2021> .
+	?o18_mat :eval_score ?score_18_mat ; :school ?school ; :subject subject:nmb_35 ; :quantity_people ?kids_18_mat ;:rank_percentile ?percentil_18_mat ; qb:dataSet <cube/nvo4/2018> .
+	?o19_mat :eval_score ?score_19_mat ; :school ?school ; :subject subject:nmb_35 ; :quantity_people ?kids_19_mat ;:rank_percentile ?percentil_19_mat ; qb:dataSet	<cube/nvo4/2019> .
+
+
+    ?school rdfs:label ?school_label ; :place ?place .
+    ?place 	a schema:City ; rdfs:label ?placeLabel ; geo:sfWithin ?mun .
+    ?mun 	rdfs:label ?munLabel ; geo:sfWithin ?obl .
+    ?obl 	rdfs:label ?oblLabel ;
+          filter(lang(?placeLabel)="bg")
+          filter(lang(?munLabel)="bg")
+          filter(lang(?oblLabel)="bg")
+}
