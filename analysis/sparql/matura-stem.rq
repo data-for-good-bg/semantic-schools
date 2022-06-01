@@ -12,7 +12,8 @@ select ?province ?town ?school_wiki_id ?school ?year ?sub_group (sum(?num_pup) a
            :grade_6 ?grade;
            :quantity_people ?num_pup;
            :school ?sch;
-           :subject ?subject.
+           :subject ?subject;
+           :grade_level 12 .
         ?sch schema:name ?school;
              :wikidata_entity ?school_wiki_id;
              :place ?place.
@@ -21,7 +22,6 @@ select ?province ?town ?school_wiki_id ?school ?year ?sub_group (sum(?num_pup) a
                geo:sfWithin ?mun.
         ?mun geo:sfWithin ?prov.
         ?prov rdfs:label ?province;
-        filter(:grade_level="12")
         filter(lang(?town)="bg")
         filter(lang(?province)="bg")
         filter(year(?date)=2021)
