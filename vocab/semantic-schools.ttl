@@ -880,6 +880,7 @@ occupation:36324354560c17e5d2ec80dac94fa9cd
 subject:nmb_36  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
+        skos:notation     "ИТ"@bg , "ИНФ"@bg ;
         skos:prefLabel    "Информатика и информационни технологии"@bg .
 
 :occupation  rdf:type     qb:CodedProperty , sosa:ObservableProperty , qb:DimensionProperty ;
@@ -1450,6 +1451,12 @@ occupation:eb3dc99a637886af33350a8c49f90a47
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Заместник-директор, спортна дейност"@bg .
+
+subject:nmb_af  rdf:type  :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:notation     "ПР"@bg ;
+        skos:prefLabel    "Предприемачество"@bg .
 
 :quantity  rdf:type                 sosa:ObservableProperty , qb:MeasureProperty ;
         rdfs:comment                "Count of something" ;
