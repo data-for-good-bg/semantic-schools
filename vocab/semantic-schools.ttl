@@ -307,7 +307,7 @@ subject:nmb_3  rdf:type   :Subject , skos:Concept ;
 subject:nmb_ad  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
-        skos:notation     "ДИППK"@bg ;
+        skos:notation     "ДИППК"@bg ;
         skos:prefLabel    "Държавен изпит за придобиване на професионална квалификация ДИППK"@bg .
 
 subject:nmb_27_b11  rdf:type  :Subject , skos:Concept ;
