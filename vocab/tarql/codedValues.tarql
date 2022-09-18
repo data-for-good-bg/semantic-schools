@@ -1,11 +1,11 @@
 CONSTRUCT {
-
- ?CONCEPT a skos:Concept, ?CLASS ;
+?CONCEPT a skos:Concept, ?CLASS ;
     skos:prefLabel ?label , ?LABEL_BG;
     skos:inScheme ?SCHEME         ;
     skos:exactMatch ?EXACT_MATCH  ;
     skos:definition ?description  ;
     skos:notation ?NOTATION_BG ;
+    skos:broader  ?BROADER ;
     ?EXTRA_P                    ?EXTRA_O ;
     rdfs:isDefinedBy     : ;
 .
@@ -17,10 +17,14 @@ WHERE {
     bind(uri(concat(str(:),ucase(substr(?scheme,1,1)),substr(?scheme,2))) as ?CLASS)
     bind(uri(?exactMatch) as ?EXACT_MATCH)
     bind(strlang(?label_bg, 'bg') AS ?LABEL_BG)
-    bind(strlang(?notation_bg, 'bg') AS ?NOTATION_BG)
+    OPTIONAL{
+    ?notation_bg_split apf:strSplit (?notation_bg ";")
+    bind(strlang(?notation_bg_split, 'bg') AS ?NOTATION_BG)
+    }
     bind(uri(tarql:expandPrefixedName(?extra_p)) as ?EXTRA_P)
     bind(if(?extra_dt != "URI",
         strdt(?extra_o,uri(tarql:expandPrefixedName(?extra_dt))),
         uri(?extra_o)
         ) as ?EXTRA_O)
+    bind(uri(?broader) as ?BROADER)
 }

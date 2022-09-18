@@ -18,6 +18,9 @@ curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4
 #Sex coded list values
 curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4eE_rDKAUs/gviz/tq?tqx=out:csv&sheet=sex" | ../bin/my-tarql "-d , --stdin" ../model/prefixes.ttl tarql/codedValues.tarql > rdf/sex.ttl
 
+#Language Level coded list values
+curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4eE_rDKAUs/gviz/tq?tqx=out:csv&sheet=language_level" | ../bin/my-tarql "-d , --stdin" ../model/prefixes.ttl tarql/codedValues.tarql > rdf/language_level.ttl
+
 #Age Barcket coded list values
 curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4eE_rDKAUs/gviz/tq?tqx=out:csv&sheet=age_bracket" | ../bin/my-tarql "-d , --stdin" ../model/prefixes.ttl tarql/codedValues.tarql > rdf/age_bracket.ttl
 
