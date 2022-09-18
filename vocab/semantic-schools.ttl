@@ -73,7 +73,7 @@ subject:nmb_106  rdf:type  :Subject , skos:Concept ;
 subject:nmb_24  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
-        skos:notation     "ИЕ"@bg , "ИспЕ"@bg ;
+        skos:notation     "ИЕ"@bg , "ИСПЕ"@bg ;
         skos:prefLabel    "Испански език"@bg .
 
 :hasShape  rdf:type         rdf:Property ;
@@ -516,7 +516,7 @@ occupation:3d51a5c488e13e21ae44b442daf3e33e
 subject:nmb_aе  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
-        skos:notation     "ДИППК-Пр"@bg ;
+        skos:notation     "ДИППК-ПР"@bg ;
         skos:prefLabel    "Държавен изпит за придобиване на професионална квалификация ДИППK – проект"@bg .
 
 occupation:012d503c3382e28f16773b99d2e1ca61
@@ -605,7 +605,7 @@ subject:nmb_25_b11  rdf:type  :Subject , skos:Concept ;
 subject:nmb_25  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
-        skos:notation     "ИтЕ"@bg ;
+        skos:notation     "ИТЕ"@bg ;
         skos:prefLabel    "Италиански език"@bg .
 
 subject:nmb_107  rdf:type  :Subject , skos:Concept ;
@@ -954,7 +954,7 @@ subject:nmb_44  rdf:type  :Subject , skos:Concept ;
 subject:nmb_23  rdf:type  :Subject , skos:Concept ;
         rdfs:isDefinedBy  : ;
         skos:inScheme     subject: ;
-        skos:notation     "ФЕ"@bg , "ФрЕ"@bg ;
+        skos:notation     "ФЕ"@bg , "ФРЕ"@bg ;
         skos:prefLabel    "Френски език"@bg .
 
 subject:nmb_105  rdf:type  :Subject , skos:Concept ;

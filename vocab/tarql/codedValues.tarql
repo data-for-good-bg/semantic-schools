@@ -19,7 +19,7 @@ WHERE {
     bind(strlang(?label_bg, 'bg') AS ?LABEL_BG)
     OPTIONAL{
     ?notation_bg_split apf:strSplit (?notation_bg ";")
-    bind(strlang(?notation_bg_split, 'bg') AS ?NOTATION_BG)
+    bind(strlang(ucase(?notation_bg_split), 'bg') AS ?NOTATION_BG)
     }
     bind(uri(tarql:expandPrefixedName(?extra_p)) as ?EXTRA_P)
     bind(if(?extra_dt != "URI",
