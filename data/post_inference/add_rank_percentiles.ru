@@ -1,3 +1,7 @@
+PREFIX subject: <https://schools.ontotext.com/data/resource/subject/>
+PREFIX : <https://schools.ontotext.com/data/resource/ontology/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
 INSERT {
     GRAPH ?G {
     ?o1 :rank_percentile ?PERC .
@@ -8,9 +12,10 @@ INSERT {
     SELECT ?o1 ?G (sum(?lower) as ?LOWER) (sum(?higher) as ?HIGHER) ((?LOWER/(?LOWER+?HIGHER))*100 as ?PERC) {
         {
             SELECT * where {
+                ?prop rdfs:subPropertyOf :eval_score .
                 GRAPH ?G {
                     #bind(subject:nmb_35 as ?subj)
-                    ?o1 :eval_score ?grade ;
+                    ?o1 ?prop ?grade ;
                         :school ?school ;
                         :subject ?subj ;
                         :quantity_people ?num_students ;
@@ -18,7 +23,7 @@ INSERT {
                 }
             }
         }
-        ?o2 :eval_score ?grade2 ;
+        ?o2 ?prop ?grade2 ;
             :school ?school2 ;
             :subject ?subj ;
             :date ?date .

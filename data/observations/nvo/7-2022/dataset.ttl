@@ -1,7 +1,7 @@
-<cube/nvo7/2021> a qb:DataSet ;
-    rdfs:label "NVO - 7 - 2021" ;
+<cube/nvo7/2022> a qb:DataSet ;
+    rdfs:label "NVO - 7 - 2022" ;
     rdfs:comment "Резултати от национално външно оценяване - 7ми клас - 2021 "@bg ;
     qb:structure <cube/nvo> ;
-    :date "2021-06-18"^^xsd:date ;
+    :date "2022-06-17"^^xsd:date ;
     :grade_level 7 ;
 .

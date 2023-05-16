@@ -13,7 +13,7 @@
 @prefix age_bracket: <https://schools.ontotext.com/data/resource/age_bracket/> .
 @prefix occupation: <https://schools.ontotext.com/data/resource/occupation/> .
 @prefix ethnic_group: <https://schools.ontotext.com/data/resource/ethnic_group/> .
-@prefix language_level: <https://schools.ontotext.com/data/resource/language_level/> .
+@prefix language_levela: <https://schools.ontotext.com/data/resource/language_level/> .
 
 @prefix cube: <https://schools.ontotext.com/data/resource/cube/> .
 
