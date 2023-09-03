@@ -30,6 +30,7 @@
 @prefix oeev:  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#> .
 @prefix prv:   <http://www.wikidata.org/prop/reference/value/> .
 @prefix hint:  <http://www.bigdata.com/queryHints#> .
+@prefix language_levela: <https://schools.ontotext.com/data/resource/language_level/> .
 @prefix schema: <http://schema.org/> .
 @prefix bd:    <http://www.bigdata.com/rdf#> .
 @prefix wdt:   <http://www.wikidata.org/prop/direct/> .
@@ -48,7 +49,6 @@
 @prefix ethnic_group: <https://schools.ontotext.com/data/resource/ethnic_group/> .
 @prefix place: <https://schools.ontotext.com/data/resource/place/> .
 @prefix prov:  <http://www.w3.org/ns/prov#> .
-@prefix language_level: <https://schools.ontotext.com/data/resource/language_level/> .
 @prefix sex:   <https://schools.ontotext.com/data/resource/sex/> .
 @prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
 @prefix p:     <http://www.wikidata.org/prop/> .
@@ -544,9 +544,9 @@ occupation:45dba98cb92fb2c10057a53e49c8d4f4
         skos:inScheme     occupation: ;
         skos:prefLabel    "Учител/Преподавател, хуманитарни и обществени дисциплини в занимания по интереси"@bg .
 
-language_level:b11  rdf:type  :Language_level , skos:Concept ;
+language_levela:b11  rdf:type  :Language_level , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     language_level: ;
+        skos:inScheme     language_levela: ;
         skos:prefLabel    "Б1.1"@bg , "B1.1" .
 
 subject:nmb_6  rdf:type   :Subject , skos:Concept ;
@@ -559,6 +559,12 @@ occupation:278d45ac9ef1793cf9dcfe8e42f2b356
         rdfs:isDefinedBy  : ;
         skos:inScheme     occupation: ;
         skos:prefLabel    "Вокален педагог"@bg .
+
+subject:nmb_ag  rdf:type  :Subject , skos:Concept ;
+        rdfs:isDefinedBy  : ;
+        skos:inScheme     subject: ;
+        skos:notation     "ДИППК-ДПР"@bg ;
+        skos:prefLabel    "Държавен изпит за придобиване на професионална квалификация ДИППK - Дипломен Проект"@bg .
 
 occupation:b081867783b9b0b45c91e2a2a2e1cbef
         rdf:type          :Occupation , skos:Concept ;
@@ -641,12 +647,12 @@ subject:nmb_24_b2  rdf:type  :Subject , skos:Concept ;
         qb:concept                  sdmx-concept:obsValue ;
         sdmx-attribute:unitMeasure  unit:YR .
 
-language_level:b1  rdf:type  :Language_level , skos:Concept ;
+language_levela:b1  rdf:type  :Language_level , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     language_level: ;
+        skos:inScheme     language_levela: ;
         skos:prefLabel    "Б1"@bg , "B1" .
 
-language_level:  rdf:type  skos:ConceptScheme ;
+language_levela:  rdf:type  skos:ConceptScheme ;
         rdfs:label    "Language Level scheme" ;
         rdfs:seeAlso  :Language_level .
 
@@ -675,7 +681,7 @@ subject:nmb_115  rdf:type  :Subject , skos:Concept ;
 :Language_level  rdf:type  rdfs:Class ;
         rdfs:isDefinedBy  : ;
         rdfs:label        "Language Level class" ;
-        rdfs:seeAlso      language_level: ;
+        rdfs:seeAlso      language_levela: ;
         rdfs:subClassOf   skos:Concept .
 
 subject:nmb_21_b2  rdf:type  :Subject , skos:Concept ;
@@ -1190,9 +1196,9 @@ occupation:2edd5c0c4b721adf48a749c76e416e87
         skos:inScheme     occupation: ;
         skos:prefLabel    "Главен учител, практическо обучение"@bg .
 
-language_level:b2  rdf:type  :Language_level , skos:Concept ;
+language_levela:b2  rdf:type  :Language_level , skos:Concept ;
         rdfs:isDefinedBy  : ;
-        skos:inScheme     language_level: ;
+        skos:inScheme     language_levela: ;
         skos:prefLabel    "Б2"@bg , "B2" .
 
 subject:nmb_97  rdf:type  :Subject , skos:Concept ;
