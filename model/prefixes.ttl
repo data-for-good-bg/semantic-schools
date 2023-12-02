@@ -1,4 +1,4 @@
-@base <https://schools.ontotext.com/data/resource/> .
+@base c .
 @prefix : <https://schools.ontotext.com/data/resource/ontology/> .
 
 @prefix graph: <https://schools.ontotext.com/data/resource/graph/> .

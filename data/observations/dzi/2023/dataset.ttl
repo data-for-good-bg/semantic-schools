@@ -1,0 +1,7 @@
+<cube/dzi/2023> a qb:DataSet ;
+    rdfs:label "DZI - 2023" ;
+    rdfs:comment "Резултати от държавен зрелсотен изпит - 2023 "@bg ;
+    qb:structure <cube/dzi> ;
+    :date "2023-05-19"^^xsd:date ;
+    :grade_level 12 ;
+.

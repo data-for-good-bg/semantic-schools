@@ -19,12 +19,14 @@ INSERT {
   .
   }
 } WHERE {
+    #http://schools.ontotext.com:7333/repositories/ontorefine:2575173855452 - 2018
     #http://schools.ontotext.com:7333/repositories/ontorefine:2507564030891 - 2019
     #http://schools.ontotext.com:7333/repositories/ontorefine:2190454123408 - 2020
     #http://schools.ontotext.com:7333/repositories/ontorefine:2053655239041 - 2021
     #http://schools.ontotext.com:7333/repositories/ontorefine:2534582373267 - 2022
-    SERVICE <http://schools.ontotext.com:7333/repositories/ontorefine:2534582373267> {
-        BIND(<cube/dzi/2022> as ?DataSet)
+    #http://schools.ontotext.com:7333/repositories/ontorefine:1928644177398 - 2023
+    SERVICE <http://schools.ontotext.com:7333/repositories/ontorefine:2575173855452> {
+        BIND(<cube/dzi/2018> as ?DataSet)
         # Columns as variables:
         #   ?c_school_id, ?c_subject_code, ?c_prop, ?c_value
         # Metadata as variables:
