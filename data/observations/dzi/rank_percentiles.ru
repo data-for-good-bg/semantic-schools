@@ -2,9 +2,9 @@
 ### !!! Assumes qb:Dataset uri is same as dataset context
 ### Finish when gdb 90sec. timeout is removed
 
-PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX subject: <https://schools.ontotext.com/resource/subject/>
 PREFIX qb: <http://purl.org/linked-data/cube#>
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 #INSERT {
 #    GRAPH ?G {

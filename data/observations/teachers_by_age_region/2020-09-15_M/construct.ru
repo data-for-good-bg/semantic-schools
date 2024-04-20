@@ -1,9 +1,9 @@
 PREFIX qb: <http://purl.org/linked-data/cube#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX subject: <http://edu.ontotext.com/resource/subject/>
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX subject: <https://schools.ontotext.com/resource/subject/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
 PREFIX mapper: <http://www.ontotext.com/mapper/>
-BASE <http://edu.ontotext.com/resource/>
+BASE <https://schools.ontotext.com/resource/>
 INSERT {
     GRAPH ?DataSet {
     ?URI_OK a qb:Observation ;

@@ -1,6 +1,6 @@
 PREFIX qb: <http://purl.org/linked-data/cube#>
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
-BASE <http://edu.ontotext.com/resource/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
+BASE <https://schools.ontotext.com/resource/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

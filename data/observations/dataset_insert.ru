@@ -1,10 +1,10 @@
 ## ugly hack INSERT PATTERN FOR dataset.ttl
 
-BASE <http://edu.ontotext.com/resource/>
+BASE <https://schools.ontotext.com/resource/>
 PREFIX qb: <http://purl.org/linked-data/cube#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
 insert data {
     graph <cube/place_summary> {
         <cube/place_summary> a qb:DSD ;

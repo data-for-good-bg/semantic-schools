@@ -41,8 +41,8 @@ Death compare 2019-2020
 
 ```sparql
 PREFIX qb: <http://purl.org/linked-data/cube#>
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
-BASE <http://edu.ontotext.com/resource/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
+BASE <https://schools.ontotext.com/resource/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 select ?place ?place_label (sum(?death_20) as ?total_20) (sum(?death_19) as ?total_19) ((?total_20/?total_19) as ?ratio) where { 
@@ -58,12 +58,12 @@ Geo Demo - DZI mean by subj and by jurisdiction on YasGUY
 [YasGUY link to query](https://api.triplydb.com/s/DkUQTW-ut)
 
 ```sparql
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
-PREFIX school: <http://edu.ontotext.com/resource/school/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
+PREFIX school: <https://schools.ontotext.com/resource/school/>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX subject: <https://schools.ontotext.com/resource/subject/>
 
 select ?subjectLabel (concat(?placeLab,"\n",?subjectLabel,"\n Средно: ",(str(avg(?grade))),"\n Общо Ученици: ",(str(sum(?num_students)))) as ?placeLabel) (concat("ranbow,",str((avg(?grade)-1)/5)) as ?placeColor) ?place where { 
 	bind(subject:nmb_1 as ?subj) 
@@ -85,9 +85,9 @@ BEL DZI Mapped with Geosparql Nearby
 ```sparql
 PREFIX omgeo: <http://www.ontotext.com/owlim/geo#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX subject: <https://schools.ontotext.com/resource/subject/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT * WHERE {
@@ -113,10 +113,10 @@ https://api.triplydb.com/s/6zJ44Fxc0
 
 ```sparql
 PREFIX qb: <http://purl.org/linked-data/cube#>
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
-BASE <http://edu.ontotext.com/resource/>
-PREFIX ethnic_group: <http://edu.ontotext.com/resource/ethnic_group/>
-PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
+BASE <https://schools.ontotext.com/resource/>
+PREFIX ethnic_group: <https://schools.ontotext.com/resource/ethnic_group/>
+PREFIX subject: <https://schools.ontotext.com/resource/subject/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 select ?place_lab ?population ?roma_pop ?roma_ratio ?avg_dzi
 where {
@@ -172,9 +172,9 @@ group by ?school ?school_label order by desc(?avg_grade)
 Rank schools by percentile on 1 subject all years
 
 ```sparql
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX subject: <https://schools.ontotext.com/resource/subject/>
 select  
 ?school ?school_label (avg(?perc) as ?avg_perc) (sum(?kids) as ?KIDS)
 where { 
@@ -188,11 +188,11 @@ group by ?school ?school_label order by desc(?avg_perc)
 # Debug
 
 ```sparql
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-PREFIX place: <http://edu.ontotext.com/resource/place/>
-PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX place: <https://schools.ontotext.com/resource/place/>
+PREFIX subject: <https://schools.ontotext.com/resource/subject/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 select * where {
 #    values ?mun {

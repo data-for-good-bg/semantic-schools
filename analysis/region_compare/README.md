@@ -3,9 +3,9 @@
 ## Mean DZI scores per municipality compared with municipality containing region capital
 
 ```sparql
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX subject: <https://schools.ontotext.com/resource/subject/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 select * where { 
 	?cap_mun a :Municipality ;
@@ -45,9 +45,9 @@ select * where {
 ## Mean DZI scores compared between region and capital municipality
 
 ```sparql
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
-PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX subject: <https://schools.ontotext.com/resource/subject/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 select * where { 
     

@@ -3,10 +3,10 @@ PREFIX wikibase: <http://wikiba.se/ontology#>
 PREFIX bd: <http://www.bigdata.com/rdf#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX wd: <http://www.wikidata.org/entity/>
-PREFIX place: <http://edu.ontotext.com/resource/place/>
+PREFIX place: <https://schools.ontotext.com/resource/place/>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX schema: <http://schema.org/>
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
+PREFIX : <https://schools.ontotext.com/resource/ontology/>
 PREFIX sf: <http://www.opengis.net/ont/sf#>
 INSERT {
     GRAPH place: {
