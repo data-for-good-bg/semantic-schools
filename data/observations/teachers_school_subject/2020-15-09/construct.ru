@@ -1,10 +1,10 @@
-BASE <https://schools.ontotext.com/resource/>
+BASE <https://schools.ontotext.com/data/resource/>
 PREFIX qb: <http://purl.org/linked-data/cube#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX subject: <https://schools.ontotext.com/resource/subject/>
-PREFIX : <https://schools.ontotext.com/resource/ontology/>
+PREFIX subject: <https://schools.ontotext.com/data/resource/subject/>
+PREFIX : <https://schools.ontotext.com/data/resource/ontology/>
 PREFIX mapper: <http://www.ontotext.com/mapper/>
-PREFIX school: <https://schools.ontotext.com/resource/school/>
+PREFIX school: <https://schools.ontotext.com/data/resource/school/>
 
 #Project http://edu.ontotext.com/orefine/project?project=2230913364235
 

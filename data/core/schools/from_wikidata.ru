@@ -1,11 +1,11 @@
-PREFIX school: <https://schools.ontotext.com/resource/school/>
+PREFIX school: <https://schools.ontotext.com/data/resource/school/>
 PREFIX sf: <http://www.opengis.net/ont/sf#>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX schema: <http://schema.org/>
-PREFIX : <https://schools.ontotext.com/resource/ontology/>
+PREFIX : <https://schools.ontotext.com/data/resource/ontology/>
 PREFIX wdt: <http://www.wikidata.org/prop/direct/>
 PREFIX wd: <http://www.wikidata.org/entity/>
-PREFIX place: <https://schools.ontotext.com/resource/place/>
+PREFIX place: <https://schools.ontotext.com/data/resource/place/>
 INSERT {
     GRAPH school: {
         ?SCHOOL a :School ;

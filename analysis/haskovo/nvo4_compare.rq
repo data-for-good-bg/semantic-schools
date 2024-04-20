@@ -1,13 +1,13 @@
-BASE  <https://schools.ontotext.com/resource/>
+BASE  <https://schools.ontotext.com/data/resource/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX : <https://schools.ontotext.com/resource/ontology/>
-PREFIX subject: <https://schools.ontotext.com/resource/subject/>
+PREFIX : <https://schools.ontotext.com/data/resource/ontology/>
+PREFIX subject: <https://schools.ontotext.com/data/resource/subject/>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX schema: <http://schema.org/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX place: <https://schools.ontotext.com/resource/place/>
+PREFIX place: <https://schools.ontotext.com/data/resource/place/>
 PREFIX qb: <http://purl.org/linked-data/cube#>
-PREFIX cube: <https://schools.ontotext.com/resource/cube/>
+PREFIX cube: <https://schools.ontotext.com/data/resource/cube/>
 select
 ?oblLabel
 ?munLabel

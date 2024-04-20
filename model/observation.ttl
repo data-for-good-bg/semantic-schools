@@ -1,23 +1,23 @@
-@prefix :      <https://schools.ontotext.com/resource/ontology/> .
+@prefix :      <https://schools.ontotext.com/data/resource/ontology/> .
 @prefix qb4st: <http://www.w3.org/ns/qb4st/> .
 @prefix qudt:  <http://qudt.org/schema/qudt/> .
 @prefix pq:    <http://www.wikidata.org/prop/qualifier/> .
 @prefix pr:    <http://www.wikidata.org/prop/reference/> .
-@prefix occupation: <https://schools.ontotext.com/resource/occupation/> .
+@prefix occupation: <https://schools.ontotext.com/data/resource/occupation/> .
 @prefix ps:    <http://www.wikidata.org/prop/statement/> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
-@prefix subject: <https://schools.ontotext.com/resource/subject/> .
+@prefix subject: <https://schools.ontotext.com/data/resource/subject/> .
 @prefix sdmx:  <http://purl.org/linked-data/sdmx#> .
 @prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
 @prefix pqn:   <http://www.wikidata.org/prop/qualifier/value-normalized/> .
 @prefix qb:    <http://purl.org/linked-data/cube#> .
 @prefix pqv:   <http://www.wikidata.org/prop/qualifier/value/> .
-@prefix school: <https://schools.ontotext.com/resource/school/> .
+@prefix school: <https://schools.ontotext.com/data/resource/school/> .
 @prefix sdmx-concept: <http://purl.org/linked-data/sdmx/2009/concept#> .
 @prefix wdref: <http://www.wikidata.org/reference/> .
 @prefix wdata: <http://www.wikidata.org/wiki/Special:EntityData/> .
-@prefix cube:  <https://schools.ontotext.com/resource/cube/> .
-@prefix age_bracket: <https://schools.ontotext.com/resource/age_bracket/> .
+@prefix cube:  <https://schools.ontotext.com/data/resource/cube/> .
+@prefix age_bracket: <https://schools.ontotext.com/data/resource/age_bracket/> .
 @prefix sdmx-attribute: <http://purl.org/linked-data/sdmx/2009/attribute#> .
 @prefix vann:  <http://purl.org/vocab/vann/> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
@@ -25,7 +25,7 @@
 @prefix wgs:   <http://www.w3.org/2003/01/geo/wgs84_pos#> .
 @prefix wikibase: <http://wikiba.se/ontology#> .
 @prefix prn:   <http://www.wikidata.org/prop/reference/value-normalized/> .
-@prefix graph: <https://schools.ontotext.com/resource/graph/> .
+@prefix graph: <https://schools.ontotext.com/data/resource/graph/> .
 @prefix unit:  <http://qudt.org/vocab/unit/> .
 @prefix oeev:  <http://www.phenome-fppn.fr/vocabulary/2018/oeev#> .
 @prefix prv:   <http://www.wikidata.org/prop/reference/value/> .
@@ -45,10 +45,10 @@
 @prefix sf:    <http://www.opengis.net/ont/sf#> .
 @prefix dct:   <http://purl.org/dc/terms/> .
 @prefix gas:   <http://www.bigdata.com/rdf/gas#> .
-@prefix ethnic_group: <https://schools.ontotext.com/resource/ethnic_group/> .
-@prefix place: <https://schools.ontotext.com/resource/place/> .
+@prefix ethnic_group: <https://schools.ontotext.com/data/resource/ethnic_group/> .
+@prefix place: <https://schools.ontotext.com/data/resource/place/> .
 @prefix prov:  <http://www.w3.org/ns/prov#> .
-@prefix sex:   <https://schools.ontotext.com/resource/sex/> .
+@prefix sex:   <https://schools.ontotext.com/data/resource/sex/> .
 @prefix quantitykind: <http://qudt.org/vocab/quantitykind/> .
 @prefix p:     <http://www.wikidata.org/prop/> .
 @prefix bds:   <http://www.bigdata.com/rdf/search#> .
@@ -57,7 +57,7 @@
 @prefix obo:   <http://purl.obolibrary.org/obo/> .
 @prefix dc:    <http://purl.org/dc/elements/1.1/> .
 
-<https://schools.ontotext.com/resource/cube/dzi/2020>
+<https://schools.ontotext.com/data/resource/cube/dzi/2020>
         rdf:type      qb:DataSet ;
         rdfs:comment  "Резултати от държавен зрелсотен изпит - 2020 "@bg ;
         rdfs:label    "DZI - 2020" ;
@@ -65,7 +65,7 @@
         :grade_level  12 ;
         qb:structure  cube:dzi .
 
-<https://schools.ontotext.com/resource/cube/dzi/2021/10c6935ff73c4985e23cc314a6e9ec87>
+<https://schools.ontotext.com/data/resource/cube/dzi/2021/10c6935ff73c4985e23cc314a6e9ec87>
         rdf:type          qb:Observation ;
         :date             "2021-05-19"^^xsd:date ;
         :eval_score       4.3E0 ;
@@ -75,14 +75,14 @@
         :rank_percentile  54.96 ;
         :school           school:2222009 ;
         :subject          subject:nmb_35 ;
-        qb:dataSet        <https://schools.ontotext.com/resource/cube/dzi/2021> .
+        qb:dataSet        <https://schools.ontotext.com/data/resource/cube/dzi/2021> .
 
 subject:nmb_1  rdf:type   skos:Concept , :Subject ;
         skos:inScheme     subject: ;
         skos:notation     "БЕЛ"@bg ;
         skos:prefLabel    "Български език и литература"@bg .
 
-<https://schools.ontotext.com/resource/cube/dzi/2020/10c6935ff73c4985e23cc314a6e9ec87>
+<https://schools.ontotext.com/data/resource/cube/dzi/2020/10c6935ff73c4985e23cc314a6e9ec87>
         rdf:type          qb:Observation ;
         :date             "2020-06-04"^^xsd:date ;
         :eval_score       4.54E0 ;
@@ -92,14 +92,14 @@ subject:nmb_1  rdf:type   skos:Concept , :Subject ;
         :rank_percentile  57.76 ;
         :school           school:2222009 ;
         :subject          subject:nmb_35 ;
-        qb:dataSet        <https://schools.ontotext.com/resource/cube/dzi/2020> .
+        qb:dataSet        <https://schools.ontotext.com/data/resource/cube/dzi/2020> .
 
 subject:nmb_35  rdf:type  skos:Concept , :Subject ;
         skos:inScheme     subject: ;
         skos:notation     "МАТ"@bg ;
         skos:prefLabel    "Математика"@bg .
 
-<https://schools.ontotext.com/resource/cube/dzi/2021>
+<https://schools.ontotext.com/data/resource/cube/dzi/2021>
         rdf:type      qb:DataSet ;
         rdfs:comment  "Резултати от държавен зрелсотен изпит - 2021 "@bg ;
         rdfs:label    "DZI - 2021" ;
@@ -107,7 +107,7 @@ subject:nmb_35  rdf:type  skos:Concept , :Subject ;
         :grade_level  12 ;
         qb:structure  cube:dzi .
 
-<https://schools.ontotext.com/resource/cube/dzi/2020/53bf3915670608ee06714f9ac828c8a2>
+<https://schools.ontotext.com/data/resource/cube/dzi/2020/53bf3915670608ee06714f9ac828c8a2>
         rdf:type          qb:Observation ;
         :date             "2020-06-04"^^xsd:date ;
         :eval_score       5.45E0 ;
@@ -117,9 +117,9 @@ subject:nmb_35  rdf:type  skos:Concept , :Subject ;
         :rank_percentile  99.16;
         :school           school:2222009 ;
         :subject          subject:nmb_1 ;
-        qb:dataSet        <https://schools.ontotext.com/resource/cube/dzi/2020> .
+        qb:dataSet        <https://schools.ontotext.com/data/resource/cube/dzi/2020> .
 
-<https://schools.ontotext.com/resource/cube/dzi/2021/53bf3915670608ee06714f9ac828c8a2>
+<https://schools.ontotext.com/data/resource/cube/dzi/2021/53bf3915670608ee06714f9ac828c8a2>
         rdf:type          qb:Observation ;
         :date             "2021-05-19"^^xsd:date ;
         :eval_score       5.26E0 ;
@@ -129,7 +129,7 @@ subject:nmb_35  rdf:type  skos:Concept , :Subject ;
         :rank_percentile  97.8947368421052631578947 ;
         :school           school:2222009 ;
         :subject          subject:nmb_1 ;
-        qb:dataSet        <https://schools.ontotext.com/resource/cube/dzi/2021> .
+        qb:dataSet        <https://schools.ontotext.com/data/resource/cube/dzi/2021> .
 
 <school/2222009> a schema:School ;
     schema:name "9 Френска езикова гимназия Алфонс дьо Ламартин"@bg ;
@@ -137,10 +137,10 @@ subject:nmb_35  rdf:type  skos:Concept , :Subject ;
 
 #PUML
 
-<https://schools.ontotext.com/resource/cube/dzi/2021/53bf3915670608ee06714f9ac828c8a2> puml:up <school/2222009> .
-<https://schools.ontotext.com/resource/cube/dzi/2020/53bf3915670608ee06714f9ac828c8a2> puml:up <school/2222009> .
-<https://schools.ontotext.com/resource/cube/dzi/2020/10c6935ff73c4985e23cc314a6e9ec87> puml:up <school/2222009> .
-<https://schools.ontotext.com/resource/cube/dzi/2021/10c6935ff73c4985e23cc314a6e9ec87> puml:up <school/2222009> .
+<https://schools.ontotext.com/data/resource/cube/dzi/2021/53bf3915670608ee06714f9ac828c8a2> puml:up <school/2222009> .
+<https://schools.ontotext.com/data/resource/cube/dzi/2020/53bf3915670608ee06714f9ac828c8a2> puml:up <school/2222009> .
+<https://schools.ontotext.com/data/resource/cube/dzi/2020/10c6935ff73c4985e23cc314a6e9ec87> puml:up <school/2222009> .
+<https://schools.ontotext.com/data/resource/cube/dzi/2021/10c6935ff73c4985e23cc314a6e9ec87> puml:up <school/2222009> .
 
 # PUML
 

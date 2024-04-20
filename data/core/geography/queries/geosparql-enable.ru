@@ -4,9 +4,9 @@ PREFIX sf: <http://www.opengis.net/ont/sf#>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX geo-pos: <http://www.w3.org/2003/01/geo/wgs84_pos#>
-clear silent graph <https://schools.ontotext.com/resource/graph/geo-coord-pairs> ;
+clear silent graph <https://schools.ontotext.com/data/resource/graph/geo-coord-pairs> ;
 insert {
-    graph <https://schools.ontotext.com/resource/graph/geo-coord-pairs> {
+    graph <https://schools.ontotext.com/data/resource/graph/geo-coord-pairs> {
     ?point geo-pos:lat ?lat ;
            geo-pos:long ?lon .
 	}

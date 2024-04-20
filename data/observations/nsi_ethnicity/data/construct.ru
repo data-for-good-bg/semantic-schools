@@ -1,10 +1,10 @@
 PREFIX qb: <http://purl.org/linked-data/cube#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX ethnic_group: <https://schools.ontotext.com/resource/ethnic_group/>
+PREFIX ethnic_group: <https://schools.ontotext.com/data/resource/ethnic_group/>
 PREFIX mapper: <http://www.ontotext.com/mapper/>
-PREFIX : <https://schools.ontotext.com/resource/ontology/>
-PREFIX place: <https://schools.ontotext.com/resource/place/>
-BASE <https://schools.ontotext.com/resource/>
+PREFIX : <https://schools.ontotext.com/data/resource/ontology/>
+PREFIX place: <https://schools.ontotext.com/data/resource/place/>
+BASE <https://schools.ontotext.com/data/resource/>
 INSERT {
     GRAPH ?DataSet {
     ?URI_BG_OK a qb:Observation ;
