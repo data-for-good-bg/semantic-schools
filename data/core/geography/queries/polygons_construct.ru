@@ -7,8 +7,8 @@ PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX sf: <http://www.opengis.net/ont/sf#>
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
-PREFIX place: <http://edu.ontotext.com/resource/place/>
+PREFIX : <https://schools.ontotext.com/data/resource/ontology/>
+PREFIX place: <https://schools.ontotext.com/data/resource/place/>
 
 INSERT {
     GRAPH place:shapes {

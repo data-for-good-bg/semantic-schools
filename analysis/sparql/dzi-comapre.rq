@@ -1,10 +1,10 @@
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX : <http://edu.ontotext.com/resource/ontology/>
-PREFIX subject: <http://edu.ontotext.com/resource/subject/>
+PREFIX : <https://schools.ontotext.com/data/resource/ontology/>
+PREFIX subject: <https://schools.ontotext.com/data/resource/subject/>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX schema: <http://schema.org/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX school: <http://edu.ontotext.com/resource/school/>
+PREFIX school: <https://schools.ontotext.com/data/resource/school/>
 select ?oblLabel ?munLabel ?placeLabel ?school_id ?school_wd ?school_label ?score_21 ?kids_21 ?score_20 ?kids_20 ?score_19 ?kids_19
 where {
 

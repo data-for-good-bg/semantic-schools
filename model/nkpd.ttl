@@ -1,4 +1,4 @@
-@prefix nkpd: <http://edu.ontotext.com/resource/nkpd/> .
+@prefix nkpd: <https://schools.ontotext.com/data/resource/nkpd/> .
 
 nkpd: a skos:ConceptScheme ;
     skos:prefLabel "Национална класификация на професиите и длъжностите"@bg ;
