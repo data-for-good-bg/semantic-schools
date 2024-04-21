@@ -8,8 +8,8 @@ Script description:
 repo-config.ttl. The script also deletes the repository if such exists.
 The deletion is a hacky way for avoiding duplication of triples.
 
-* `init-repo.sh` is responsible to import all turtle and sparql files in
-the repo.
+* `init-repo.sh` is responsible to initialize repo data by importing turtle files
+or executing sparql files.
 
-* `import-file.sh` is a helper script which imports turtle or sparql file
+* `import-file.sh` is a helper script which imports turtle or executes sparql file
 in the repo.
