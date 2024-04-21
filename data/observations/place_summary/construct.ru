@@ -1,4 +1,4 @@
-BASE <http://edu.ontotext.com/resource/>
+BASE <https://schools.ontotext.com/data/resource/>
 PREFIX qb: <http://purl.org/linked-data/cube#>
 PREFIX : <http://edu.ontotext.com/resource/ontology/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>

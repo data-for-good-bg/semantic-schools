@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+mkdir -p /rdf
+
 #Measures
 curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4eE_rDKAUs/gviz/tq?tqx=out:csv&sheet=Measures" | ../bin/my-tarql "-d , --stdin" ../model/prefixes.ttl tarql/measures.tarql > rdf/measures.ttl
 
@@ -31,4 +33,4 @@ curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4
 curl "https://docs.google.com/spreadsheets/d/1UgEswvbaF9qDGyK8Gq2hkO4F1DtXsXvrY4eE_rDKAUs/gviz/tq?tqx=out:csv&sheet=ethnic_group" | ../bin/my-tarql "-d , --stdin" ../model/prefixes.ttl tarql/codedValues.tarql > rdf/ethnic_group.ttl
 
 #Concatenate vocabulary
-cat rdf/*.ttl | riot --syntax=ttl --formatted=ttl> semantic-schools.ttl
+cat rdf/*.ttl ./ontology.ttl | riot --syntax=ttl --formatted=ttl> semantic-schools.ttl
