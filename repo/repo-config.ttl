@@ -4,8 +4,8 @@
 @prefix sail: <http://www.openrdf.org/config/sail#> .
 
 # https://graphdb.ontotext.com/documentation/10.6/configuring-a-repository.html#configuring-a-repository-configuration-parameters
-<#data-for-good> a rep:Repository;
-      rep:repositoryID "data-for-good";
+<#__REPO_ID__> a rep:Repository;
+      rep:repositoryID "__REPO_ID__";
       rep:repositoryImpl [
             rep:repositoryType "graphdb:SailRepository";
             <http://www.openrdf.org/config/repository/sail#sailImpl> [
