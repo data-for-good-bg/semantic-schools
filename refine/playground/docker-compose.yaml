@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  notebook:
+    image: quay.io/jupyter/datascience-notebook:python-3.11.9
+    volumes:
+      - "./work:/home/jovyan/work"
+    ports:
+      - "8888:8888"
