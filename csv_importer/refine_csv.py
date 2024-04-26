@@ -75,9 +75,6 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     #    The first line contains the column names, the second line contains
     #    abbriviations of the subjects in the columns where values for the
     #    corresponding subjects are stored
-    #    Example:
-    #      "Област","Община","Населено място","Училище","Код по Админ","Явили се","Ср. успех в точки","Явили се","Ср. успех в точки"
-    #      "","","","","","БЕЛ","БЕЛ","МАТ","МАТ"
     # 5. NVO 7th grade 2023
     #    There are four lines describing the maximum possible score for
     #    each subject.
@@ -94,13 +91,13 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     #
     input.seek(0)
 
-    column_names = None
+    column_names_line = None
     for line in input:
         if line.startswith('"Област') or line.startswith('"Регион'):
-            column_names = line.strip()
+            column_names_line = line.strip()
             break
 
-    assert column_names, 'Cannot find line with column names.'
+    assert column_names_line, 'Cannot find line with column names.'
 
     output = StringIO()
 
@@ -110,24 +107,58 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
         # we have special line case
         next_special_line = next_special_line.strip()
 
-        new_col_names = []
-        for h, s in zip(column_names.split(','), next_special_line.split(',')):
-            h = translate_column(h.replace('"', ''))
-            s = translate_column(s.replace('"', ''))
+        if 'БЕЛ' in next_special_line:
+            #    Example:
+            #      "Област","Община","Населено място","Училище","Код по Админ","Явили се","Ср. успех в точки","Явили се","Ср. успех в точки"
+            #      "","","","","","БЕЛ","БЕЛ","МАТ","МАТ"
 
-            new_header = h if s == '' else h + ' ' + s
-            new_col_names.append(new_header)
+            logger.debug('The special line contains subject names')
+            new_col_names = []
+            for col_name, special_value in zip(column_names_line.split(','), next_special_line.split(',')):
+                col_name = translate_column(col_name.replace('"', ''))
+                special_value = translate_column(special_value.replace('"', ''))
 
-        new_headers_line = ','.join(new_col_names) + os.linesep
-        logger.debug(new_headers_line)
+                new_header = col_name if special_value == '' else col_name + ' ' + special_value
+                new_col_names.append(new_header)
 
-        output.write(new_headers_line)
+            new_column_names_lines = ','.join(new_col_names) + os.linesep
+            logger.debug(new_column_names_lines)
+
+            output.write(new_column_names_lines)
+
+        if 'Явили се' in next_special_line:
+            # Example:
+            # "Област","Община","Населено място","Училище","Код по Админ","БЕЛ","","МАТ",""
+            # "","","","","","Явили се","Ср. успех в точки","Явили се","Ср. успех в точки"
+
+            logger.debug('The special line contains description of columns')
+
+            # fill in empty column names
+            column_names = column_names_line.split(',')
+            for i in range(len(column_names)):
+                if column_names[i] == '""':
+                    column_names[i] = column_names[i-1]
+
+            new_col_names = []
+
+            for col_name, special_value in zip(column_names, next_special_line.split(',')):
+                col_name = translate_column(col_name.replace('"', ''))
+                special_value = translate_column(special_value.replace('"', ''))
+
+                new_header = col_name if special_value == '' else special_value + ' ' + col_name
+                new_col_names.append(new_header)
+
+            new_column_names_lines = ','.join(new_col_names) + os.linesep
+            logger.debug(new_column_names_lines)
+
+            output.write(new_column_names_lines)
+
     else:
         logger.debug('The line after the column names is not special, adding it to the output')
 
 
         new_col_names = []
-        for c in column_names.split(','):
+        for c in column_names_line.split(','):
             new_col_names.append(translate_column(c))
 
         new_column_names_line = ','.join(new_col_names) + os.linesep
