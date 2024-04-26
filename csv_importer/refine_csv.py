@@ -34,11 +34,20 @@ def translate_column(value: str) -> str:
 def load_csv(file: str) -> StringIO:
     # using 'utf-8-sig' encoding to handle the BOM csv files provided
     # by data.egov.bg
+    # Some of the CSV files contain the BOM mark not only at the beginning
+    # of the file, also inside the first value on the first line.
+    # That's why below we replace the sequence '\ufeff' everywhere (this
+    # is the three byte representation of the BOM mark U+FEFF)
+    # https://en.wikipedia.org/wiki/Byte_order_mark
+    # https://docs.python.org/3/howto/unicode.html
+    # https://stackoverflow.com/questions/13590749/reading-unicode-file-data-with-bom-chars-in-python
 
     result = StringIO()
     with open(file, 'rb') as f:
         for line in f:
-            result.write(line.decode('utf-8-sig'))
+            line = line.decode('utf-8-sig')
+            line = line.replace('\ufeff', '')
+            result.write(line)
 
     return result
 
@@ -60,9 +69,8 @@ def convert_csv_columns(input: StringIO) -> StringIO:
         h = translate_column(h.replace('"', ''))
         s = translate_column(s.replace('"', ''))
 
-        new_header = h if s == '' else s + ' ' + h
+        new_header = h if s == '' else h + ' ' + s
         new_headers.append(new_header)
-
 
     new_headers_line = ','.join(new_headers) + os.linesep
     logger.debug(new_headers_line)
@@ -107,16 +115,16 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
         subject_cols = scores.columns[i*2+1 : i*2+3]
         logger.debug('subject_cols -> %s', subject_cols )
 
-        subject_name = subject_cols[0].split(' ')[0]
+        subject_name = subject_cols[0].split(' ')[1]
         logger.debug('extracted subject_name -> %s', subject_name)
-        assert subject_cols[1].startswith(subject_name)
+        assert subject_cols[1].endswith(subject_name)
 
         subject_name = subject_name.upper()
         logger.debug('subject_name -> %s', subject_name)
 
         df = scores.loc[:, ['school_admin_id', *subject_cols]]
 
-        renaming_cols = { c: c.split(' ')[1] for c in subject_cols }
+        renaming_cols = { c: c.split(' ')[0] for c in subject_cols }
         df = df.rename(columns=renaming_cols)
 
         df.insert(1, 'subject', subject_name)
