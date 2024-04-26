@@ -34,6 +34,27 @@ def translate_column(value: str) -> str:
     return value
 
 
+def infer_max_possible_nvo_score(data: pd.DataFrame) -> float:
+    """
+    Infers the max possible score for NVO based on the maximum score
+    found in the data frame.
+
+    The maximum possible score:
+    * was 65 points for several years
+    * after that the max possible score is 100 points
+
+    """
+
+    assert 'score' in data.columns, \
+        'The data frame should contain score column in order to infer the max possible score.'
+    max_score = data['score'].max()
+
+    if max_score <= 65.00:
+        return 65.00
+    else:
+        return 100.00
+
+
 def load_csv(file: str) -> StringIO:
     # using 'utf-8-sig' encoding to handle the BOM csv files provided
     # by data.egov.bg
@@ -190,7 +211,9 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
 
     numeric_cols = get_subject_column_names(data)
     for numberic_col in numeric_cols:
-        data[numberic_col] = data[numberic_col].replace(',', '.', regex=True)
+        fixed = data[numberic_col].replace(',', '.', regex=True)
+        fixed = fixed.astype(float)
+        data[numberic_col] = fixed
 
     return data
 
@@ -214,22 +237,27 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
     logger.debug('numeric_cols_count -> %d, subject_count -> %d', numeric_cols_count, subject_count)
     subject_df = []
     for i in range(subject_count):
+        # subject_cols will look like 'people бел' and 'score бел'
         subject_cols = scores.columns[i*2+1 : i*2+3]
         logger.debug('subject_cols -> %s', subject_cols )
 
         subject_name = subject_cols[0].split(' ')[1]
         logger.debug('extracted subject_name -> %s', subject_name)
-        assert subject_cols[1].endswith(subject_name)
+        assert subject_cols[1].endswith(subject_name), \
+            'The two columns do not contain the same subject name.'
 
         subject_name = subject_name.upper()
         logger.debug('subject_name -> %s', subject_name)
 
         df = scores.loc[:, ['school_admin_id', *subject_cols]]
 
+        # rename the columns to be just 'people' and 'score', we remove the subject name
         renaming_cols = { c: c.split(' ')[0] for c in subject_cols }
         df = df.rename(columns=renaming_cols)
 
+        max_possible_score = infer_max_possible_nvo_score(df)
         df.insert(1, 'subject', subject_name)
+        df.insert(1, 'max_possible_score', max_possible_score)
         subject_df.append(df)
 
 
