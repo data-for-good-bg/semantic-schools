@@ -17,6 +17,8 @@ def main():
     with open(csv, 'rt') as f:
         for line in f:
             line = line.strip()
+            if not line:
+                continue
             name, url = line.split(',')
             if url:
                 filename = url.split('/')[-1]
