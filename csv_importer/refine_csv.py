@@ -4,6 +4,7 @@ import pandas as pd
 import sys
 import logging
 import os
+import re
 
 from io import StringIO
 
@@ -11,7 +12,9 @@ from io import StringIO
 logger = logging.getLogger(__name__)
 
 
-COLUMN_TRANSLATE = {
+# List of regular expressions which will be translated no matter where
+# in the column name are found
+COL_RE_TRANSLATION = {
     'област': 'region',
     'регион': 'region',
     'община': 'municipality',
@@ -20,13 +23,33 @@ COLUMN_TRANSLATE = {
     'училище': 'school',
     'код по админ': 'school_admin_id',
     'код': 'school_admin_id',
-    'явили се': 'people',
-    'ср. успех в точки': 'score',
-    'mat': 'мат'
+    'mat': 'мат',
+    '\)з': ')-з', # there's one special case in dzi-2022
+    ' \(мах 100 т\)': '', #nov-4-2018
+    '\(пп\)': '', # dzi-2022
+    '\(ооп\) ': '', # dzi-2022
+    ' з': '-з',
+    ' (b1-|b1.1-|b2-)з': r'-\1з',
+
 }
+
+# List of regular expressions which will be translated only if they
+# are found at the beginning or at the end of the column name
+COL_RE_TRANSLATION_SPECIAL_POSITIONS = {
+    'явили се': 'people',
+    'ср\. успех в точки': 'score',
+    'ср\.успех': 'score',
+    'ср\.усп\.': 'score',
+    'ср\.усп': 'score',
+
+    'бр\.': 'people',
+    'брой': 'people',
+}
+
 
 SBJ_IDX = 0
 CN_IDX = 1
+
 
 def refine_original_col_name(value: str) -> str:
     """
@@ -36,14 +59,33 @@ def refine_original_col_name(value: str) -> str:
     * removes redundant information or characters
     """
 
+    logger.debug('value %s', value)
+
     value = value.replace('"', '')
     value = value.lower()
-    value = value.replace(' (мах 100 т)', '')
+    logger.debug('value %s', value)
+
     while '  ' in value:
         value = value.replace('  ', ' ')
+    logger.debug('value %s', value)
 
-    for old_v, new_v in COLUMN_TRANSLATE.items():
-        value = value.replace(old_v, new_v)
+
+    for regex, repl in COL_RE_TRANSLATION.items():
+        value = re.sub(regex, repl, value)
+        value = value.strip()
+    logger.debug('value %s', value)
+
+    for base_regex, repl in COL_RE_TRANSLATION_SPECIAL_POSITIONS.items():
+        value = re.sub(f'^{base_regex}', repl, value)
+        value = re.sub(f'{base_regex}$', repl, value)
+        value = value.strip()
+    logger.debug('value %s', value)
+
+    # sometimes there's missing space between the subject name and
+    # the score
+    if 'score' in value and not value.startswith('score') and ' score' not in value:
+        value = value.replace('score', ' score')
+    logger.debug('value %s', value)
 
     return value
 
@@ -59,9 +101,14 @@ def order_attr_in_subject_column_names(col_names):
     result = []
 
     for col_name in col_names:
-        if col_name.startswith('score') or col_name.startswith('people'):
-            f, s = col_name.split(' ')
-            result.append(f'{s} {f}')
+        if col_name.startswith('score ') or col_name.startswith('people '):
+            try:
+                f, s = col_name.split(' ')
+                result.append(f'{s} {f}')
+            except ValueError:
+                logger.exception('Failed to handle column: %s', col_name)
+                raise
+
         else:
             result.append(col_name)
 
@@ -69,7 +116,7 @@ def order_attr_in_subject_column_names(col_names):
 
 
 def is_subject_column(col_name: str) -> bool:
-    return 'people' in col_name or 'score' in col_name
+    return col_name.endswith(' people') or col_name.endswith(' score')
 
 
 def get_subject_column_names(data: pd.DataFrame) -> list[str]:
@@ -113,17 +160,46 @@ def load_csv(file: str) -> StringIO:
     # https://stackoverflow.com/questions/13590749/reading-unicode-file-data-with-bom-chars-in-python
 
     # The first unicode sequence is the BOM mark,
-    # the second one is another weird unicode sequence found in a column name
-    to_replace = ['\ufeff', '\u00a0']
+    # The second one is another weird unicode sequence found in a column name
+    # The third item is because one of the files contains: "<BOM>""Област"""
+    #   So the <BOM> will be replaced, then we handle the trippled quotes
+    #   It is handled by this special way, because it is not good idea to handle
+    #   trippled quotes in the whole file.
+    to_replace = {
+        '\ufeff': '',
+        '\u00a0': '',
+        '"""Област"""': '"Област"'
+    }
 
     result = StringIO()
     with open(file, 'rb') as f:
         for line in f:
             line = line.decode('utf-8-sig')
-            for c in to_replace:
-                line = line.replace(c, '')
+            for old_v, new_v in to_replace.items():
+                line = line.replace(old_v, new_v)
+
             result.write(line)
 
+    return result
+
+
+def fill_empty_cells_from_previous(input: list[str]) -> list[str]:
+    """
+    Takes a list as input and returns another where empty elements
+    from the previous element.
+
+    ['','','a','','b',''] -> ['', '', 'a', 'a', 'b','b']
+
+    """
+    if not input:
+        return input
+
+    result = [input[0]]
+    for i in range(1, len(input)):
+        if input[i] == '':
+            result.append(input[i-1])
+        else:
+            result.append(input[i])
     return result
 
 
@@ -171,89 +247,70 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
 
     input.seek(0)
 
-    # find the line with the original column names
+    # This loop finds the line with the original column names and
+    # also the lines which
     column_names_line = None
+    column_option_lines = []
     for line in input:
-        if line.startswith('"Област') or line.startswith('"Регион'):
-            column_names_line = line.strip()
-            break
+        if column_names_line is None:
+            if line.startswith('"Област') or line.startswith('"Регион'):
+                column_names_line = line.strip()
+        else:
+            if line.startswith('""'):
+                column_option_lines.append(line.strip())
+            else:
+                break
+
     assert column_names_line, 'Cannot find line with column names.'
+    logger.debug('column_names_line: %s', column_names_line)
 
     output = StringIO()
 
-    # TODO: The code below is hard to read and understand
-    #       find out how to organize it better
-    #
-    next_special_line = input.readline()
-    if next_special_line.startswith('""'):
-        logger.debug('The line after the column names is special, will handle it')
-        # we have special line case
-        next_special_line = next_special_line.strip()
+    # get the original column lines, remove the double quotes
+    new_col_names = [
+        c.replace('"', '')
+        for c in column_names_line.split(',')
+    ]
+    logger.debug('new_col_names: %s', new_col_names)
 
-        if 'БЕЛ' in next_special_line:
-            #    Example:
-            #      "Област","Община","Населено място","Училище","Код по Админ","Явили се","Ср. успех в точки","Явили се","Ср. успех в точки"
-            #      "","","","","","БЕЛ","БЕЛ","МАТ","МАТ"
+    # In some files there are columns without name. These columns take
+    # the name of the previous column (this is usually subject name).
+    new_col_names = fill_empty_cells_from_previous(new_col_names)
+    logger.debug('new_col_names: %s', new_col_names)
 
-            logger.debug('The special line contains subject names')
-            new_col_names = []
-            for col_name, special_value in zip(column_names_line.split(','), next_special_line.split(',')):
-                col_name = refine_original_col_name(col_name)
-                special_value = refine_original_col_name(special_value)
+    # Merge the new column names with the values of the lines with column
+    # options
+    for option_line in column_option_lines:
+        options = [
+            c.replace('"', '')
+            for c in option_line.split(',')
+        ]
+        logger.debug('options: %s', options)
+        options = fill_empty_cells_from_previous(options)
+        logger.debug('options: %s', options)
+        ex_col_names = []
+        for col_name, option in zip(new_col_names, options):
+            new_col_name = f'{col_name} {option}'.strip()
+            ex_col_names.append(new_col_name)
+        new_col_names = ex_col_names
 
-                new_header = col_name if special_value == '' else col_name + ' ' + special_value
-                new_col_names.append(new_header)
-
-            new_col_names = order_attr_in_subject_column_names(new_col_names)
-            new_column_names_lines = ','.join(new_col_names) + os.linesep
-            logger.debug(new_column_names_lines)
-
-            output.write(new_column_names_lines)
-
-        if 'Явили се' in next_special_line:
-            # Example:
-            # "Област","Община","Населено място","Училище","Код по Админ","БЕЛ","","МАТ",""
-            # "","","","","","Явили се","Ср. успех в точки","Явили се","Ср. успех в точки"
-
-            logger.debug('The special line contains description of columns')
-
-            # fill in empty column names
-            column_names = column_names_line.split(',')
-            for i in range(len(column_names)):
-                if column_names[i] == '""':
-                    column_names[i] = column_names[i-1]
-
-            new_col_names = []
-
-            for col_name, special_value in zip(column_names, next_special_line.split(',')):
-                col_name = refine_original_col_name(col_name)
-                special_value = refine_original_col_name(special_value)
-
-                new_header = col_name if special_value == '' else special_value + ' ' + col_name
-                new_col_names.append(new_header)
-
-            new_col_names = order_attr_in_subject_column_names(new_col_names)
-            new_column_names_lines = ','.join(new_col_names) + os.linesep
-            logger.debug(new_column_names_lines)
-
-            output.write(new_column_names_lines)
-
-    else:
-        logger.debug('The line after the column names is not special, adding it to the output')
+        logger.debug('options: %s', options)
+        logger.debug('new_col_names: %s', new_col_names)
 
 
-        new_col_names = []
-        for c in column_names_line.split(','):
-            new_col_names.append(refine_original_col_name(c))
+    for i in range(len(new_col_names)):
+        new_col_names[i] = refine_original_col_name(new_col_names[i])
+    logger.debug('new_col_names: %s', new_col_names)
 
-        new_col_names = order_attr_in_subject_column_names(new_col_names)
-        new_column_names_line = ','.join(new_col_names) + os.linesep
-        logger.info('Translated column names: %s', new_column_names_line)
+    new_col_names = order_attr_in_subject_column_names(new_col_names)
+    logger.debug('new_col_names: %s', new_col_names)
 
-        output.write(new_column_names_line)
-        output.write(next_special_line)
+    new_column_names_lines = ','.join(new_col_names) + os.linesep
+    logger.debug('new_column_names_lines: %s', new_column_names_lines)
 
+    output.write(new_column_names_lines)
 
+    # add all other lines
     for line in input:
         output.write(line)
 
@@ -276,11 +333,14 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     # The score column in CSV files is with comman and pandas imports them
     # as string, not as float
     # Here we convert these columns to float type
-    numeric_cols = get_subject_column_names(data)
-    for numberic_col in numeric_cols:
-        fixed = data[numberic_col].replace(',', '.', regex=True)
+    subject_cols = get_subject_column_names(data)
+    for subject_col in subject_cols:
+        logger.debug('converting to float column %s', subject_col)
+        fixed = data[subject_col].replace(',', '.', regex=True)
+        # dzi-2022 contains one cell with value '('
+        fixed = fixed.replace('(',None)
         fixed = fixed.astype(float)
-        data[numberic_col] = fixed
+        data[subject_col] = fixed
 
 
     # In NVO 4th grade CSV files the subject columns (people and score) are
@@ -293,7 +353,11 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
             subj_cols.append(c)
         else:
             new_cols.append(c)
+
+    logger.debug('subject columns before sorting: %s', subj_cols)
     subj_cols = sorted(subj_cols)
+    logger.debug('subject columns after  sorting: %s', subj_cols)
+
     new_cols = [*new_cols, *subj_cols]
 
     data = data.loc[:, new_cols]
@@ -321,7 +385,7 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
     subject_cols_count = len(subject_cols)
     assert subject_cols_count > 0, 'Subject columns cannot be zero.'
     assert subject_cols_count % 2 == 0, \
-        f'Subject column count should be an even number, but it is {subject_cols_count}'
+        f'Subject column count should be an even number, but it is {subject_cols_count}. Columns are: {subject_cols}'
 
     cols_to_extract = ['school_admin_id', *subject_cols]
 
@@ -344,7 +408,7 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
         subject_name = subject_cols[0].split(' ')[SBJ_IDX]
         logger.debug('extracted subject_name -> %s', subject_name)
         assert subject_name in subject_cols[1], \
-            'The two columns do not contain the same subject name.'
+            f'The two columns do not contain the same subject name {subject_cols}'
 
         subject_name = subject_name.upper()
         logger.debug('subject_name -> %s', subject_name)
