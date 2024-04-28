@@ -515,7 +515,9 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
 
     # concat all subject data frames in one, sort by school_admin_id
     result = pd.concat(subject_df)
+    result = result[result['score'] > 0]
     result = result.sort_values('school_admin_id')
+
     return result
 
 
