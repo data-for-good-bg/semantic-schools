@@ -46,14 +46,16 @@ COL_RE_TRANSLATION_SPECIAL_POSITIONS = {
     'брой': 'people',
 }
 
-
+# Subject columns in the data frames are structured like this
+# 'БЕЛ people' and 'БЕЛ score'. The two constants are the indexes of
+# subject name and column name in such columns.
 SBJ_IDX = 0
 CN_IDX = 1
 
 
 def refine_original_col_name(value: str) -> str:
     """
-    This function changes original (or raw) column names.
+    This function changes original column names.
     * translates known texts from Bulgarian to English
     * lowers all letters
     * removes redundant information or characters
@@ -116,10 +118,20 @@ def order_attr_in_subject_column_names(col_names):
 
 
 def is_subject_column(col_name: str) -> bool:
+    """
+    Return True if the column is a subject column, otherwise False.
+    A subject column is column which carries information for the number of
+    people attended to examination of given subject ('<subj> people')
+    and the score for certain subject ('<subj> score').
+    """
     return col_name.endswith(' people') or col_name.endswith(' score')
 
 
 def get_subject_column_names(data: pd.DataFrame) -> list[str]:
+    """
+    From all columns of the specified data frame returns only the subject
+    columns.
+    """
     return [
         col
         for col in data.columns
@@ -129,38 +141,38 @@ def get_subject_column_names(data: pd.DataFrame) -> list[str]:
 
 def infer_max_possible_nvo_score(data: pd.DataFrame) -> float:
     """
-    Infers the max possible score for NVO based on the maximum score
-    found in the data frame.
+    Infers the max possible score based on the data found in the data frame.
 
-    The maximum possible score:
+    For NVO the maximum possible score:
     * was 65 points for several years
     * after that the max possible score is 100 points
-
     """
 
     assert 'score' in data.columns, \
         'The data frame should contain score column in order to infer the max possible score.'
     max_score = data['score'].max()
 
+    if max_score <= 6.00:
+        return 6.00
+
     if max_score <= 65.00:
         return 65.00
-    else:
-        return 100.00
+
+    return 100.00
 
 
 def load_csv(file: str) -> StringIO:
     # using 'utf-8-sig' encoding to handle the BOM csv files provided
     # by data.egov.bg
     # Some of the CSV files contain the BOM mark not only at the beginning
-    # of the file, also inside the first value on the first line.
-    # That's why below we replace the sequence '\ufeff' everywhere (this
-    # is the three byte representation of the BOM mark U+FEFF)
+    # of the file, but also inside the first value on the first line.
+    # That's why below we replace the sequence '\ufeff' everywhere.
     # https://en.wikipedia.org/wiki/Byte_order_mark
     # https://docs.python.org/3/howto/unicode.html
     # https://stackoverflow.com/questions/13590749/reading-unicode-file-data-with-bom-chars-in-python
 
     # The first unicode sequence is the BOM mark,
-    # The second one is another weird unicode sequence found in a column name
+    # The second one is another weird unicode sequence found in a column name.
     # The third item is because one of the files contains: "<BOM>""Област"""
     #   So the <BOM> will be replaced, then we handle the trippled quotes
     #   It is handled by this special way, because it is not good idea to handle
@@ -190,6 +202,9 @@ def fill_empty_cells_from_previous(input: list[str]) -> list[str]:
 
     ['','','a','','b',''] -> ['', '', 'a', 'a', 'b','b']
 
+    This is used to fill column names in the cases where the pair of columns
+    describe the same subject, but only one of them is filled.
+
     """
     if not input:
         return input
@@ -204,51 +219,109 @@ def fill_empty_cells_from_previous(input: list[str]) -> list[str]:
 
 
 def refine_csv_column_names(input: StringIO) -> StringIO:
-    # The NVO 7th grade CSV files first several lines describe the structure
-    # of the file, but there are variations:
-    # 1. NVO 7th grade 2016 - not handled yet
-    # 2. NVO 7th grade 2018
-    #    The first three lines describe the maximum possible score for the two
-    #    subjects. These three lines are skipped, the maximum possible score
-    #    will be inferred.
-    # 3. NVO 7th grade 2019, 2020, 2022
-    #    There first line contains the column names, there are no any
-    #    special lines
-    # 4. NVO 7th grade 2021
-    #    The first line contains the column names, the second line contains
-    #    abbriviations of the subjects in the columns where values for the
-    #    corresponding subjects are stored
-    # 5. NVO 7th grade 2023
-    #    There are four lines describing the maximum possible score for
-    #    each subject.
-    #    The fifth line contains the column names, in this case the subject
-    #    names are in this line.
-    #    The sixth line contains the column names for umuber of people and
-    #    score.
-    #    We'll infer the maximum possible score.
-    #
-    #
-    # NB1
-    # The common pattern in all cases is the line containing "Област",....
-    # We'll skip everything until that line.
-    # Then we may or may not handle the next line.
-    #
-    # NB2
-    # In some files column names are paired by subject, i.e. we have
-    # 'Явили се subj-x','Ср. успех в точки subj-x','Явили се subj-y','Ср. успех в точки subj-y'
-    # In other files that's not true.
-    # That's why this function also changes the column names to contain
-    # the subject in at the benning of the name. After the columns are translated
-    # and re-organized they will look like this.
-    # 'subj-x people','subj-y people','subj-x score','subj-y score'
-    # Later the whole dataframe will be organized in such way that the
-    # columns are paired by subject
-    #
+    """
+    The function gets the raw CSV input removes all non-CSV lines and
+    more importantly - re-organizes the CSV column names in a way which
+    is easier for automatic processing.
+
+    There CSV files for NVO and DZI come in several formats.
+
+    Currently this function supports several variations and does not
+    support these files:
+    * dzi-2016 -> contains three columns "Училище" and does not contain "Код по Админ"
+    * nvo-4-2015 -> does not contain "Код по Админ".
+    * nvo-7-2016 -> does not contain "Код по Админ"
+
+    Rest of the CSV files are in a form which this function (and tool) supports.
+
+    Here are more details about the supported formats and their variations:
+
+    1. All supported formats contain a line with column names which starts with
+    column Област or in one case Регион.
+
+    Examples:
+    * nvo-4-2019
+        "Област","Община","Населено място","Код","Училище","Явили се МАТ","Явили се БЕЛ","Явили се ЧО","Явили се ЧП","Ср. успех в точки МАТ","Ср. успех в точки БЕЛ","Ср. успех в точки ЧО","Ср. успех в точки ЧП"
+    * nvo-4-2022
+        "Област","Община","Населено място","Училище","Код по АДМИН","БЕЛ Явили се","БЕЛ Ср. успех в точки","МАТ Явили се","МАТ  Ср. успех в точки"
+
+    2. In some cases this line is preceeded by several additional lines
+    which describe what the file is about. These lines are not well structured
+    and this function ignores them.
+    There's loop below which skips all lines before the line starting with
+    'Област'.
+
+    Examples: nvo-7-2018
+
+    3. In scome case the line with column names is followed by one or two
+    lines which contain additional descriptors (or options) for the columns.
+
+    Several examples:
+    * nvo-4-2023
+        "Област","Община","Населено място","Училище","Код по Админ","БЕЛ","","МАТ",""
+        "","","","","","Явили се","Ср. успех в точки","Явили се","Ср. успех в точки"
+
+    * nvo-7-2021
+        "Област","Община","Населено място","Училище","Код по Админ","Явили се","Ср. успех в точки","Явили се","Ср. успех в точки"
+        "","","","","","БЕЛ","БЕЛ","МАТ","МАТ"
+
+    * dzi-2023
+            "Област","Община","Населено място","Училище","Код по Админ","БЕЛ(ООП)","","Мат(ПП)","","Ист(ПП)","".....
+            "","","","","","З","","З","","З","".......
+            "","","","","","Бр.","Ср.усп.","Бр.","Ср.усп.","Бр.","Ср.усп."......
+
+    These two or three lines are merged by concatenating the values with
+    space as separator (only where options are non-empty).
+
+    For nvo-4-2023 we'll have columns like:
+    "БЕЛ Явили се", "БЕЛ Ср. успех в точки"
+
+    For nvo-7-2021 wе'll have columns like:
+    "Явили се БЕЛ" "Ср. успех в точки БЕЛ"
+
+    For dzi-2023 we'll have columns like:
+    "БЕЛ(ООП) З Бр.", "БЕЛ(ООП) З Ср.усп."
+
+    NB: In dzi-2023 example there is colimn "БЕЛ(ПП)" followed by empty column,
+    then "Мат(ПП)" and again empty column. The empty columns are filled
+    from their preceeding column.
+
+    ---
+
+    In all three variations the function constructs a single line
+    with column names.
+    After that this line is partially translated to english. All variations
+    of 'Явили се' are translated to the term 'people', all variations of
+    'Среден успех' are translated to 'score.
+    The function does also some other replacements in order to remove
+    insignificant data.
+
+    As it is shown in the examples above there are files where 'Явили се' and
+    'Среден успех' are at the beginning of the column name, in other files
+    it is at the end of the column name.
+
+    After the translation we have 'people' and 'score' either at the beginning
+    or at the end of the column names.
+
+    The function re-organizes this by putting the subject name at the beginning
+    in all subject columns, all of them become:
+    'БЕЛ score', 'БЕЛ people', 'MAT score', 'MAT people', ....
+
+    This way we can sort the columns by subject name. This is important
+    because in some files the subject columns are paired, but in some files
+    we have 'Явили се' columns for all subjects, then 'Среден успех' columns
+    for all subjects.
+
+    At the end this function retruns the input StringIO changed to contain
+    only one line with column names. This way it is ready to be imported
+    by  Pandas.
+
+    """
 
     input.seek(0)
 
     # This loop finds the line with the original column names and
-    # also the lines which
+    # also the lines which contain additional column options
     column_names_line = None
     column_option_lines = []
     for line in input:
@@ -274,7 +347,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     logger.debug('new_col_names: %s', new_col_names)
 
     # In some files there are columns without name. These columns take
-    # the name of the previous column (this is usually subject name).
+    # the name of the previous column.
     new_col_names = fill_empty_cells_from_previous(new_col_names)
     logger.debug('new_col_names: %s', new_col_names)
 
@@ -288,8 +361,12 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
         logger.debug('options: %s', options)
         options = fill_empty_cells_from_previous(options)
         logger.debug('options: %s', options)
+
+        # merge new_col_names with the current options and produce
+        # list with the merged values
         ex_col_names = []
         for col_name, option in zip(new_col_names, options):
+            # strip is important for the empty options
             new_col_name = f'{col_name} {option}'.strip()
             ex_col_names.append(new_col_name)
         new_col_names = ex_col_names
@@ -297,20 +374,22 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
         logger.debug('options: %s', options)
         logger.debug('new_col_names: %s', new_col_names)
 
-
+    # translate  columns
     for i in range(len(new_col_names)):
         new_col_names[i] = refine_original_col_name(new_col_names[i])
     logger.debug('new_col_names: %s', new_col_names)
 
+    # organize all subject column names to contain subject at the beginning
     new_col_names = order_attr_in_subject_column_names(new_col_names)
     logger.debug('new_col_names: %s', new_col_names)
 
+    # construct the new column names line
     new_column_names_lines = ','.join(new_col_names) + os.linesep
     logger.debug('new_column_names_lines: %s', new_column_names_lines)
 
     output.write(new_column_names_lines)
 
-    # add all other lines
+    # copy add all other lines into the result
     for line in input:
         output.write(line)
 
