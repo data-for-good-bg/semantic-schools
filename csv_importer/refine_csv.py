@@ -39,7 +39,7 @@ COL_RE_TRANSLATION = {
     '\)з': ')-з', # there's one special case in dzi-2022
     ' \(мах 100 т\)': '', #nov-4-2018
     '\(пп\)': '', # dzi-2022
-    '\(ооп\) ': '', # dzi-2022
+    '\(ооп\)': '', # dzi-2022
     ' з': '-з',
     ' (b1-|b1.1-|b2-)з': r'-\1з',
 
@@ -420,6 +420,10 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     # convert school id column to str
     data['school_admin_id'] = data['school_admin_id'].astype(str)
 
+    # dzi-2018 contains two rows for РУО, those rows do not have place, that's
+    # why we delete these rows
+    data = data[data['place'].isna() == False]
+
     # Conver people columns to int
     people_cols = [c for c in data.columns if is_people_column(c)]
     for c in people_cols:
@@ -547,7 +551,7 @@ def main():
     print(schools_data.loc[:3])
 
     scores_data = extract_scores_data(refined_data)
-    print(scores_data.loc[:3])
+    print(scores_data)
 
 
 if __name__ == '__main__':

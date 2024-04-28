@@ -26,11 +26,18 @@ def get_prety_place(value: str) -> str:
     """
     Formats cities and villages in standard way.
     """
-    if '.' in value:
-        prefix, name = value.split('.')
-        return f'{prefix.lower()}. {name.title()}'
-    else:
-        return value.title()
+    if not value:
+        return value
+
+    try:
+        if '.' in value:
+            prefix, name = value.split('.')
+            return f'{prefix.lower()}. {name.title()}'
+        else:
+                return value.title()
+    except:
+        logger.error('Failed to make prety place from value %s', value)
+        raise
 
 
 def get_max_value(session: Session, int_column: Column) -> int:
