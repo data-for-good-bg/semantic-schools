@@ -424,7 +424,7 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     people_cols = [c for c in data.columns if is_people_column(c)]
     for c in people_cols:
         logger.debug('converting to int people column %s', c)
-        data[c] = data[c].fillna(-1).astype(int)
+        data[c] = data[c].fillna(-1).astype('int32')
 
 
     # Conver score columns to float
@@ -526,7 +526,7 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
         subject_df.append(df)
 
     # concat all subject data frames in one, sort by school_admin_id
-    result = pd.concat(subject_df)
+    result = pd.concat(subject_df, ignore_index=True)
     result = result[result['score'] > 0]
     result = result.sort_values('school_admin_id')
 
