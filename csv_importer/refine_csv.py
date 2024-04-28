@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 
+"""
+This script provides functoins for working with NVO and DZI CSV files provided
+by data.egov.bg.
+
+It is supposed that these functions will be used by another script which
+will convert/import the data somewhere.
+
+It can be used as a standalone app by passing one CSV file to it. This is
+dev use case - it calls all main functions on the provided CSV file.
+
+"""
+
 import pandas as pd
 import sys
 import logging

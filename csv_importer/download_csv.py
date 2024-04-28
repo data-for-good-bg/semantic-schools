@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 
+
+"""
+Script for downloading CSV files from data.egov.bg portal.
+"""
+
 import sys
 import os
 import logging
@@ -19,14 +24,12 @@ def main():
             line = line.strip()
             if not line or line.startswith('#'):
                 continue
-            name, url = line.split(',')
-            if url:
-                filename = url.split('/')[-1]
-                target_file = os.path.join(DOWNLOAD_DIR, f'{name}-{filename}.csv')
+            name, resource_id = line.split(',')
+            if resource_id:
+                target_file = os.path.join(DOWNLOAD_DIR, f'{name}-{resource_id}.csv')
 
                 if not os.path.exists(target_file):
-                    # TODO: fix this
-                    url = f'https://data.egov.bg/resource/download/{filename}/csv'
+                    url = f'https://data.egov.bg/resource/download/{resource_id}/csv'
                     logger.info('Downloading %s to %s', url, target_file)
 
                     with requests.get(f'{url}', stream=True) as r:
@@ -35,7 +38,7 @@ def main():
                             for chunk in r.iter_content(chunk_size=8192):
                                 f.write(chunk)
                 else:
-                    logger.info('URL %s is already downloaed to %s', url, target_file)
+                    logger.info('Resource %s is already downloaed to %s', resource_id, target_file)
 
 
 if __name__ == '__main__':
