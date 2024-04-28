@@ -217,12 +217,11 @@ def fill_empty_cells_from_previous(input: list[str]) -> list[str]:
     if not input:
         return input
 
-    result = [input[0]]
-    for i in range(1, len(input)):
-        if input[i] == '':
-            result.append(input[i-1])
-        else:
-            result.append(input[i])
+    result = input.copy()
+    for i in range(1, len(result)):
+        if result[i] == '':
+            result[i] = result[i-1]
+
     return result
 
 
