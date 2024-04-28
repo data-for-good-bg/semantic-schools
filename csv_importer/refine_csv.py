@@ -117,6 +117,14 @@ def order_attr_in_subject_column_names(col_names):
     return result
 
 
+def is_people_column(col_name: str) -> bool:
+    return col_name.endswith(' people')
+
+
+def is_score_column(col_name: str) -> bool:
+    return col_name.endswith(' score')
+
+
 def is_subject_column(col_name: str) -> bool:
     """
     Return True if the column is a subject column, otherwise False.
@@ -124,19 +132,7 @@ def is_subject_column(col_name: str) -> bool:
     people attended to examination of given subject ('<subj> people')
     and the score for certain subject ('<subj> score').
     """
-    return col_name.endswith(' people') or col_name.endswith(' score')
-
-
-def get_subject_column_names(data: pd.DataFrame) -> list[str]:
-    """
-    From all columns of the specified data frame returns only the subject
-    columns.
-    """
-    return [
-        col
-        for col in data.columns
-        if is_subject_column(col)
-    ]
+    return is_people_column(col_name) or is_score_column(col_name)
 
 
 def infer_max_possible_nvo_score(data: pd.DataFrame) -> float:
@@ -409,17 +405,25 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     # Here we remove all spaces from it.
     data['school_admin_id'] = data['school_admin_id'].replace(' ', '', regex=True)
 
-    # The score column in CSV files is with comman and pandas imports them
-    # as string, not as float
-    # Here we convert these columns to float type
-    subject_cols = get_subject_column_names(data)
-    for subject_col in subject_cols:
-        logger.debug('converting to float column %s', subject_col)
-        fixed = data[subject_col].replace(',', '.', regex=True)
+    # convert school id column to str
+    data['school_admin_id'] = data['school_admin_id'].astype(str)
+
+    # Conver people columns to int
+    people_cols = [c for c in data.columns if is_people_column(c)]
+    for c in people_cols:
+        logger.debug('converting to int people column %s', c)
+        data[c] = data[c].fillna(-1).astype(int)
+
+
+    # Conver score columns to float
+    score_cols = [c for c in data.columns if is_score_column(c)]
+    for c in score_cols:
+        logger.debug('converting to float score column %s', c)
+        fixed = data[c].replace(',', '.', regex=True)
         # dzi-2022 contains one cell with value '('
         fixed = fixed.replace('(',None)
         fixed = fixed.astype(float)
-        data[subject_col] = fixed
+        data[c] = fixed
 
 
     # In NVO 4th grade CSV files the subject columns (people and score) are
@@ -460,7 +464,7 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
     This means tha for every pair (people, score) it generates a line for
     the corresponding school.
     """
-    subject_cols = get_subject_column_names(data)
+    subject_cols = [c for c in data.columns if is_subject_column(c)]
     subject_cols_count = len(subject_cols)
     assert subject_cols_count > 0, 'Subject columns cannot be zero.'
     assert subject_cols_count % 2 == 0, \
