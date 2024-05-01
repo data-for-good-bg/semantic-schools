@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:14-bookworm
+    shm_size: 128mb
+    environment:
+      - POSTGRES_PASSWORD=data-for-good
+      - POSTGRES_DB=eddata
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - "./pgdata:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"

@@ -22,24 +22,6 @@ PLACE = 'place'
 logger = logging.getLogger(__name__)
 
 
-def get_prety_place(value: str) -> str:
-    """
-    Formats cities and villages in standard way.
-    """
-    if not value:
-        return value
-
-    try:
-        if '.' in value:
-            prefix, name = value.split('.')
-            return f'{prefix.lower()}. {name.title()}'
-        else:
-                return value.title()
-    except:
-        logger.error('Failed to make prety place from value %s', value)
-        raise
-
-
 def get_max_value(session: Session, int_column: Column) -> int:
     cur = session.execute(
         func.max(int_column)
@@ -62,7 +44,6 @@ def insert_region(session: Session, region: str) -> int:
         logger.debug('Found region "%s" with id %d', region, first[0])
         return first[0]
 
-    # TODO: sqlite specific
     id_max = get_max_value(session, Region.c.id)
 
     id = id_max + 1
@@ -179,11 +160,6 @@ def insert_school(session: Session, place_id: int, school_id: str, school_name: 
 
 
 def import_schools(db: Engine, schools: pd.DataFrame) -> None:
-
-    # format in standard way several columns
-    schools[REGION] = schools[REGION].str.title()
-    schools[MUN] = schools[MUN].str.title()
-    schools[PLACE] = schools[PLACE].apply(get_prety_place)
 
     schools = schools.sort_values(by=[REGION, MUN, PLACE])
 
@@ -327,8 +303,13 @@ def main():
     scores_data = extract_scores_data(refined_data)
     logger.info('Successfully extracted scores data.')
 
-    db_path = os.path.join(os.path.dirname(__file__), 'sqlite', 'data.db')
-    db_url = f'sqlite:///{db_path}'
+    # NB: to work with sqlite uncomment these lines
+    # db_path = os.path.join(os.path.dirname(__file__), 'sqlite', 'data.db')
+    # db_url = f'sqlite:///{db_path}'
+
+    # NB: to work with postgre use this line
+    db_url = f'postgresql://postgres:data-for-good@localhost/eddata'
+
     db = create_engine(db_url)
 
     import_schools(db, schools_data)
