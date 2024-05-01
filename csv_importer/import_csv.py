@@ -303,13 +303,8 @@ def main():
     scores_data = extract_scores_data(refined_data)
     logger.info('Successfully extracted scores data.')
 
-    # NB: to work with sqlite uncomment these lines
-    # db_path = os.path.join(os.path.dirname(__file__), 'sqlite', 'data.db')
-    # db_url = f'sqlite:///{db_path}'
-
-    # NB: to work with postgre use this line
-    db_url = f'postgresql://postgres:data-for-good@localhost/eddata'
-
+    # example sqlite URL: f'sqlite:///{os.path.join(os.path.dirname(__file__), 'sqlite', 'data.db')}'
+    db_url = os.environ.get('DB_URL', 'postgresql://postgres:data-for-good@localhost/eddata')
     db = create_engine(db_url)
 
     import_schools(db, schools_data)
