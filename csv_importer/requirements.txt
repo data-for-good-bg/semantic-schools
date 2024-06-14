@@ -1,2 +1,4 @@
 pandas==2.2.2
 requests==2.31.0
+SQLAlchemy==2.0.29
+alembic==1.13.1
