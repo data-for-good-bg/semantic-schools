@@ -39,7 +39,7 @@ COL_RE_TRANSLATION = {
     '\)з': ')-з', # there's one special case in dzi-2022
     ' \(мах 100 т\)': '', #nov-4-2018
     '\(пп\)': '', # dzi-2022
-    '\(ооп\) ': '', # dzi-2022
+    '\(ооп\)': '', # dzi-2022
     ' з': '-з',
     ' (b1-|b1.1-|b2-)з': r'-\1з',
 
@@ -217,12 +217,11 @@ def fill_empty_cells_from_previous(input: list[str]) -> list[str]:
     if not input:
         return input
 
-    result = [input[0]]
-    for i in range(1, len(input)):
-        if input[i] == '':
-            result.append(input[i-1])
-        else:
-            result.append(input[i])
+    result = input.copy()
+    for i in range(1, len(result)):
+        if result[i] == '':
+            result[i] = result[i-1]
+
     return result
 
 
@@ -420,11 +419,15 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     # convert school id column to str
     data['school_admin_id'] = data['school_admin_id'].astype(str)
 
+    # dzi-2018 contains two rows for РУО, those rows do not have place, that's
+    # why we delete these rows
+    data = data[data['place'].isna() == False]
+
     # Conver people columns to int
     people_cols = [c for c in data.columns if is_people_column(c)]
     for c in people_cols:
         logger.debug('converting to int people column %s', c)
-        data[c] = data[c].fillna(-1).astype(int)
+        data[c] = data[c].fillna(-1).astype('int32')
 
 
     # Conver score columns to float
@@ -526,7 +529,7 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
         subject_df.append(df)
 
     # concat all subject data frames in one, sort by school_admin_id
-    result = pd.concat(subject_df)
+    result = pd.concat(subject_df, ignore_index=True)
     result = result[result['score'] > 0]
     result = result.sort_values('school_admin_id')
 
@@ -547,7 +550,7 @@ def main():
     print(schools_data.loc[:3])
 
     scores_data = extract_scores_data(refined_data)
-    print(scores_data.loc[:3])
+    print(scores_data)
 
 
 if __name__ == '__main__':
