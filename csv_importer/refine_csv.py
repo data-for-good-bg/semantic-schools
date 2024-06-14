@@ -423,6 +423,40 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     # why we delete these rows
     data = data[data['place'].isna() == False]
 
+    # unify all variations of Чужбина regions/municipalities
+    def _unify_foreign_country(v):
+        if 'чужбина' in v.lower():
+            return 'Чужбина'
+        else:
+            return v
+
+    data['region'] = data['region'].apply(_unify_foreign_country)
+    data['region'] = data['region'].str.title()
+
+    data['municipality'] = data['municipality'].apply(_unify_foreign_country)
+    data['municipality'] = data['municipality'].str.title()
+
+
+    def _get_prety_place(value: str) -> str:
+        """
+        Formats cities and villages in standard way.
+        """
+        if not value:
+            return value
+
+        try:
+            if '.' in value:
+                prefix, name = value.split('.')
+                return f'{prefix.strip().lower()}. {name.strip().title()}'
+            else:
+                    return value.strip().title()
+        except:
+            logger.error('Failed to make prety place from value %s', value)
+            raise
+
+    data['place'] = data['place'].apply(_get_prety_place)
+
+
     # Conver people columns to int
     people_cols = [c for c in data.columns if is_people_column(c)]
     for c in people_cols:
