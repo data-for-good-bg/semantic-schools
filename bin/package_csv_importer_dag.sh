@@ -29,6 +29,7 @@ cp_file() {
 
 
 cp_file "$REPO_DIR/dags/dag_csv_importer.py" "$build_dir"
+touch "$build_dir/__init__.py"
 
 dst_csv_importer_dir="$build_dir/csv_importer"
 mkdir -p "$dst_csv_importer_dir"
