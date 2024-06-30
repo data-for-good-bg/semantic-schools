@@ -1,7 +1,7 @@
 import os
 import requests
 from tempfile import NamedTemporaryFile
-from datetime import date
+import pendulum
 
 from airflow.decorators import dag, task
 from airflow.models.param import Param
@@ -11,7 +11,7 @@ from airflow.models import Variable
 @dag(
     dag_id='educational_data_csv_importer',
     schedule=None,
-    start_date=date(2024, 1, 1),
+    start_date=pendulum.datetime(2024, 1, 1, tz="UTC"),
     catchup=False,
     tags=['schools', 'educational', 'nvo', 'dzi'],
     params={
