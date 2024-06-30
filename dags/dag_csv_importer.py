@@ -51,7 +51,7 @@ def educational_data_csv_importer():
         logger.info(f'Will download url: {csv_to_import_url}')
         with requests.get(csv_to_import_url, stream=True) as r:
             r.raise_for_status()
-            with NamedTemporaryFile(delete_on_close=False, mode='wb') as f:
+            with NamedTemporaryFile(delete=False, mode='wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
 
