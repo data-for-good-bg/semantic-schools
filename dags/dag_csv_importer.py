@@ -1,9 +1,13 @@
 import os
 import pendulum
+import logging
 
 from airflow.decorators import dag, task
 from airflow.models.param import Param
 from airflow.models import Variable
+
+
+logger = logging.getLogger(__name__)
 
 
 @dag(
@@ -41,6 +45,7 @@ def educational_data_csv_importer():
         from tempfile import NamedTemporaryFile
 
         csv_to_import_url = params['csv_to_import_url']
+        logger.info(f'Will download url: {csv_to_import_url}')
         with requests.get(csv_to_import_url, stream=True) as r:
             r.raise_for_status()
             with NamedTemporaryFile(delete_on_close=False, mode='wb') as f:
@@ -59,6 +64,7 @@ def educational_data_csv_importer():
         from csv_importer.import_csv import import_file
 
         prepare_env_vars()
+        logger.info(f'Will import file: {csv_file}')
         import_file(csv_file)
         os.unlink(csv_file)
 
