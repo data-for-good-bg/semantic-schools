@@ -14,7 +14,8 @@ import requests
 logger = logging.getLogger(__name__)
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
-DOWNLOAD_DIR = os.environ.get('DOWNLOAD_DIR', os.path.join(SCRIPT_DIR, 'downloads'))
+CSV_IMPORTER_DIR = os.path.dirname(SCRIPT_DIR)
+DOWNLOAD_DIR = os.environ.get('DOWNLOAD_DIR', os.path.join(CSV_IMPORTER_DIR, 'downloads'))
 
 
 def main():

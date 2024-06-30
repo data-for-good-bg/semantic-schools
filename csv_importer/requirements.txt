@@ -1,5 +1,6 @@
 pandas==2.2.2
 requests==2.31.0
-SQLAlchemy==2.0.29
+# the version of SQLAlchemy comes from the apache-airflow requirements
+SQLAlchemy==1.4.52
 alembic==1.13.1
-psycopg2-binary
+psycopg2-binary==2.9.9

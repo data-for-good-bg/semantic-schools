@@ -1,6 +1,6 @@
 from sqlalchemy import (
     MetaData, Table, Column,
-    Integer, String, ForeignKey, Identity, Double
+    Integer, String, ForeignKey, Identity, Numeric
 )
 
 Models = MetaData()
@@ -62,6 +62,6 @@ ExaminationScore: Table = Table(
     Column('subject_specifier', String(10), nullable=False, primary_key=True),
 
     Column('people', Integer),
-    Column('score', Double),
-    Column('max_possible_score', Double)
+    Column('score', Numeric),
+    Column('max_possible_score', Numeric)
 )

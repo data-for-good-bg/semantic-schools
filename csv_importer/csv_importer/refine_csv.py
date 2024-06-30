@@ -34,6 +34,7 @@ COL_RE_TRANSLATION = {
     'населено  място': 'place',
     'училище': 'school',
     'код по админ': 'school_admin_id',
+    'код по неиспуо': 'school_admin_id',
     'код': 'school_admin_id',
     'mat': 'мат',
     '\)з': ')-з', # there's one special case in dzi-2022
@@ -42,7 +43,6 @@ COL_RE_TRANSLATION = {
     '\(ооп\)': '', # dzi-2022
     ' з': '-з',
     ' (b1-|b1.1-|b2-)з': r'-\1з',
-
 }
 
 # List of regular expressions which will be translated only if they
@@ -159,6 +159,7 @@ def infer_max_possible_nvo_score(data: pd.DataFrame) -> float:
     assert 'score' in data.columns, \
         'The data frame should contain score column in order to infer the max possible score.'
     max_score = data['score'].max()
+    logger.debug('max score value calculated is: %s', max_score)
 
     if max_score <= 6.00:
         return 6.00
