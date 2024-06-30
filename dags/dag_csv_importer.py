@@ -37,7 +37,7 @@ def educational_data_csv_importer():
 
     @task.external_python(
         python=PATH_TO_VENV_PYTHON_BINARY,
-        op_kwargs={
+        templates_dict={
             'csv_to_import_url': '{{ params.csv_to_import_url }}'
         }
     )
