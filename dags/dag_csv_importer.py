@@ -37,12 +37,12 @@ def educational_data_csv_importer():
 
     @task.external_python(
         python=PATH_TO_VENV_PYTHON_BINARY,
-        templates_dict={
+        op_kwargs={
             'csv_to_import_url': '{{ params.csv_to_import_url }}'
         }
     )
     def download_csv_file(**kwargs):
-        csv_to_import_url = kwargs['templates_dict']['csv_to_import_url']
+        csv_to_import_url = kwargs['csv_to_import_url']
         with requests.get(csv_to_import_url, stream=True) as r:
             r.raise_for_status()
             with NamedTemporaryFile(delete_on_close=False, mode='wb') as f:
