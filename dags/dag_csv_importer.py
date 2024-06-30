@@ -8,9 +8,6 @@ from airflow.models.param import Param
 from airflow.models import Variable
 
 
-from csv_importer.import_csv import import_file
-
-
 VENVS_ROOT = Variable.get('venvs_root')
 PATH_TO_VENV_PYTHON_BINARY = os.path.join(VENVS_ROOT, 'eddata_csv_importer')
 
@@ -61,6 +58,8 @@ def educational_data_csv_importer():
         python=PATH_TO_VENV_PYTHON_BINARY,
     )
     def import_csv(csv_file: str):
+        from csv_importer.import_csv import import_file
+
         prepare_env_vars()
         import_file(csv_file)
 
