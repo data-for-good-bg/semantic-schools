@@ -1,0 +1,7 @@
+-r ../csv_importer/requirements.txt
+
+# There's conflict between the above requirement file and the airflow requirements
+# so currently venv with all of the can be created by manually installing the above
+# file, then apache-airflow.
+#
+# apache-airflow==2.8.4

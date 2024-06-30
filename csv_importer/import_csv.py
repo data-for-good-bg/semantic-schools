@@ -284,10 +284,7 @@ def extract_examination_attributes(filename: str):
     return examination_type, grade, year
 
 
-def main():
-
-    csv_file = sys.argv[1]
-
+def import_file(csv_file: str):
     examination_type, grade, year = extract_examination_attributes(csv_file)
 
     logger.info('Importing file %s', csv_file)
@@ -310,6 +307,13 @@ def main():
     import_schools(db, schools_data)
 
     import_scores(db, examination_type, year, grade, scores_data)
+
+
+def main():
+
+    csv_file = sys.argv[1]
+    import_file(csv_file)
+
 
 if __name__ == '__main__':
     log_level = logging.DEBUG if os.environ.get('DEBUG', 'no') == 'yes' else logging.INFO
