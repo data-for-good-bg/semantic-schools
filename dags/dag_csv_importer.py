@@ -47,9 +47,7 @@ def educational_data_csv_importer():
                     f.write(chunk)
 
 
-                return {
-                    'csv_file': f.name
-                }
+                return f.name
 
 
     @task.external_python(
@@ -61,7 +59,7 @@ def educational_data_csv_importer():
         prepare_env_vars()
         import_file(csv_file)
 
-    download_csv_file >> import_csv
+    import_csv(download_csv_file())
 
 
 educational_data_csv_importer()
