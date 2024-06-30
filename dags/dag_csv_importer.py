@@ -11,12 +11,8 @@ from airflow.models import Variable
 from csv_importer.import_csv import import_file
 
 
-# We assume this file is placed in a `dags` directory which is next to
-# the `csv_importer/venv` directory, containing a venv for our ExternalPythonOperators
-PATH_TO_VENV_PYTHON_BINARY = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), '..', 'csv_importer', 'venv', 'bin', 'python'
-)
-
+VENVS_ROOT = Variable.get('venvs_root')
+PATH_TO_VENV_PYTHON_BINARY = os.path.join(VENVS_ROOT, 'eddata_csv_importer')
 
 
 @dag(
