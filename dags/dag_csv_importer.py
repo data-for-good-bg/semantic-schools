@@ -24,7 +24,7 @@ from airflow.models import Variable
 def educational_data_csv_importer():
 
     VENVS_ROOT = Variable.get('VENVS_ROOT')
-    PATH_TO_VENV_PYTHON_BINARY = os.path.join(VENVS_ROOT, 'eddata_csv_importer')
+    PATH_TO_VENV_PYTHON_BINARY = os.path.join(VENVS_ROOT, 'eddata_csv_importer', 'bin', 'python3')
 
     def prepare_env_vars():
         db_host = Variable.get('EDDATA_DB_HOST')
