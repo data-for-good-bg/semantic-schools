@@ -41,7 +41,7 @@ def educational_data_csv_importer():
             'csv_to_import_url': '{{ params.csv_to_import_url }}'
         }
     )
-    def download_csv_file(csv_to_import_url):
+    def download_csv_file(*, csv_to_import_url):
         with requests.get(csv_to_import_url, stream=True) as r:
             r.raise_for_status()
             with NamedTemporaryFile(delete_on_close=False, mode='wb') as f:
