@@ -43,6 +43,9 @@ def educational_data_csv_importer():
     def download_csv_file(params):
         import requests
         from tempfile import NamedTemporaryFile
+        import logging
+
+        logger = logging.getLogger(__name__)
 
         csv_to_import_url = params['csv_to_import_url']
         logger.info(f'Will download url: {csv_to_import_url}')
@@ -62,6 +65,9 @@ def educational_data_csv_importer():
     def import_csv(csv_file: str):
         import os
         from csv_importer.import_csv import import_file
+        import logging
+
+        logger = logging.getLogger(__name__)
 
         prepare_env_vars()
         logger.info(f'Will import file: {csv_file}')
