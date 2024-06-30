@@ -6,7 +6,6 @@ import pendulum
 from airflow.decorators import dag, task
 from airflow.models.param import Param
 from airflow.models import Variable
-from airflow.operators.python import get_current_context
 
 
 @dag(
@@ -40,6 +39,8 @@ def educational_data_csv_importer():
         python=PATH_TO_VENV_PYTHON_BINARY
     )
     def download_csv_file():
+        from airflow.operators.python import get_current_context
+
         context = get_current_context()
         csv_to_import_url = context['params']['csv_to_import_url']
         with requests.get(csv_to_import_url, stream=True) as r:
