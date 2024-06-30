@@ -1,6 +1,4 @@
 import os
-import requests
-from tempfile import NamedTemporaryFile
 import pendulum
 
 from airflow.decorators import dag, task
@@ -39,6 +37,9 @@ def educational_data_csv_importer():
         python=PATH_TO_VENV_PYTHON_BINARY
     )
     def download_csv_file(params):
+        import requests
+        from tempfile import NamedTemporaryFile
+
         csv_to_import_url = params['csv_to_import_url']
         with requests.get(csv_to_import_url, stream=True) as r:
             r.raise_for_status()
@@ -54,10 +55,12 @@ def educational_data_csv_importer():
         python=PATH_TO_VENV_PYTHON_BINARY,
     )
     def import_csv(csv_file: str):
+        import os
         from csv_importer.import_csv import import_file
 
         prepare_env_vars()
         import_file(csv_file)
+        os.unlink(csv_file)
 
     import_csv(download_csv_file())
 
