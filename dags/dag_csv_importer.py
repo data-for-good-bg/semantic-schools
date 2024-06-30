@@ -36,7 +36,8 @@ def educational_data_csv_importer():
 
 
     @task.external_python(
-        python=PATH_TO_VENV_PYTHON_BINARY
+        python=PATH_TO_VENV_PYTHON_BINARY,
+        use_dill=True
     )
     def download_csv_file(**kwargs):
         csv_to_import_url = kwargs['params']['csv_to_import_url']
