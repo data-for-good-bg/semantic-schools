@@ -64,7 +64,7 @@ def educational_data_csv_importer():
     )
     def import_csv(csv_file: str):
         import os
-        from .csv_importer.import_csv import import_file
+        from csv_importer.import_csv import import_file
         import logging
 
         logger = logging.getLogger(__name__)
