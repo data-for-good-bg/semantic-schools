@@ -34,7 +34,7 @@ dst_csv_importer_dir="$build_dir/csv_importer"
 mkdir -p "$dst_csv_importer_dir"
 
 src_csv_importer_dir="$REPO_DIR/csv_importer"
-src_files=("import_csv.py" "refine_csv.py" "models.py")
+src_files=("import_csv.py" "refine_csv.py" "models.py" "__init__.py")
 
 
 for item in "${src_files[@]}"; do
