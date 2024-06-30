@@ -1,0 +1,7 @@
+[project]
+name = "csv-importer"
+version = "0.0.1"
+requires-python = ">= 3.8"
+
+[tool.setuptools]
+py-modules = ["__init__", "refine_csv", "import_csv", "models"]
