@@ -8,7 +8,7 @@ from .refine_csv import (
     load_csv, refine_csv_column_names, refine_data,
     extract_school_data, extract_scores_data
 )
-from models import Region, Municipality, Place, School, Examination, ExaminationScore
+from .models import Region, Municipality, Place, School, Examination, ExaminationScore
 from sqlalchemy import create_engine, Engine, insert, select, func, Column, update
 from sqlalchemy.orm import Session
 
