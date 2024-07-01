@@ -29,7 +29,7 @@ def educational_data_csv_importer():
     PATH_TO_VENV_PYTHON_BINARY = os.path.join(VENVS_ROOT, 'eddata_csv_importer', 'bin', 'python3')
 
     TASK_VIRTUAL_ENV_ARGS = {
-        'requirements': ['pandas==2.2.2', 'requests==2.31.0', 'SQLAlchemy==2.0.29', 'alembic==1.13.1', 'psycopg2-binary==2.9.9'],
+        'requirements': ['pandas==2.2.2', 'requests==2.31.0', 'SQLAlchemy==2.0.29', 'alembic==1.13.1', 'psycopg2-binary==2.9.9', 'apache-airflow==2.8.4'],
         'venv_cache_path': VENVS_ROOT,
         'system_site_packages': False
     }
