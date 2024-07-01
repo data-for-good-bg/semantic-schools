@@ -74,7 +74,7 @@ def educational_data_csv_importer():
 
     download_task = PythonVirtualenvOperator(
         python_callable=download_csv_file,
-        op_kwargs={'csv_to_import_url': '{{ params.csv_to_import_url }}'}
+        op_kwargs={'csv_to_import_url': '{{ params.csv_to_import_url }}'},
         **TASK_VIRTUAL_ENV_ARGS
     )
 
