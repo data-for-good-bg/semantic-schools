@@ -44,14 +44,14 @@ def educational_data_csv_importer():
 
 
     @task.virtualenv(**TASK_VIRTUAL_ENV_ARGS)
-    def download_csv_file(*, params):
+    def download_csv_file(**kwargs):
         import requests
         from tempfile import NamedTemporaryFile
         import logging
 
         logger = logging.getLogger(__name__)
 
-        csv_to_import_url = params['csv_to_import_url']
+        csv_to_import_url = kwargs['params']['csv_to_import_url']
         logger.info(f'Will download url: {csv_to_import_url}')
         with requests.get(csv_to_import_url, stream=True) as r:
             r.raise_for_status()
