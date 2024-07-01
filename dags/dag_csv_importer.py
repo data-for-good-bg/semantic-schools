@@ -10,6 +10,9 @@ from airflow.models import Variable
 logger = logging.getLogger(__name__)
 
 
+DAG_REQUIREMENTS = ['pandas==2.2.2', 'requests==2.31.0', 'SQLAlchemy==2.0.29', 'alembic==1.13.1', 'psycopg2-binary==2.9.9']
+
+
 @dag(
     dag_id='educational_data_csv_importer',
     schedule=None,
@@ -37,8 +40,10 @@ def educational_data_csv_importer():
         os.environ['DB_URL'] = f'postgresql://{db_user}:{db_pass}@{db_host}/{db_name}'
 
 
-    @task.external_python(
-        python=PATH_TO_VENV_PYTHON_BINARY
+    @task.virtualenv(
+        requirements=DAG_REQUIREMENTS,
+        venv_cache_path=VENVS_ROOT,
+        system_site_packages=False
     )
     def download_csv_file(params):
         import requests
@@ -59,8 +64,10 @@ def educational_data_csv_importer():
                 return f.name
 
 
-    @task.external_python(
-        python=PATH_TO_VENV_PYTHON_BINARY,
+    @task.virtualenv(
+        requirements=DAG_REQUIREMENTS,
+        venv_cache_path=VENVS_ROOT,
+        system_site_packages=False
     )
     def import_csv(csv_file: str):
         import os
