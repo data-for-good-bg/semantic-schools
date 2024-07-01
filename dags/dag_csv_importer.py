@@ -10,9 +10,6 @@ from airflow.models import Variable
 logger = logging.getLogger(__name__)
 
 
-DAG_REQUIREMENTS = ['pandas==2.2.2', 'requests==2.31.0', 'SQLAlchemy==2.0.29', 'alembic==1.13.1', 'psycopg2-binary==2.9.9']
-
-
 @dag(
     dag_id='educational_data_csv_importer',
     schedule=None,
@@ -31,6 +28,12 @@ def educational_data_csv_importer():
     VENVS_ROOT = Variable.get('VENVS_ROOT')
     PATH_TO_VENV_PYTHON_BINARY = os.path.join(VENVS_ROOT, 'eddata_csv_importer', 'bin', 'python3')
 
+    TASK_VIRTUAL_ENV_ARGS = {
+        'requirements': ['pandas==2.2.2', 'requests==2.31.0', 'SQLAlchemy==2.0.29', 'alembic==1.13.1', 'psycopg2-binary==2.9.9'],
+        'venv_cache_path': VENVS_ROOT,
+        'system_site_packages': False
+    }
+
     def prepare_env_vars():
         db_host = Variable.get('EDDATA_DB_HOST')
         db_name = Variable.get('EDDATA_DB_NAME')
@@ -40,10 +43,7 @@ def educational_data_csv_importer():
         os.environ['DB_URL'] = f'postgresql://{db_user}:{db_pass}@{db_host}/{db_name}'
 
 
-    @task.virtualenv(
-        requirements=DAG_REQUIREMENTS,
-        venv_cache_path=VENVS_ROOT
-    )
+    @task.virtualenv(**TASK_VIRTUAL_ENV_ARGS)
     def download_csv_file(params):
         import requests
         from tempfile import NamedTemporaryFile
@@ -63,10 +63,7 @@ def educational_data_csv_importer():
                 return f.name
 
 
-    @task.virtualenv(
-        requirements=DAG_REQUIREMENTS,
-        venv_cache_path=VENVS_ROOT
-    )
+    @task.virtualenv(**TASK_VIRTUAL_ENV_ARGS)
     def import_csv(csv_file: str):
         import os
         from csv_importer.import_csv import import_file
