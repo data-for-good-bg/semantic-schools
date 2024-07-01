@@ -43,7 +43,7 @@ def educational_data_csv_importer():
         os.environ['DB_URL'] = f'postgresql://{db_user}:{db_pass}@{db_host}/{db_name}'
 
 
-    @task.virtualenv(**TASK_VIRTUAL_ENV_ARGS)
+    @task.virtualenv(**TASK_VIRTUAL_ENV_ARGS, use_dill=True)
     def download_csv_file(**kwargs):
         import requests
         from tempfile import NamedTemporaryFile
