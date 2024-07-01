@@ -80,7 +80,7 @@ def educational_data_csv_importer():
 
     import_csv_task = PythonVirtualenvOperator(
         python_callable=import_csv,
-        ****TASK_VIRTUAL_ENV_ARGS
+        **TASK_VIRTUAL_ENV_ARGS
     )
 
     download_task >> import_csv_task
