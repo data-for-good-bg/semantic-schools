@@ -6,6 +6,7 @@ from airflow.decorators import dag, task
 from airflow.models.param import Param
 from airflow.models import Variable
 
+from airflow.operators.python import PythonVirtualenvOperator
 
 logger = logging.getLogger(__name__)
 
@@ -43,18 +44,13 @@ def educational_data_csv_importer():
         os.environ['DB_URL'] = f'postgresql://{db_user}:{db_pass}@{db_host}/{db_name}'
 
 
-    @task.virtualenv(**TASK_VIRTUAL_ENV_ARGS,
-                     use_dill=True,
-                     op_kwargs={'csv_to_import_url': '{{ params.csv_to_import_url }}'})
-    def download_csv_file(**kwargs):
+    def download_csv_file(csv_to_import_url):
         import requests
         from tempfile import NamedTemporaryFile
         import logging
 
         logger = logging.getLogger(__name__)
 
-        logger.warning(f'kwargs: {kwargs}')
-        csv_to_import_url = kwargs['csv_to_import_url']
         logger.info(f'Will download url: {csv_to_import_url}')
         with requests.get(csv_to_import_url, stream=True) as r:
             r.raise_for_status()
@@ -62,11 +58,8 @@ def educational_data_csv_importer():
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
 
-
                 return f.name
 
-
-    @task.virtualenv(**TASK_VIRTUAL_ENV_ARGS)
     def import_csv(csv_file: str):
         import os
         from csv_importer.import_csv import import_file
@@ -79,7 +72,18 @@ def educational_data_csv_importer():
         import_file(csv_file)
         os.unlink(csv_file)
 
-    import_csv(download_csv_file())
+    download_task = PythonVirtualenvOperator(
+        python_callable=download_csv_file,
+        op_kwargs={'csv_to_import_url': '{{ params.csv_to_import_url }}'}
+        **TASK_VIRTUAL_ENV_ARGS
+    )
+
+    import_csv_task = PythonVirtualenvOperator(
+        python_callable=import_csv,
+        ****TASK_VIRTUAL_ENV_ARGS
+    )
+
+    download_task >> import_csv_task
 
 
 educational_data_csv_importer()
