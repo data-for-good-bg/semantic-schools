@@ -60,7 +60,7 @@ def educational_data_csv_importer():
 
                 return f.name
 
-    def import_csv(csv_file: str):
+    def import_csv(task_instance):
         import os
         from csv_importer.import_csv import import_file
         import logging
@@ -68,6 +68,9 @@ def educational_data_csv_importer():
         logger = logging.getLogger(__name__)
 
         prepare_env_vars()
+
+        csv_file = task_instance.xcom_pull(key='return_value', task_ids='download_csv_file')
+
         logger.info(f'Will import file: {csv_file}')
         import_file(csv_file)
         os.unlink(csv_file)
@@ -82,6 +85,7 @@ def educational_data_csv_importer():
     import_csv_task = PythonVirtualenvOperator(
         task_id='import_csv',
         python_callable=import_csv,
+        op_kwargs={'task_instance': '{{ task_instance }}'},
         **TASK_VIRTUAL_ENV_ARGS
     )
 
