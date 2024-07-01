@@ -66,8 +66,7 @@ def educational_data_csv_importer():
 
     @task.virtualenv(
         requirements=DAG_REQUIREMENTS,
-        venv_cache_path=VENVS_ROOT,
-        system_site_packages=False
+        venv_cache_path=VENVS_ROOT
     )
     def import_csv(csv_file: str):
         import os
