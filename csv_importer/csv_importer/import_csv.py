@@ -1,15 +1,13 @@
-#!/usr/bin/env python3
-
-import sys
 import os
 import logging
 
-from refine_csv import (
+from .refine_csv import (
     load_csv, refine_csv_column_names, refine_data,
     extract_school_data, extract_scores_data
 )
-from models import Region, Municipality, Place, School, Examination, ExaminationScore
-from sqlalchemy import create_engine, Engine, insert, select, func, Column, update
+from .models import Region, Municipality, Place, School, Examination, ExaminationScore
+from sqlalchemy.engine import create_engine, Engine
+from sqlalchemy import insert, select, func, Column, update
 from sqlalchemy.orm import Session
 
 import pandas as pd
@@ -260,8 +258,8 @@ def import_scores(db: Engine, examination_type: str, year: int, grade: int, scor
                 subject,
                 subject_specifier,
                 int(score['people']),
-                score['score'],
-                score['max_possible_score'],
+                float(score['score']),
+                float(score['max_possible_score']),
             )
 
         session.commit()
@@ -284,11 +282,8 @@ def extract_examination_attributes(filename: str):
     return examination_type, grade, year
 
 
-def main():
-
-    csv_file = sys.argv[1]
-
-    examination_type, grade, year = extract_examination_attributes(csv_file)
+def import_file(csv_file: str, examination_type: str, grade: int, year: int):
+    # examination_type, grade, year = extract_examination_attributes(csv_file)
 
     logger.info('Importing file %s', csv_file)
     raw_data = load_csv(csv_file)
@@ -310,8 +305,3 @@ def main():
     import_schools(db, schools_data)
 
     import_scores(db, examination_type, year, grade, scores_data)
-
-if __name__ == '__main__':
-    log_level = logging.DEBUG if os.environ.get('DEBUG', 'no') == 'yes' else logging.INFO
-    logging.basicConfig(level=log_level)
-    main()
