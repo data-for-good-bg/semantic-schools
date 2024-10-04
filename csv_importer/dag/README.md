@@ -38,11 +38,9 @@ Variable.get('MY_VARIABLE_NAME')
 In the `/home/airflow/airflow/secrets/var.json` there's one special
 variable  `VENVS_ROOT` which points to directory where DAGs virtual environments
 will be created.
-Below there's more about how this environment is being used.
-
+Below there's more about how this directory is being used.
 
 ## dag_csv_importer.py
-
 
 ### Installing the DAG
 
@@ -55,7 +53,6 @@ In the future we might have special Airflow DAG which will be configured
 to execute such installation scripts, each of the in different github repo.
 
 The target directories are passed to the script through env vars.
-
 
 ## The virtual environment for the DAG
 
@@ -100,8 +97,8 @@ with `@task.external_python`.
 
 ## Accessing the postgres where the data should be imported
 
-Currently the DAG uses Airflow variables for obtaining the details abot the postgres
-database.
+Currently the DAG uses Airflow variables for obtaining the details about
+the postgres database.
 The variables for host, database name and user are configured through the
 Airflow UI. The password is stored in the `/home/airflow/airflow/secrets/var.json`
 (check the mentions of LocalFilesystemBackend above).

@@ -1,25 +1,27 @@
 # NVO 4th grade with several resources https://data.egov.bg/organisation/dataset/5613e75f-2b1b-4244-9f54-b27580a91dfb
-nvo-4-2023,60eaaf20-9f06-4ac5-a08b-88e541b908a6
-nvo-4-2022,3774a01e-e781-4d4b-bb53-dc70476acb01
-nvo-4-2019,19aa3973-f788-4ac5-92fb-0e1cf52ed08a
 nvo-4-2018,af2a12fc-fc44-4eb3-a8d9-1798b987cf03
+nvo-4-2019,19aa3973-f788-4ac5-92fb-0e1cf52ed08a
 nvo-4-2021,4a29e792-a60b-4969-a54d-87a7ce36c8ef
+nvo-4-2022,3774a01e-e781-4d4b-bb53-dc70476acb01
+nvo-4-2023,60eaaf20-9f06-4ac5-a08b-88e541b908a6
+nvo-4-2024,92570e77-adb9-4c4e-ba93-f43cddffda6c
 
 # NVO 7th grade with several resources https://data.egov.bg/organisation/dataset/b56288b6-25aa-4049-9aa6-de2cd4cdabf8
-nvo-7-2023,a9b1a68e-ecbb-4cff-8822-3d068ba7dc49
-nvo-7-2022,8db4cee0-03f5-456f-b571-f14b73fecf75
 nvo-7-2018,025f06e2-5676-47d0-a08a-bc8bf56916a7
 nvo-7-2019,8198a9cf-01da-4f8f-b2f4-5095e33a9972
-nvo-7-2021,ccb4db31-e5d0-4717-9476-4fb71dd98b1a
 nvo-7-2020,6a7a1a4f-bded-4f4f-9050-b29a653e9e2d
+nvo-7-2021,ccb4db31-e5d0-4717-9476-4fb71dd98b1a
+nvo-7-2022,8db4cee0-03f5-456f-b571-f14b73fecf75
+nvo-7-2023,a9b1a68e-ecbb-4cff-8822-3d068ba7dc49
+nvo-7-2024,0ac6db0b-2368-46e8-bbb1-62a256289747
 
-
-# NVO 10th grade
+# NVO 10th grade https://data.egov.bg/data/view/2f801b2f-d4cb-4ddb-a23d-3e372339c80f
 nvo-10-2021,a75c453d-2a9a-4f97-9ed6-96176a2092fa
 nvo-10-2022,2e8b46e1-114f-48b7-a4c5-49814bcc367b
-nvo-10-2023,2e8b46e1-114f-48b7-a4c5-49814bcc367b
+nvo-10-2023,244ebb61-c7b8-4296-a600-dc37f42d7817
+nvo-10-2024,c5199d50-9b9b-4c63-9468-c4e7a044a28f
 
-# dzi
+# dzi https://data.egov.bg/data/view/066b4b04-d81d-444e-a61c-8ca0516079e4
 dzi-2016,f1ae52dc-0d5e-4d53-aa7f-654a8579c07d
 dzi-2017,ad482baf-1806-435b-8359-7caead9074e1
 dzi-2018,1259ac13-6c38-4864-b80d-afcf944bbe0d

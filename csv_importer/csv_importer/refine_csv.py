@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 
 """
-This script provides functoins for working with NVO and DZI CSV files provided
+This script contains functoins for working with NVO and DZI CSV files provided
 by data.egov.bg.
 
 It is supposed that these functions will be used by another script which
-will convert/import the data somewhere.
+will convert/import the data into postgres, GraphDB, etc.
 
 It can be used as a standalone app by passing one CSV file to it. This is
 dev use case - it calls all main functions on the provided CSV file.
-
 """
 
 import pandas as pd
@@ -21,48 +20,62 @@ import re
 from io import StringIO
 
 
-logger = logging.getLogger(__name__)
+from .runtime import getLogger
+from .db_manage import load_subject_abbr_map
+
+
+logger = getLogger(__name__)
 
 
 # List of regular expressions which will be translated no matter where
-# in the column name are found
-COL_RE_TRANSLATION = {
-    'област': 'region',
-    'регион': 'region',
-    'община': 'municipality',
-    'населено място': 'place',
-    'населено  място': 'place',
-    'училище': 'school',
-    'код по админ': 'school_admin_id',
-    'код по неиспуо': 'school_admin_id',
-    'код': 'school_admin_id',
-    'mat': 'мат',
-    '\)з': ')-з', # there's one special case in dzi-2022
-    ' \(мах 100 т\)': '', #nov-4-2018
-    '\(пп\)': '', # dzi-2022
-    '\(ооп\)': '', # dzi-2022
-    ' з': '-з',
-    ' (b1-|b1.1-|b2-)з': r'-\1з',
-}
+# in the column name are found. The order is important.
+COL_RE_TRANSLATION = [
+    ('област', 'region'),
+    ('регион', 'region'),
+    ('община', 'municipality'),
+    ('населено място', 'place'),
+    ('населено  място', 'place'),
+    ('училище', 'school'),
+    ('код по админ', 'school_admin_id'),
+    ('код по неиспуо', 'school_admin_id'),
+    ('код', 'school_admin_id'),
+    ('mat', 'мат'),
+    ('\)з', ')'), # there's one special case in dzi-2022
+    (' \(мах 100 т\)', ''), #nov-4-2018
+    ('\(пп\)', ''), # dzi-2022
+    ('\(ооп\)', ''), # dzi-2022
+    (' з', ''),
+    (' b(1|1.1|2)-з', r'-б\1'),
+    ('диппк-пр\.', 'диппк-пр'),
+]
 
 # List of regular expressions which will be translated only if they
-# are found at the beginning or at the end of the column name
-COL_RE_TRANSLATION_SPECIAL_POSITIONS = {
-    'явили се': 'people',
-    'ср\. успех в точки': 'score',
-    'ср\.успех': 'score',
-    'ср\.усп\.': 'score',
-    'ср\.усп': 'score',
+# are found at the beginning or at the end of the column name.
+# The order is important.
+COL_RE_TRANSLATION_SPECIAL_POSITIONS = [
+    ('явили се', 'people'),
+    ('ср\. успех в точки', 'score'),
+    ('ср\.успех', 'score'),
+    ('ср\.усп\.', 'score'),
+    ('ср\.усп', 'score'),
 
-    'бр\.': 'people',
-    'брой': 'people',
-}
+    ('бр\.', 'people'),
+    ('брой', 'people'),
+]
+
+# Some of the DZI CSV files contain columns titled '2дзи' with aggregated
+# information about 2nd DZI (i.e. non BEL DZI),
+# Some of the DZI CSV files contain coumns titled 'общо' with aggregated
+# information for all DZI.
+# If not removed these columns are treated as another subject, so we
+# delete them.
+SUBJECTS_TO_REMOVE = ['2дзи', 'общо']
 
 # Subject columns in the data frames are structured like this
 # 'БЕЛ people' and 'БЕЛ score'. The two constants are the indexes of
-# subject name and column name in such columns.
+# subject name component and attribute name component in such column names.
 SBJ_IDX = 0
-CN_IDX = 1
+ATTR_IDX = 1
 
 
 def refine_original_col_name(value: str) -> str:
@@ -73,33 +86,33 @@ def refine_original_col_name(value: str) -> str:
     * removes redundant information or characters
     """
 
-    logger.debug('value %s', value)
+    logger.verbose_info('value %s', value)
 
     value = value.replace('"', '')
     value = value.lower()
-    logger.debug('value %s', value)
+    logger.verbose_info('value %s', value)
 
     while '  ' in value:
         value = value.replace('  ', ' ')
-    logger.debug('value %s', value)
+    logger.verbose_info('value %s', value)
 
 
-    for regex, repl in COL_RE_TRANSLATION.items():
+    for regex, repl in COL_RE_TRANSLATION:
         value = re.sub(regex, repl, value)
         value = value.strip()
-    logger.debug('value %s', value)
+    logger.verbose_info('value %s', value)
 
-    for base_regex, repl in COL_RE_TRANSLATION_SPECIAL_POSITIONS.items():
+    for base_regex, repl in COL_RE_TRANSLATION_SPECIAL_POSITIONS:
         value = re.sub(f'^{base_regex}', repl, value)
         value = re.sub(f'{base_regex}$', repl, value)
         value = value.strip()
-    logger.debug('value %s', value)
+    logger.verbose_info('value %s', value)
 
     # sometimes there's missing space between the subject name and
     # the score
     if 'score' in value and not value.startswith('score') and ' score' not in value:
         value = value.replace('score', ' score')
-    logger.debug('value %s', value)
+    logger.verbose_info('value %s', value)
 
     return value
 
@@ -147,6 +160,13 @@ def is_subject_column(col_name: str) -> bool:
     return is_people_column(col_name) or is_score_column(col_name)
 
 
+def is_particular_subject_column(col_name: str, subject: str) -> bool:
+    """
+    Checks if the col_name is particular subject.
+    """
+    return is_subject_column(col_name) and col_name.startswith(f'{subject} ')
+
+
 def infer_max_possible_nvo_score(data: pd.DataFrame) -> float:
     """
     Infers the max possible score based on the data found in the data frame.
@@ -159,7 +179,7 @@ def infer_max_possible_nvo_score(data: pd.DataFrame) -> float:
     assert 'score' in data.columns, \
         'The data frame should contain score column in order to infer the max possible score.'
     max_score = data['score'].max()
-    logger.debug('max score value calculated is: %s', max_score)
+    logger.verbose_info('max score value calculated is: %s', max_score)
 
     if max_score <= 6.00:
         return 6.00
@@ -206,8 +226,11 @@ def load_csv(file: str) -> StringIO:
 
 def fill_empty_cells_from_previous(input: list[str]) -> list[str]:
     """
-    Takes a list as input and returns another where empty elements
-    from the previous element.
+    Takes a list of strings as input and returns another list in which the
+    where empty elements will be filled with the value from the preceeding
+    element.
+
+    Example:
 
     ['','','a','','b',''] -> ['', '', 'a', 'a', 'b','b']
 
@@ -240,7 +263,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     * nvo-4-2015 -> does not contain "Код по Админ".
     * nvo-7-2016 -> does not contain "Код по Админ"
 
-    Rest of the CSV files are in a form which this function (and tool) supports.
+    Rest of the CSV files are in a form which this function supports.
 
     Here are more details about the supported formats and their variations:
 
@@ -300,7 +323,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     with column names.
     After that this line is partially translated to english. All variations
     of 'Явили се' are translated to the term 'people', all variations of
-    'Среден успех' are translated to 'score.
+    'Среден успех' are translated to 'score'.
     The function does also some other replacements in order to remove
     insignificant data.
 
@@ -322,8 +345,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
 
     At the end this function retruns the input StringIO changed to contain
     only one line with column names. This way it is ready to be imported
-    by  Pandas.
-
+    by Pandas.
     """
 
     input.seek(0)
@@ -332,6 +354,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     # also the lines which contain additional column options
     column_names_line = None
     column_option_lines = []
+    buffered_line = None
     for line in input:
         if column_names_line is None:
             if line.startswith('"Област') or line.startswith('"Регион'):
@@ -340,10 +363,13 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
             if line.startswith('""'):
                 column_option_lines.append(line.strip())
             else:
+                # buffer this line, we need to added it to the output
+                buffered_line = line
                 break
 
-    assert column_names_line, 'Cannot find line with column names.'
-    logger.debug('column_names_line: %s', column_names_line)
+    if not column_names_line:
+        raise RuntimeError('Cannot find line with column names.')
+    logger.verbose_info('column_names_line: %s', column_names_line)
 
     output = StringIO()
 
@@ -352,12 +378,12 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
         c.replace('"', '')
         for c in column_names_line.split(',')
     ]
-    logger.debug('new_col_names: %s', new_col_names)
+    logger.verbose_info('new_col_names: %s', new_col_names)
 
     # In some files there are columns without name. These columns take
     # the name of the previous column.
     new_col_names = fill_empty_cells_from_previous(new_col_names)
-    logger.debug('new_col_names: %s', new_col_names)
+    logger.verbose_info('new_col_names: %s', new_col_names)
 
     # Merge the new column names with the values of the lines with column
     # options
@@ -366,9 +392,9 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
             c.replace('"', '')
             for c in option_line.split(',')
         ]
-        logger.debug('options: %s', options)
+        logger.verbose_info('options: %s', options)
         options = fill_empty_cells_from_previous(options)
-        logger.debug('options: %s', options)
+        logger.verbose_info('options: %s', options)
 
         # merge new_col_names with the current options and produce
         # list with the merged values
@@ -379,23 +405,27 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
             ex_col_names.append(new_col_name)
         new_col_names = ex_col_names
 
-        logger.debug('options: %s', options)
-        logger.debug('new_col_names: %s', new_col_names)
+        logger.verbose_info('options: %s', options)
+        logger.verbose_info('new_col_names: %s', new_col_names)
 
     # translate  columns
     for i in range(len(new_col_names)):
         new_col_names[i] = refine_original_col_name(new_col_names[i])
-    logger.debug('new_col_names: %s', new_col_names)
+    logger.verbose_info('new_col_names: %s', new_col_names)
 
     # organize all subject column names to contain subject at the beginning
     new_col_names = order_attr_in_subject_column_names(new_col_names)
-    logger.debug('new_col_names: %s', new_col_names)
+    logger.verbose_info('new_col_names: %s', new_col_names)
 
     # construct the new column names line
     new_column_names_lines = ','.join(new_col_names) + os.linesep
-    logger.debug('new_column_names_lines: %s', new_column_names_lines)
+    logger.verbose_info('new_column_names_lines: %s', new_column_names_lines)
 
     output.write(new_column_names_lines)
+
+    if buffered_line:
+        logger.verbose_info('buffered_line: %s', buffered_line)
+        output.write(buffered_line)
 
     # copy add all other lines into the result
     for line in input:
@@ -407,18 +437,22 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
 def refine_data(csv_data: StringIO) -> pd.DataFrame:
     """
     This function loads a CSV file into pandas DataFrame and
-    does some basic refinining actions on the data.
+    refines the data.
     """
 
     csv_data.seek(0)
     data = pd.read_csv(csv_data)
 
-    # In some CSV files the schoold ID contain spaces, in some it does not
+    # convert school id column to str
+    data['school_admin_id'] = data['school_admin_id'].astype(str)
+
+    # In some CSV files the school ID contain spaces, in some it does not
     # Here we remove all spaces from it.
     data['school_admin_id'] = data['school_admin_id'].replace(' ', '', regex=True)
 
-    # convert school id column to str
-    data['school_admin_id'] = data['school_admin_id'].astype(str)
+    # For some CSV files the school ID loads as float and after conversion to
+    # string contains '.0' at the end, i.e. '1000002.0' should become '1000002'
+    data['school_admin_id'] = data['school_admin_id'].replace('\.0', '', regex=True)
 
     # dzi-2018 contains two rows for РУО, those rows do not have place, that's
     # why we delete these rows
@@ -441,6 +475,8 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     def _get_prety_place(value: str) -> str:
         """
         Formats cities and villages in standard way.
+        TODO: Some places do not contain `гр.` and `с.` prefixes, as result
+        in the database we have `гр. София` and `София` records.
         """
         if not value:
             return value
@@ -450,25 +486,24 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
                 prefix, name = value.split('.')
                 return f'{prefix.strip().lower()}. {name.strip().title()}'
             else:
-                    return value.strip().title()
+                return value.strip().title()
         except:
             logger.error('Failed to make prety place from value %s', value)
             raise
 
     data['place'] = data['place'].apply(_get_prety_place)
 
-
     # Conver people columns to int
     people_cols = [c for c in data.columns if is_people_column(c)]
     for c in people_cols:
-        logger.debug('converting to int people column %s', c)
+        logger.verbose_info('converting to int people column %s', c)
         data[c] = data[c].fillna(-1).astype('int32')
 
 
     # Conver score columns to float
     score_cols = [c for c in data.columns if is_score_column(c)]
     for c in score_cols:
-        logger.debug('converting to float score column %s', c)
+        logger.verbose_info('converting to float score column %s', c)
         fixed = data[c].replace(',', '.', regex=True)
         # dzi-2022 contains one cell with value '('
         fixed = fixed.replace('(',None)
@@ -487,13 +522,48 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
         else:
             new_cols.append(c)
 
-    logger.debug('subject columns before sorting: %s', subj_cols)
+    logger.verbose_info('subject columns before sorting: %s', subj_cols)
     subj_cols = sorted(subj_cols)
-    logger.debug('subject columns after  sorting: %s', subj_cols)
+    logger.verbose_info('subject columns after  sorting: %s', subj_cols)
+
+    for subj_to_remove in SUBJECTS_TO_REMOVE:
+        subj_cols = [s for s in subj_cols if not is_particular_subject_column(s, subj_to_remove)]
+    logger.verbose_info('subject columns after removing: %s', subj_cols)
 
     new_cols = [*new_cols, *subj_cols]
 
     data = data.loc[:, new_cols]
+
+    # Now we'll re-map subject abbreviations to IDs from Subject table
+    # The subject abbreviations are lowercased. The keys in map below loaded
+    # with load_subject_abbr_map are also lowercased.
+    # The IDs are uppercased.
+    #
+    # The loop below:
+    # 1. Builds a dictionary with column new->old names.
+    # 2. Raise an exception in case unknown subject is found.
+    #
+    # TODO: The load_subject_abbr_map loads data from DB, this dependency
+    #       to the database is not really good. The initial intention was
+    #       refine_csv module to be used for importing data in both relational
+    #       and graph DB. Probably the function could load the data from the
+    #       constant in the code.
+
+    logger.verbose_info('Columns before subject remapping: %s', data.columns)
+    subject_mapping = load_subject_abbr_map()
+    renamings_map = {}
+    for c in data.columns:
+        if is_subject_column(c):
+            subject_abbr, attribute = c.split(' ')
+            subject_item = subject_mapping.get(subject_abbr)
+            if not subject_item:
+                raise ValueError('Cannot find subject for abbreviation %s.', subject_abbr)
+
+            renamings_map[c] = f'{subject_item.id} {attribute}'
+
+    logger.verbose_info('Column name renaming map: %s', renamings_map)
+    data = data.rename(columns=renamings_map)
+    logger.verbose_info('Columns after  subject remapping: %s', data.columns)
 
     return data
 
@@ -527,7 +597,7 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
 
     subject_count = subject_cols_count // 2
 
-    logger.debug('subject_cols_count -> %d, subject_count -> %d', subject_cols_count, subject_count)
+    logger.verbose_info('subject_cols_count -> %d, subject_count -> %d', subject_cols_count, subject_count)
 
     # The for loop below will generate a DataFrame for each subject.
     # The data frame will be added in this list.
@@ -536,21 +606,21 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
     for i in range(subject_count):
         # +1 is added because the scores DataFrame contains school_admin_id
         subject_cols = scores.columns[i*2+1 : i*2+1+2]
-        logger.debug('subject_cols -> %s', subject_cols )
+        logger.verbose_info('subject_cols -> %s', subject_cols )
 
         subject_name = subject_cols[0].split(' ')[SBJ_IDX]
-        logger.debug('extracted subject_name -> %s', subject_name)
+        logger.verbose_info('extracted subject_name -> %s', subject_name)
         assert subject_name in subject_cols[1], \
             f'The two columns do not contain the same subject name {subject_cols}'
 
         subject_name = subject_name.upper()
-        logger.debug('subject_name -> %s', subject_name)
+        logger.verbose_info('subject_name -> %s', subject_name)
 
         df = scores.loc[:, ['school_admin_id', *subject_cols]]
 
         # rename the columns to be just 'people' and 'score', in other words
         # we remove the subject name from the column names
-        renaming_cols = { c: c.split(' ')[CN_IDX] for c in subject_cols }
+        renaming_cols = { c: c.split(' ')[ATTR_IDX] for c in subject_cols }
         df = df.rename(columns=renaming_cols)
 
         # insert the subject in the dataframe
