@@ -8,71 +8,79 @@ import chartlib
 
 
 raw_data = datalib.load_dzi_data()
+subject_data = datalib.extract_subject_data(raw_data)
 
 st.set_page_config(
     page_title='ДЗИ Данни',
     layout='wide'
 )
+
+
+def _write_subject_data_per_years(subject_group: str):
+    html_text = StringIO()
+
+    html_text.write(f'<ul style="font-size: 12px">{subject_group} предмети са:\n')
+    for years_str, subjects_str in datalib.extract_subjects_of_group_per_years(subject_data, subject_group):
+        html_text.write(f'  <li>За години {years_str} : {subjects_str}</li>')
+
+    html_text.write('</ul></span>')
+    st.html(html_text.getvalue())
+
+
 st.write('# ДЗИ Данни')
+with st.expander(label='**Поглед за цяла Бълагрия**', expanded=False):
 
-with st.expander(label='**Поглед за цяла Бълагрия**', expanded=True):
+    people_data = datalib.extract_people_aggregated_data(
+        raw_data, ['year']
+    )
 
-    data = datalib.group_by_year_subjectgroup(raw_data)
-    data_pivoted = data.pivot_table(index=['year'], columns='subject_group', values='total_people', fill_value=0)
-    data_pivoted['СТЕМ-ПР'] = data_pivoted['СТЕМ']/data_pivoted['БЕЛ']
-    data_pivoted['ДРУГИ-ПР'] = data_pivoted['ДРУГИ']/data_pivoted['БЕЛ']
-    data_pivoted['БЕЗ'] = data_pivoted['БЕЛ'] - data_pivoted['СТЕМ'] - data_pivoted['ДРУГИ']
-    data_pivoted['БЕЗ-ПР'] = data_pivoted['БЕЗ']/data_pivoted['БЕЛ']
-    data_pivoted = data_pivoted.reset_index()
+    values_chart, percent_chart = chartlib.create_line_charts_for_people_aggregated_data(people_data)
+    values_chart = values_chart.properties(width=400)
+    percent_chart = percent_chart.properties(width=400)
 
-    subject_data = datalib.extract_subject_data(raw_data)
-
-    def _write_subject_data_per_years(subject_group: str):
-        html_text = StringIO()
-
-        #md_text.write('<span style="font-size: 10px;">\n')
-        html_text.write(f'<ul style="font-size: 12px">{subject_group} предмети са:\n')
-        for years_str, subjects_str in datalib.extract_subjects_of_group_per_years(subject_data, subject_group):
-            html_text.write(f'  <li>За години {years_str} : {subjects_str}</li>')
-
-        html_text.write('</ul></span>')
-        st.html(html_text.getvalue())
-
-
-    st.write('## ДЗИ по Български език и литература (БЕЛ)')
-    st.write('Тъй като държавният зрелостен изпит по БЕЛ е задължителен, броят ученици явили се по БЕЛ съотвества на броят зрелостници в съответната година.')
-
-    chart1, _ = chartlib.create_charts_for_subjet_group(data_pivoted, 'БЕЛ', 'БЕЛ')
-    st.altair_chart(chart1)
-
-    st.write('## ДЗИ по СТЕМ предмети')
+    st.markdown((
+        '* _Матурата по БЕЛ е задължителна, поради това може да се приеме, че броят явили се на изпит по БЕЛ представя броят зрелостници._'
+        '\n* _Броят ученици, без допълнителен зрелостен изпит е получен като разликата между броя явили се по БЕЛ и броя явили се по всички други предмети. **Може да е подвеждащ?!**_'
+    ))
     _write_subject_data_per_years('СТЕМ')
-
-    chart1, chart2 = chartlib.create_charts_for_subjet_group(data_pivoted, 'СТЕМ', 'СТЕМ-ПР')
-    col1, col2 = st.columns(2)
-    col1.altair_chart(chart1)
-    col2.altair_chart(chart2)
-
-
-    st.write('## ДЗИ по други предмети')
+    _write_subject_data_per_years('Чужди езици')
+    _write_subject_data_per_years('Дипломни прокети')
     _write_subject_data_per_years('ДРУГИ')
 
-    chart1, chart2 = chartlib.create_charts_for_subjet_group(data_pivoted, 'ДРУГИ', 'ДРУГИ-ПР')
-    col1, col2 = st.columns(2)
-    col1.altair_chart(chart1)
-    col2.altair_chart(chart2)
+    st.write(values_chart | percent_chart)
 
-    st.write('## Данни за брой ученици без втора матура')
+
+with st.expander(label='**Поглед по области**', expanded=True):
+
+    people_data = datalib.extract_people_aggregated_data(raw_data, ['year', 'region'])
+
+    values_chart, percent_chart = chartlib.create_line_charts_for_people_aggregated_data(people_data)
+
+    facet_field_def = alt.FacetFieldDef(field='region', type='nominal', title='Област')
+    facet_columns = 4
+
+    values_chart = (
+        values_chart
+        .facet(facet=facet_field_def, columns=facet_columns)
+        .resolve_scale(y='independent', x='independent')
+    )
+
+    percent_chart = (
+        percent_chart
+        .facet(facet=facet_field_def, columns=facet_columns)
+        .resolve_scale(y='independent', x='independent')
+    )
+
     st.markdown((
-        '_TODO_ - провери отново закона\n\n'
-        '_Бележка: След учебна година 2021/2022 учениците имат право да се '
-        'явят на до 3 допълнителни матури._\n\n_Графиките в тази секция може да '
-        'са подвеждащи, тъй като няма данни за това колко ученика са се явили '
-        'на повече от един допълнителен зрелостен изпит. Графиките представят '
-        'разликата на явилите се по БЕЛ и явилите се на всички други предмети._'
+        '* _Матурата по БЕЛ е задължителна, поради това може да се приеме, че броят явили се на изпит по БЕЛ представя броят зрелостници._'
+        '\n* _Броят ученици, без допълнителен зрелостен изпит е получен като разликата между броя явили се по БЕЛ и броя явили се по всички други предмети. **Може да е подвеждащ?!**_'
     ))
 
-    chart1, chart2 = chartlib.create_charts_for_subjet_group(data_pivoted, 'БЕЗ', 'БЕЗ-ПР')
-    col1, col2 = st.columns(2)
-    col1.altair_chart(chart1)
-    col2.altair_chart(chart2)
+    _write_subject_data_per_years('СТЕМ')
+    _write_subject_data_per_years('Чужди езици')
+    _write_subject_data_per_years('Дипломни прокети')
+    _write_subject_data_per_years('ДРУГИ')
+
+    value_tabs, percent_tab = st.tabs(['Бройки', 'Проценти'])
+    value_tabs.write(values_chart)
+    percent_tab.write(percent_chart)

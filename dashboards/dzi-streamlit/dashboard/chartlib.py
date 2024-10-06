@@ -2,36 +2,62 @@ import pandas as pd
 import altair as alt
 
 
-def create_charts_for_subjet_group(data: pd.DataFrame, subject_col: str, subject_percent_col: str) -> tuple[alt.Chart, alt.Chart]:
-    poeple_per_year_chart_base = (
-        alt.Chart(data)
-        .mark_bar()
+def create_line_charts_for_people_aggregated_data(people_data: pd.DataFrame) -> tuple[alt.Chart, alt.Chart]:
+    """
+    The `people_data` dataframe is expected to contain columns `year`, `subject_group`,
+    `total_people` and `total_people_percent`.
+
+    The result will be two mark_line charts representing how total_people
+    and total_people_percent change over the years.
+
+    The dataframe could contain more columns, the caller may use .facet() or
+    .repeat() to create charts for each value of such columns.
+
+    Both charts
+     * will display each subject_group with different color.
+     * come with a drop-down menu which will highlight
+       the selected subject_group.
+    """
+
+    ### create charts
+    subject_groups = people_data['subject_group'].unique().tolist()
+    subject_group_dropdown = alt.binding_select(
+        name='Вид матура ',
+        options=[None, *subject_groups],
+        labels=['Всички', *subject_groups]
+    )
+    selection_subject_group = alt.selection_point(fields=['subject_group'], bind=subject_group_dropdown)
+
+    color = alt.condition(
+        selection_subject_group,
+        alt.Color('subject_group:N', title='Вид матура'),
+        alt.value('lightgray')
+    )
+
+    values_chart = (
+        alt.Chart(people_data)
+        .mark_line(point=True)
         .encode(
-            alt.X(f'{subject_col}:Q', title='Брой явили се ученици'),
-            alt.Y('year:O', title='Година'),
-            alt.Color('year:N', title='Година')
+            alt.X('year:O', title='Година'),
+            alt.Y('total_people:Q', axis=alt.Axis(format='.0f'), title='Брой явили се ученици'),
+            color=color
+        )
+        .add_params(
+            selection_subject_group
         )
     )
-    value_text_chart = (
-        poeple_per_year_chart_base
-        .mark_text(align='right', dx=-3)
-        .encode(alt.Text(subject_col), alt.Color())
-    )
-    poeple_per_year_chart = poeple_per_year_chart_base + value_text_chart
 
-    people_per_year_percent_chart = (
-        alt.Chart(data)
-        .mark_bar()
+    percent_chart = (
+        alt.Chart(people_data)
+        .mark_line(point=True)
         .encode(
-            alt.X(f'{subject_percent_col}:Q', axis=alt.Axis(format='.0%'), title=f'Брой ученици избрали {subject_col}, като % от общия брой'),
-            alt.Y('year:O', title='Година'),
-            alt.Color('year:N', title='Година')
+            alt.X('year:O', title='Година'),
+            alt.Y('total_people_percent:Q', axis=alt.Axis(format='.0%'), title='Процент от общият брой ученици'),
+            color=color
+        )
+        .add_params(
+            selection_subject_group
         )
     )
-    people_per_year_percent_chart = people_per_year_percent_chart + (
-        people_per_year_percent_chart
-        .mark_text(align='right', dx=-3)
-        .encode(alt.Text(subject_percent_col, format='.0%'), alt.Color())
-    )
 
-    return poeple_per_year_chart, people_per_year_percent_chart
+    return values_chart, percent_chart
