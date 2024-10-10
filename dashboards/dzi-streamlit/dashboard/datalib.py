@@ -129,6 +129,56 @@ def extract_people_aggregated_data(input_data: pd.DataFrame, id_columns: list[st
     return result
 
 
+def extract_score_aggregated_data(input_data: pd.DataFrame, id_columns: list[str]) -> pd.DataFrame:
+    """
+    TODO
+    """
+
+    # group the data by the specified id_columns and subjec_group
+    data = input_data.groupby([*id_columns, 'subject_group']).apply(
+        lambda x: pd.Series({
+            'score': (x['score'] * x['people']).sum() / x['people'].sum(),
+            'total_people': x['people'].sum()  # Total number of people
+        })
+    ).reset_index()
+
+    return data
+
+    # extract unique subject groups
+    subject_groups = data['subject_group'].unique().tolist()
+
+    # pivot subject groups as columns
+    data_pivoted = data.pivot_table(index=id_columns, columns='subject_group', values='total_people', fill_value=0)
+
+    # add column БЕЗ
+    data_pivoted['БЕЗ'] = data_pivoted['БЕЛ']
+    for subject_group in subject_groups:
+        if subject_group != 'БЕЛ':
+            data_pivoted['БЕЗ'] = data_pivoted['БЕЗ'] - data_pivoted[subject_group]
+    subject_groups.append('БЕЗ')
+
+    # for each subject group add percent column
+    for subject_group in subject_groups:
+        data_pivoted[f'{subject_group}-ПР'] = data_pivoted[subject_group]/data_pivoted['БЕЛ']
+
+    data_pivoted = data_pivoted.reset_index()
+
+    # melt subject_groups percent columns to rows
+    value_vars = [f'{subject_group}-ПР' for subject_group in subject_groups]
+    data_with_percent_value = data_pivoted.melt(id_vars=id_columns, value_vars=value_vars, value_name='total_people_percent')
+    # remove the -ПР suffix from values
+    data_with_percent_value['subject_group'] = data_with_percent_value['subject_group'].apply(lambda v: v.replace('-ПР', ''))
+
+    # melt subject_groups columns to rows
+    data_with_abs_value = data_pivoted.melt(id_vars=id_columns, value_vars=subject_groups, value_name='total_people')
+
+    # merge the two dataframes
+    result = data_with_abs_value.merge(data_with_percent_value, on=[*id_columns, 'subject_group'], how='inner')
+
+    return result
+
+
+
 # def filter_by_subjectgroup(data: pd.DataFrame, value: str) -> pd.DataFrame:
 #     return data.loc[data['subject_group'] == value]
 

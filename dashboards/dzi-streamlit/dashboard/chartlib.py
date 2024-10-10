@@ -19,20 +19,6 @@ def create_line_charts_for_people_aggregated_data(people_data: pd.DataFrame) -> 
        the selected subject_group.
     """
 
-    ### create charts
-    subject_groups = people_data['subject_group'].unique().tolist()
-    subject_group_dropdown = alt.binding_select(
-        name='Вид матура ',
-        options=[None, *subject_groups],
-        labels=['Всички', *subject_groups]
-    )
-    selection_subject_group = alt.selection_point(fields=['subject_group'], bind=subject_group_dropdown)
-
-    color = alt.condition(
-        selection_subject_group,
-        alt.Color('subject_group:N', title='Вид матура'),
-        alt.value('lightgray')
-    )
 
     values_chart = (
         alt.Chart(people_data)
@@ -40,10 +26,6 @@ def create_line_charts_for_people_aggregated_data(people_data: pd.DataFrame) -> 
         .encode(
             alt.X('year:O', title='Година'),
             alt.Y('total_people:Q', axis=alt.Axis(format='.0f'), title='Брой явили се ученици'),
-            color=color
-        )
-        .add_params(
-            selection_subject_group
         )
     )
 
@@ -53,10 +35,6 @@ def create_line_charts_for_people_aggregated_data(people_data: pd.DataFrame) -> 
         .encode(
             alt.X('year:O', title='Година'),
             alt.Y('total_people_percent:Q', axis=alt.Axis(format='.0%'), title='Процент от общият брой ученици'),
-            color=color
-        )
-        .add_params(
-            selection_subject_group
         )
     )
 
