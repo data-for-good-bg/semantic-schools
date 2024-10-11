@@ -15,8 +15,17 @@ st.set_page_config(
     layout='wide'
 )
 
+# change the font size of tab titles
+st.markdown("""
+<style>
+    .stTabs [data-baseweb="tab"] {
+        & p { font-size: 18px }
+    }
+</style>""", unsafe_allow_html=True)
 
-def _write_subject_data_per_years(subject_group: str):
+
+
+def _write_subject_group_data_per_years(subject_group: str):
     html_text = StringIO()
 
     html_text.write(f'<ul style="font-size: 12px">{subject_group} предмети са:\n')
@@ -27,156 +36,87 @@ def _write_subject_data_per_years(subject_group: str):
     st.html(html_text.getvalue())
 
 
-st.write('# ДЗИ Данни')
-with st.expander(label='**Поглед за цяла Бълагрия**', expanded=False):
-
-    people_data = datalib.extract_people_aggregated_data(
-        raw_data, ['year']
-    )
-
-    subject_groups = people_data['subject_group'].unique().tolist()
-    subject_group_dropdown = alt.binding_select(
-        name='Вид матура ',
-        options=[None, *subject_groups],
-        labels=['Всички', *subject_groups]
-    )
-    selection_subject_group = alt.selection_point(fields=['subject_group'], bind=subject_group_dropdown)
-
-    color = alt.condition(
-        selection_subject_group,
-        alt.Color('subject_group:N', title='Вид матура'),
-        alt.value('lightgray')
-    )
-
-    values_chart, percent_chart = chartlib.create_line_charts_for_people_aggregated_data(people_data)
-    values_chart = (
-        values_chart
-        .encode(color=color)
-        .add_params(selection_subject_group)
-        .properties(width=400)
-    )
-    percent_chart = (
-        percent_chart
-        .encode(color=color)
-        .add_params(selection_subject_group)
-        .properties(width=400)
-    )
-
+def _write_all_subject_groups():
     st.markdown((
         '* _Матурата по БЕЛ е задължителна, поради това може да се приеме, че броят явили се на изпит по БЕЛ представя броят зрелостници._'
         '\n* _Броят ученици, без допълнителен зрелостен изпит е получен като разликата между броя явили се по БЕЛ и броя явили се по всички други предмети. **Може да е подвеждащ?!**_'
     ))
-    _write_subject_data_per_years('СТЕМ')
-    _write_subject_data_per_years('Чужди езици')
-    _write_subject_data_per_years('Дипломни прокети')
-    _write_subject_data_per_years('ДРУГИ')
+    _write_subject_group_data_per_years('СТЕМ')
+    _write_subject_group_data_per_years('Чужди езици')
+    _write_subject_group_data_per_years('Дипломни прокети')
+    _write_subject_group_data_per_years('ДРУГИ')
 
 
+st.write('# ДЗИ Данни')
+with st.expander(label='**Поглед за цяла Бълагрия**', expanded=False):
 
-    score_data = datalib.extract_score_aggregated_data(
+    aggregated_data = datalib.extract_subjectgroup_aggregated_data(
         raw_data, ['year']
     )
-    score_data_subjcts = subject_data['subject_group'].unique().tolist()
 
-    # selected_subjects = st.multiselect(
-    #     label='Предмет', options=score_data_subjcts, default=['БЕЛ', 'СТЕМ']
-    # )
+    def _customize(chart: alt.Chart) -> alt.Chart:
+        return chart.properties(width=400)
 
-    #score_data = score_data.loc[(score_data['subject_group'].isin(selected_subjects)) ]
-    #st.write(score_data)
+    values_chart, percent_chart, score_chart = chartlib.create_subjectgroup_charts(aggregated_data, _customize)
 
-    score_chart = (
-        alt.Chart(score_data)
-        .mark_line(point=True)
-        .encode(
-            alt.X('year:O', title='Година'),
-            alt.Y('score:Q', axis=alt.Axis(format='.2f'), title='Среден успех', scale=alt.Scale(domainMin=2.0, domainMax=6.0)),
-            color=color
-        )
-        .properties(
-            width=400,
-        )
-        .add_params(
-            selection_subject_group
-        )
-    )
+    _write_all_subject_groups()
 
     st.write((values_chart | percent_chart) & score_chart)
 
 
+with st.expander(label='**Поглед по области**', expanded=False):
+    _write_all_subject_groups()
 
-with st.expander(label='**Поглед по области**', expanded=True):
-    st.markdown((
-        '* _Матурата по БЕЛ е задължителна, поради това може да се приеме, че броят явили се на изпит по БЕЛ представя броят зрелостници._'
-        '\n* _Броят ученици, без допълнителен зрелостен изпит е получен като разликата между броя явили се по БЕЛ и броя явили се по всички други предмети. **Може да е подвеждащ?!**_'
-    ))
+    aggregated_data = datalib.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region'])
 
-    _write_subject_data_per_years('СТЕМ')
-    _write_subject_data_per_years('Чужди езици')
-    _write_subject_data_per_years('Дипломни прокети')
-    _write_subject_data_per_years('ДРУГИ')
-
-
-    summary_tab, value_tab, percent_tab = st.tabs(['Обща картина', 'Явили се ученици, брой', 'Явили се ученици, процент'])
-
-    people_data = datalib.extract_people_aggregated_data(raw_data, ['year', 'region'])
-
-    values_chart, percent_chart = chartlib.create_line_charts_for_people_aggregated_data(people_data)
-
-    facet_field_def = alt.FacetFieldDef(field='region', type='nominal', title='Област')
-    facet_columns = 4
-
-    values_chart = (
-        values_chart
-        .facet(facet=facet_field_def, columns=facet_columns)
-        .resolve_scale(y='independent', x='independent')
+    regions = aggregated_data['region'].unique().tolist()
+    st.write('##### Филтър по области')
+    selected_regions = st.multiselect(
+        '',
+        options=regions,
+        default=regions,
+        label_visibility='hidden'
     )
 
-    percent_chart = (
-        percent_chart
-        .facet(facet=facet_field_def, columns=facet_columns)
-        .resolve_scale(y='independent', x='independent')
-    )
+    st.write('##### Графики')
+    summary_tab, value_tab, percent_tab, score_tab = st.tabs([
+        '1\. Явили се, обща картина',
+        '2\. Явили се ученици, по област, брой',
+        '3\. Явили се ученици, по област, в проценти',
+        '4\. Среден успех, по област'
+    ])
 
-    subject_groups = people_data['subject_group'].unique().tolist()
+    if selected_regions:
 
-    selected_subject_group = summary_tab.selectbox(
-        'Вид матура',
-        subject_groups,
-        subject_groups.index('БЕЛ'),
-    )
+        # filter the data by region
+        aggregated_data = aggregated_data[aggregated_data['region'].isin(selected_regions)]
 
 
-    years = people_data['year'].unique().tolist()
-    year_group_dropdown = alt.binding_select(
-        name='Година ',
-        options=[None, *years],
-        labels=['Всички'] + [f'{y}' for y in years]
-    )
-    selection_year = alt.selection_point(fields=['year'], bind=year_group_dropdown)
+        def _customize(chart: alt.Chart) -> alt.Chart:
+            facet_field_def = alt.FacetFieldDef(
+                field='region', type='nominal',
+                title='Област (осите в различните графики може да имат различен обхват)')
+            facet_columns = 4
+            return (chart
+                .facet(facet=facet_field_def, columns=facet_columns)
+                .resolve_scale(y='independent', x='independent')
+            )
 
-    year_color = alt.condition(
-        selection_year,
-        alt.Color('year:N', title='Година'),
-        alt.value('lightgray')
-    )
+        values_chart, percent_chart, score_chart = chartlib.create_subjectgroup_charts(aggregated_data, _customize)
 
-    summary_chart = (
-        alt.Chart(people_data[people_data['subject_group'] == selected_subject_group])
-        .mark_point()
-        .encode(
-            alt.X('total_people:Q'),
-            alt.Y('region:N'),
-            color=year_color,
+        # selector for subject_group
+        subject_groups = aggregated_data['subject_group'].unique().tolist()
+        selected_subject_group = summary_tab.selectbox(
+            'Вид матура',
+            subject_groups,
+            subject_groups.index('БЕЛ'),
         )
-        .properties(
-            width=800
-        )
-        .add_params(
-            selection_year
-        )
-    )
 
-    summary_tab.write(summary_chart)
-    value_tab.write(values_chart)
-    percent_tab.write(percent_chart)
+        summary_chart = chartlib.create_total_people_chart(
+            aggregated_data[aggregated_data['subject_group'] == selected_subject_group]
+        )
+
+        summary_tab.write(summary_chart)
+        value_tab.write(values_chart)
+        percent_tab.write(percent_chart)
+        score_tab.write(score_chart)

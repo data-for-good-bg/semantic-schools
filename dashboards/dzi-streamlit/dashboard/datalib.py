@@ -63,10 +63,10 @@ def group_by_year_subjectgroup(data: pd.DataFrame) -> pd.DataFrame:
 
 
 
-def extract_people_aggregated_data(input_data: pd.DataFrame, id_columns: list[str]) -> pd.DataFrame:
+def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: list[str]) -> pd.DataFrame:
     """
     The input dataframe should contain the columns pointed in `id_columns` and
-    also `total_people` and `subject_group` columns. The dataframe may have
+    also `total_people`, 'score' and `subject_group` columns. The dataframe may have
     any other columns, which will be dropped as part of group-by operation,
     see below.
 
@@ -80,6 +80,7 @@ def extract_people_aggregated_data(input_data: pd.DataFrame, id_columns: list[st
     * the subject_group column
     * tatal_people will be the aggregated sum calculated by the group-by
     * total_people_percent will be the percent from subject_group 'БЕЛ'
+    * score column will contain the weighted average score for the subject group
 
     The result dataframe will contain also a new row with
       `subject_group` equal 'БЕЗ' value for each `id_columns` combination.
@@ -89,94 +90,51 @@ def extract_people_aggregated_data(input_data: pd.DataFrame, id_columns: list[st
 
     """
 
-    # group the data by the specified id_columns and subjec_group
-    data = input_data.groupby([*id_columns, 'subject_group']).agg(
-        total_people=('people', 'sum'),
-        # avg_score=('score', 'mean')
-    ).reset_index()
-
-    # extract unique subject groups
-    subject_groups = data['subject_group'].unique().tolist()
-
-    # pivot subject groups as columns
-    data_pivoted = data.pivot_table(index=id_columns, columns='subject_group', values='total_people', fill_value=0)
-
-    # add column БЕЗ
-    data_pivoted['БЕЗ'] = data_pivoted['БЕЛ']
-    for subject_group in subject_groups:
-        if subject_group != 'БЕЛ':
-            data_pivoted['БЕЗ'] = data_pivoted['БЕЗ'] - data_pivoted[subject_group]
-    subject_groups.append('БЕЗ')
-
-    # for each subject group add percent column
-    for subject_group in subject_groups:
-        data_pivoted[f'{subject_group}-ПР'] = data_pivoted[subject_group]/data_pivoted['БЕЛ']
-
-    data_pivoted = data_pivoted.reset_index()
-
-    # melt subject_groups percent columns to rows
-    value_vars = [f'{subject_group}-ПР' for subject_group in subject_groups]
-    data_with_percent_value = data_pivoted.melt(id_vars=id_columns, value_vars=value_vars, value_name='total_people_percent')
-    # remove the -ПР suffix from values
-    data_with_percent_value['subject_group'] = data_with_percent_value['subject_group'].apply(lambda v: v.replace('-ПР', ''))
-
-    # melt subject_groups columns to rows
-    data_with_abs_value = data_pivoted.melt(id_vars=id_columns, value_vars=subject_groups, value_name='total_people')
-
-    # merge the two dataframes
-    result = data_with_abs_value.merge(data_with_percent_value, on=[*id_columns, 'subject_group'], how='inner')
-
-    return result
-
-
-def extract_score_aggregated_data(input_data: pd.DataFrame, id_columns: list[str]) -> pd.DataFrame:
-    """
-    TODO
-    """
-
-    # group the data by the specified id_columns and subjec_group
     data = input_data.groupby([*id_columns, 'subject_group']).apply(
         lambda x: pd.Series({
             'score': (x['score'] * x['people']).sum() / x['people'].sum(),
-            'total_people': x['people'].sum()  # Total number of people
-        })
+            'total_people': x['people'].sum()
+        }),
+        include_groups=False
     ).reset_index()
-
-    return data
 
     # extract unique subject groups
     subject_groups = data['subject_group'].unique().tolist()
 
     # pivot subject groups as columns
-    data_pivoted = data.pivot_table(index=id_columns, columns='subject_group', values='total_people', fill_value=0)
+    data_pivoted_people = data.pivot_table(index=id_columns, columns='subject_group', values='total_people', fill_value=0)
 
-    # add column БЕЗ
-    data_pivoted['БЕЗ'] = data_pivoted['БЕЛ']
+    # add column БЕЗ, this column could be misleading!
+    data_pivoted_people['БЕЗ'] = data_pivoted_people['БЕЛ']
     for subject_group in subject_groups:
         if subject_group != 'БЕЛ':
-            data_pivoted['БЕЗ'] = data_pivoted['БЕЗ'] - data_pivoted[subject_group]
+            data_pivoted_people['БЕЗ'] = data_pivoted_people['БЕЗ'] - data_pivoted_people[subject_group]
+    data_pivoted_people['БЕЗ'] = data_pivoted_people['БЕЗ'].apply(lambda v: 0 if v < 0 else v)
     subject_groups.append('БЕЗ')
 
     # for each subject group add percent column
     for subject_group in subject_groups:
-        data_pivoted[f'{subject_group}-ПР'] = data_pivoted[subject_group]/data_pivoted['БЕЛ']
+        data_pivoted_people[f'{subject_group}-ПР'] = data_pivoted_people[subject_group]/data_pivoted_people['БЕЛ']
 
-    data_pivoted = data_pivoted.reset_index()
+    data_pivoted_people = data_pivoted_people.reset_index()
 
     # melt subject_groups percent columns to rows
     value_vars = [f'{subject_group}-ПР' for subject_group in subject_groups]
-    data_with_percent_value = data_pivoted.melt(id_vars=id_columns, value_vars=value_vars, value_name='total_people_percent')
+    data_with_percent_value = data_pivoted_people.melt(id_vars=id_columns, value_vars=value_vars, value_name='total_people_percent')
     # remove the -ПР suffix from values
     data_with_percent_value['subject_group'] = data_with_percent_value['subject_group'].apply(lambda v: v.replace('-ПР', ''))
 
     # melt subject_groups columns to rows
-    data_with_abs_value = data_pivoted.melt(id_vars=id_columns, value_vars=subject_groups, value_name='total_people')
+    data_with_abs_value = data_pivoted_people.melt(id_vars=id_columns, value_vars=subject_groups, value_name='total_people')
+
+    data_merged_people = data_with_abs_value.merge(data_with_percent_value, on=[*id_columns, 'subject_group'], how='inner')
+
+    score_data = data[[*id_columns, 'subject_group', 'score']]
 
     # merge the two dataframes
-    result = data_with_abs_value.merge(data_with_percent_value, on=[*id_columns, 'subject_group'], how='inner')
+    result = data_merged_people.merge(score_data, on=[*id_columns, 'subject_group'], how='left')
 
     return result
-
 
 
 # def filter_by_subjectgroup(data: pd.DataFrame, value: str) -> pd.DataFrame:
