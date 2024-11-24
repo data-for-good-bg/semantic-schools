@@ -14,6 +14,7 @@ from csv_importer.import_csv import import_file
 from csv_importer.runtime import enable_verbose_logging, enable_dry_run
 from csv_importer.db_manage import list_examinations, delete_examination, init_db
 from csv_importer.db import DEFAULT_DB_URL
+from csv_importer.wikidata import extract_wikidata
 
 
 _cli_help=\
@@ -63,6 +64,13 @@ def parse_args():
     parser_del_exam.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     parser_del_exam.add_argument('-n', '--dry-run', action='store_true', help='Perform a dry run without making changes')
 
+    # Subparser for extracting data from wikidata
+    parser_extract_wiki_data = subparsers.add_parser('extract-wikidata', help='Extracts data from wikidata')
+    # parser_extract_wiki_data.add_argument('--id', type=str, required=True, help='ID of the examination to be delete')
+    parser_extract_wiki_data.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
+    parser_extract_wiki_data.add_argument('-n', '--dry-run', action='store_true', help='Perform a dry run without making changes')
+
+
     args = parser.parse_args()
     return args
 
@@ -88,6 +96,8 @@ def main():
         list_examinations()
     elif args.command == 'delete-examination':
         delete_examination(args.id)
+    elif args.command == 'extract-wikidata':
+        extract_wikidata()
     else:
         raise RuntimeError(f'Unsupported command: {args.command}')
 

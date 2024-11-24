@@ -17,13 +17,18 @@ from sqlalchemy import (
 
 Models = MetaData()
 
+WikidataId = String(100)
+Longitude = Numeric(precision=9, scale=6)
+Latitude = Numeric(precision=8, scale=6)
+
 # Describes the adminstrative teritorial unit Region -> Област.
 # The ID is auto-inc value implemented in db_actions.py
 Region: Table = Table(
     'region',
     Models,
     Column('id', Integer, primary_key=True),
-    Column('name', String(20))
+    Column('name', String(20)),
+    Column('wd', WikidataId)
 )
 
 # Describes the adminstrative teritorial unit Municipality -> Община.
@@ -33,7 +38,9 @@ Municipality: Table = Table(
     Models,
     Column('id', Integer, primary_key=True),
     Column('name', String(20)),
-    Column('region_id', ForeignKey('region.id'), nullable=False)
+    Column('region_id', ForeignKey('region.id'), nullable=False),
+    Column('region_wd', WikidataId),
+    Column('wd', WikidataId)
 )
 
 # Describes the cities and villages.
@@ -43,7 +50,12 @@ Place: Table = Table(
     Models,
     Column('id', Integer, primary_key=True),
     Column('name', String(40)),
-    Column('municipality_id', ForeignKey('municipality.id'), nullable=False)
+    Column('municipality_id', ForeignKey('municipality.id'), nullable=False),
+    Column('municipality_wd', WikidataId),
+    Column('wd', WikidataId),
+    Column('type', String(4)),
+    Column('longitude', Longitude),
+    Column('latitude', Latitude)
 )
 
 # Describes the builgarian schools.
@@ -59,7 +71,9 @@ School: Table = Table(
     Models,
     Column('id', String(10), primary_key=True),
     Column('name', String(150), nullable=False),
-    Column('place_id', ForeignKey('place.id'), nullable=False)
+    Column('place_id', ForeignKey('place.id'), nullable=False),
+    # Column('place_wd', ForeignKey('place.wd'), nullable=False),
+    # Column('wd', WikidataId),
 )
 
 # Examination table representation one examination session or "Изпитна сесия".

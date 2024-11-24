@@ -66,15 +66,25 @@ def _get_max_value(session: Session, int_column: Column) -> int:
         return 0
 
 
-def insert_region(session: Session, region: str) -> int:
+def insert_region(session: Session, wd: str, region: str) -> int:
     first = session.execute(
-        select(Region.c.id).where(
-            Region.c.name == region
+        select(Region.c.id, Region.c.name).where(
+            Region.c.wd == wd
         )
     ).first()
 
     if first and first[0]:
-        logger.verbose_info('Found region "%s" with id %d', region, first[0])
+        if first[1] == region:
+            logger.verbose_info('Found region: "%s"', first)
+        else:
+            if not is_dry_run():
+                session.execute(
+                    update(Region)
+                    .where(Region.c.wd == wd)
+                    .values({Region.c.name: region})
+                )
+            logger.verbose_info('Update regionn name for (%d, "%s") from "%s" to "%s"', first[0], wd, first[1], region)
+
         return first[0]
 
     id_max = _get_max_value(session, Region.c.id)
@@ -84,11 +94,12 @@ def insert_region(session: Session, region: str) -> int:
         session.execute(
             insert(Region)
             .values({
-                'id': id,
-                'name': region
+                Region.c.id: id,
+                Region.c.wd: wd,
+                Region.c.name: region
             })
         )
-    logger.verbose_info('Inserted region "%s" with id %d', region, id)
+    logger.verbose_info('Inserted region (%d, "%s", "%s")', id, wd, region)
 
     return id
 
@@ -121,30 +132,45 @@ def insert_mun(session: Session, region_id: int, mun: str) -> int:
     return id
 
 
-def insert_mun(session: Session, region_id: int, mun: str) -> int:
+def insert_mun(session: Session, region_wd: str, wd: str, mun: str) -> int:
     first = session.execute(
-        select(Municipality.c.id).where(
-            Municipality.c.region_id == region_id,
-            Municipality.c.name == mun
+        select(Municipality.c.id, Municipality.c.name).where(
+            Municipality.c.region_wd == region_wd,
+            Municipality.c.wd == wd
         )
     ).first()
+
     if first and first[0]:
-        logger.verbose_info('Found municipality "%s" with id %d', mun, first[0])
+        if first[1] == mun:
+            logger.verbose_info('Found municipality (%d, "%s", "%s", "%s")', first[0], region_wd, wd, mun)
+        else:
+            if not is_dry_run():
+                session.execute(
+                    update(Municipality)
+                    .where(Municipality.c.md == wd)
+                    .values({Municipality.c.name: mun})
+                )
+            logger.verbose_info('Update municipality for (%d, "%s") from "%s" to "%s"', first[0], region_wd, first[1], mun)
+
         return first[0]
 
     id_max = _get_max_value(session, Municipality.c.id)
     id = id_max + 1
 
+    region_row = session.execute(select(Region.c.id).where(Region.c.wd == region_wd)).first()
+
     if not is_dry_run():
         session.execute(
             insert(Municipality)
             .values({
-                'id': id,
-                'region_id': region_id,
-                'name': mun
+                Municipality.c.id: id,
+                Municipality.c.region_id: region_row[0],
+                Municipality.c.region_wd: region_wd,
+                Municipality.c.wd: wd,
+                Municipality.c.name: mun
             })
         )
-    logger.verbose_info('Inserted municipality "%s" with id %d', mun, id)
+    logger.verbose_info('Inserted municipality (id=%d, region_id=%d, region_wd="%s", wd="%s", name="%s")', id, region_row[0], region_wd, wd, mun)
 
     return id
 
