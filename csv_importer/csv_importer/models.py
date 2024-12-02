@@ -18,17 +18,20 @@ from sqlalchemy import (
 Models = MetaData()
 
 WikidataId = String(100)
-Longitude = Numeric(precision=9, scale=6)
-Latitude = Numeric(precision=8, scale=6)
+AreaId = String(100)
+Longitude = String(15)
+Latitude = String(15)
 
 # Describes the adminstrative teritorial unit Region -> Област.
 # The ID is auto-inc value implemented in db_actions.py
 Region: Table = Table(
     'region',
     Models,
-    Column('id', Integer, primary_key=True),
+    Column('id', WikidataId, primary_key=True),
     Column('name', String(20)),
-    Column('wd', WikidataId)
+    Column('area_id', AreaId),
+    Column('longitude', Longitude),
+    Column('latitude', Latitude)
 )
 
 # Describes the adminstrative teritorial unit Municipality -> Община.
@@ -36,11 +39,12 @@ Region: Table = Table(
 Municipality: Table = Table(
     'municipality',
     Models,
-    Column('id', Integer, primary_key=True),
+    Column('id', WikidataId, primary_key=True),
     Column('name', String(20)),
     Column('region_id', ForeignKey('region.id'), nullable=False),
-    Column('region_wd', WikidataId),
-    Column('wd', WikidataId)
+    Column('area_id', AreaId),
+    Column('longitude', Longitude),
+    Column('latitude', Latitude)
 )
 
 # Describes the cities and villages.
@@ -48,12 +52,11 @@ Municipality: Table = Table(
 Place: Table = Table(
     'place',
     Models,
-    Column('id', Integer, primary_key=True),
+    Column('id', WikidataId, primary_key=True),
     Column('name', String(40)),
     Column('municipality_id', ForeignKey('municipality.id'), nullable=False),
-    Column('municipality_wd', WikidataId),
-    Column('wd', WikidataId),
     Column('type', String(4)),
+    Column('area_id', AreaId),
     Column('longitude', Longitude),
     Column('latitude', Latitude)
 )
@@ -72,8 +75,8 @@ School: Table = Table(
     Column('id', String(10), primary_key=True),
     Column('name', String(150), nullable=False),
     Column('place_id', ForeignKey('place.id'), nullable=False),
-    # Column('place_wd', ForeignKey('place.wd'), nullable=False),
-    # Column('wd', WikidataId),
+    Column('longitude', Longitude),
+    Column('latitude', Latitude)
 )
 
 # Examination table representation one examination session or "Изпитна сесия".

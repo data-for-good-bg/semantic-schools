@@ -1,7 +1,6 @@
 from enum import Enum
-from sqlalchemy import insert, select, func, Column, update
+from sqlalchemy import insert, select, func, Column, update, Numeric
 from sqlalchemy.orm import Session
-
 
 from .models import Subject, Region, Municipality, Place, School, Examination, ExaminationScore
 from .runtime import getLogger, is_dry_run
@@ -66,40 +65,49 @@ def _get_max_value(session: Session, int_column: Column) -> int:
         return 0
 
 
-def insert_region(session: Session, wd: str, region: str) -> int:
+def insert_region(session: Session, id: str, name: str, area_id: str, longitude: str, latitude: str) -> str:
+    input_tuple = (id, name, area_id, longitude, latitude)
+
     first = session.execute(
-        select(Region.c.id, Region.c.name).where(
-            Region.c.wd == wd
+        select(
+            Region.c.id, Region.c.name, Region.c.area_id,
+            Region.c.longitude, Region.c.latitude
+        ).where(
+            Region.c.id == id
         )
     ).first()
 
-    if first and first[0]:
-        if first[1] == region:
-            logger.verbose_info('Found region: "%s"', first)
+    if first:
+        if first == input_tuple:
+            logger.verbose_info('Found region: %s', first)
         else:
             if not is_dry_run():
                 session.execute(
                     update(Region)
-                    .where(Region.c.wd == wd)
-                    .values({Region.c.name: region})
+                    .where(Region.c.id == id)
+                    .values({
+                        Region.c.name: name,
+                        Region.c.area_id: area_id,
+                        Region.c.longitude: longitude,
+                        Region.c.latitude: latitude
+                    })
                 )
-            logger.verbose_info('Update regionn name for (%d, "%s") from "%s" to "%s"', first[0], wd, first[1], region)
+            logger.verbose_info('Update region from "%s" to "%s"', first, input_tuple)
 
         return first[0]
 
-    id_max = _get_max_value(session, Region.c.id)
-
-    id = id_max + 1
     if not is_dry_run():
         session.execute(
             insert(Region)
             .values({
                 Region.c.id: id,
-                Region.c.wd: wd,
-                Region.c.name: region
+                Region.c.name: name,
+                Region.c.area_id: area_id,
+                Region.c.longitude: longitude,
+                Region.c.latitude: latitude
             })
         )
-    logger.verbose_info('Inserted region (%d, "%s", "%s")', id, wd, region)
+    logger.verbose_info('Inserted region %s', input_tuple)
 
     return id
 
@@ -132,73 +140,100 @@ def insert_mun(session: Session, region_id: int, mun: str) -> int:
     return id
 
 
-def insert_mun(session: Session, region_wd: str, wd: str, mun: str) -> int:
+def insert_mun(session: Session, id: str, region_id: str, name: str, area_id: str, longitude: str, latitude: str) -> str:
+    input_tuple = (id, region_id, name, area_id, longitude, latitude)
+
     first = session.execute(
-        select(Municipality.c.id, Municipality.c.name).where(
-            Municipality.c.region_wd == region_wd,
-            Municipality.c.wd == wd
+        select(Municipality.c.id, Municipality.c.region_id, Municipality.c.name,
+               Municipality.c.area_id, Municipality.c.longitude, Municipality.c.latitude).
+        where(
+            Municipality.c.id == id
         )
     ).first()
 
-    if first and first[0]:
-        if first[1] == mun:
-            logger.verbose_info('Found municipality (%d, "%s", "%s", "%s")', first[0], region_wd, wd, mun)
+    if first:
+        if first == input_tuple:
+            logger.verbose_info('Found municipality %s', input_tuple)
         else:
             if not is_dry_run():
                 session.execute(
                     update(Municipality)
-                    .where(Municipality.c.md == wd)
-                    .values({Municipality.c.name: mun})
+                    .where(Municipality.c.id == id)
+                    .values({
+                        Municipality.c.name: name,
+                        Municipality.c.region_id: region_id,
+                        Municipality.c.area_id: area_id,
+                        Municipality.c.longitude: longitude,
+                        Municipality.c.latitude: latitude,
+                    })
                 )
-            logger.verbose_info('Update municipality for (%d, "%s") from "%s" to "%s"', first[0], region_wd, first[1], mun)
+            logger.verbose_info('Update municipality from %s to %s', input_tuple, first)
 
         return first[0]
-
-    id_max = _get_max_value(session, Municipality.c.id)
-    id = id_max + 1
-
-    region_row = session.execute(select(Region.c.id).where(Region.c.wd == region_wd)).first()
 
     if not is_dry_run():
         session.execute(
             insert(Municipality)
             .values({
                 Municipality.c.id: id,
-                Municipality.c.region_id: region_row[0],
-                Municipality.c.region_wd: region_wd,
-                Municipality.c.wd: wd,
-                Municipality.c.name: mun
+                Municipality.c.name: name,
+                Municipality.c.region_id: region_id,
+                Municipality.c.area_id: area_id,
+                Municipality.c.longitude: longitude,
+                Municipality.c.latitude: latitude,
             })
         )
-    logger.verbose_info('Inserted municipality (id=%d, region_id=%d, region_wd="%s", wd="%s", name="%s")', id, region_row[0], region_wd, wd, mun)
+    logger.verbose_info('Inserted municipality %s', input_tuple)
 
     return id
 
 
-def insert_place(session: Session, mun_id: int, place: str) -> int:
+def insert_place(session: Session, id: str, mun_id: str, name: str, place_type: str, area_id: str, longitude: str, latitude: str) -> str:
+    input_tuple = (id, mun_id, name, place_type, area_id, longitude, latitude)
+
     first = session.execute(
-        select(Place.c.id).where(
-            Place.c.municipality_id == mun_id,
-            Place.c.name == place
+        select(Place.c.id, Place.c.municipality_id, Place.c.name, Place.c.type,
+               Place.c.area_id, Place.c.longitude, Place.c.latitude).
+        where(
+            Place.c.id == id
         )
     ).first()
-    if first and first[0]:
-        logger.verbose_info('Found place "%s" with id %d', place, first[0])
-        return first[0]
 
-    id_max = _get_max_value(session, Place.c.id)
-    id = id_max + 1
+    if first:
+        if first == input_tuple:
+            logger.verbose_info('Found place %s:', first)
+        else:
+            if not is_dry_run():
+                session.execute(
+                    update(Place)
+                    .where(Place.c.id == id)
+                    .values({
+                        Place.c.name: name,
+                        Place.c.municipality_id: mun_id,
+                        Place.c.type: place_type,
+                        Place.c.area_id: area_id,
+                        Place.c.longitude: longitude,
+                        Place.c.latitude: latitude,
+                    })
+                )
+            logger.verbose_info('Update place from %s to %s', input_tuple, first)
+
+        return first[0]
 
     if not is_dry_run():
         session.execute(
             insert(Place)
             .values({
-                'id': id,
-                'municipality_id': mun_id,
-                'name': place
+                Place.c.id: id,
+                Place.c.name: name,
+                Place.c.municipality_id: mun_id,
+                Place.c.type: place_type,
+                Place.c.area_id: area_id,
+                Place.c.longitude: longitude,
+                Place.c.latitude: latitude,
             })
         )
-    logger.verbose_info('Inserted place "%s" with id %d', place, id)
+    logger.verbose_info('Inserted place %s', input_tuple)
 
     return id
 

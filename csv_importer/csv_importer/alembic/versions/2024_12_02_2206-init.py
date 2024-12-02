@@ -1,8 +1,8 @@
-"""Create tables
+"""init
 
-Revision ID: 200d6e6d7372
+Revision ID: 5d8323448434
 Revises: 
-Create Date: 2024-05-01 10:41:17.105127
+Create Date: 2024-12-02 22:06:02.235157
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '200d6e6d7372'
+revision: str = '5d8323448434'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,28 +28,46 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('region',
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.String(length=100), nullable=False),
     sa.Column('name', sa.String(length=20), nullable=True),
+    sa.Column('area_id', sa.String(length=100), nullable=True),
+    sa.Column('longitude', sa.String(length=15), nullable=True),
+    sa.Column('latitude', sa.String(length=15), nullable=True),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('subject',
+    sa.Column('id', sa.String(length=10), nullable=False),
+    sa.Column('name', sa.String(length=120), nullable=True),
+    sa.Column('abbreviations', sa.String(length=30), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('municipality',
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.String(length=100), nullable=False),
     sa.Column('name', sa.String(length=20), nullable=True),
-    sa.Column('region_id', sa.Integer(), nullable=False),
+    sa.Column('region_id', sa.String(length=100), nullable=False),
+    sa.Column('area_id', sa.String(length=100), nullable=True),
+    sa.Column('longitude', sa.String(length=15), nullable=True),
+    sa.Column('latitude', sa.String(length=15), nullable=True),
     sa.ForeignKeyConstraint(['region_id'], ['region.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('place',
-    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('id', sa.String(length=100), nullable=False),
     sa.Column('name', sa.String(length=40), nullable=True),
-    sa.Column('municipality_id', sa.Integer(), nullable=False),
+    sa.Column('municipality_id', sa.String(length=100), nullable=False),
+    sa.Column('type', sa.String(length=4), nullable=True),
+    sa.Column('area_id', sa.String(length=100), nullable=True),
+    sa.Column('longitude', sa.String(length=15), nullable=True),
+    sa.Column('latitude', sa.String(length=15), nullable=True),
     sa.ForeignKeyConstraint(['municipality_id'], ['municipality.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('school',
     sa.Column('id', sa.String(length=10), nullable=False),
     sa.Column('name', sa.String(length=150), nullable=False),
-    sa.Column('place_id', sa.Integer(), nullable=False),
+    sa.Column('place_id', sa.String(length=100), nullable=False),
+    sa.Column('longitude', sa.String(length=15), nullable=True),
+    sa.Column('latitude', sa.String(length=15), nullable=True),
     sa.ForeignKeyConstraint(['place_id'], ['place.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -57,13 +75,12 @@ def upgrade() -> None:
     sa.Column('examination_id', sa.String(length=15), nullable=False),
     sa.Column('school_id', sa.String(length=10), nullable=False),
     sa.Column('subject', sa.String(length=10), nullable=False),
-    sa.Column('subject_specifier', sa.String(length=10), nullable=False),
     sa.Column('people', sa.Integer(), nullable=True),
-    sa.Column('score', sa.Double(), nullable=True),
-    sa.Column('max_possible_score', sa.Double(), nullable=True),
+    sa.Column('score', sa.Numeric(), nullable=True),
+    sa.Column('max_possible_score', sa.Numeric(), nullable=True),
     sa.ForeignKeyConstraint(['examination_id'], ['examination.id'], ),
     sa.ForeignKeyConstraint(['school_id'], ['school.id'], ),
-    sa.PrimaryKeyConstraint('examination_id', 'school_id', 'subject', 'subject_specifier')
+    sa.PrimaryKeyConstraint('examination_id', 'school_id', 'subject')
     )
     # ### end Alembic commands ###
 
@@ -74,6 +91,7 @@ def downgrade() -> None:
     op.drop_table('school')
     op.drop_table('place')
     op.drop_table('municipality')
+    op.drop_table('subject')
     op.drop_table('region')
     op.drop_table('examination')
     # ### end Alembic commands ###
