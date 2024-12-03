@@ -1,6 +1,7 @@
 from enum import Enum
-from sqlalchemy import insert, select, func, Column, update, Numeric
+from sqlalchemy import insert, select, update, Table
 from sqlalchemy.orm import Session
+from collections import OrderedDict
 
 from .models import Subject, Region, Municipality, Place, School, Examination, ExaminationScore
 from .runtime import getLogger, is_dry_run
@@ -54,188 +55,73 @@ def insert_or_update_subject(session: Session, id: str, name: str, abbr: list[st
         logger.verbose_info('Inserted subject %s, %s, %s', id, name, abbreviations)
 
 
-def _get_max_value(session: Session, int_column: Column) -> int:
-    cur = session.execute(
-        func.max(int_column)
-    )
-    first_row = cur.first()
-    if first_row and first_row[0]:
-        return first_row[0]
-    else:
-        return 0
-
-
-def insert_region(session: Session, id: str, name: str, area_id: str, longitude: str, latitude: str) -> str:
-    input_tuple = (id, name, area_id, longitude, latitude)
+def insert_object(session: Session, model: Table, id_name: str, values: OrderedDict) -> None:
+    input_tuple = tuple(values.values())
 
     first = session.execute(
-        select(
-            Region.c.id, Region.c.name, Region.c.area_id,
-            Region.c.longitude, Region.c.latitude
-        ).where(
-            Region.c.id == id
-        )
+        select(values.keys()).
+        where(id_name == values[id_name])
     ).first()
 
     if first:
         if first == input_tuple:
-            logger.verbose_info('Found region: %s', first)
+            logger.verbose_info('Found %s: %s', model.name, first)
         else:
             if not is_dry_run():
+                values_for_update = values.copy()
+                values_for_update.pop(id_name)
                 session.execute(
-                    update(Region)
-                    .where(Region.c.id == id)
-                    .values({
-                        Region.c.name: name,
-                        Region.c.area_id: area_id,
-                        Region.c.longitude: longitude,
-                        Region.c.latitude: latitude
-                    })
+                    update(model)
+                    .where(id_name == values[id_name])
+                    .values(values_for_update)
                 )
-            logger.verbose_info('Update region from "%s" to "%s"', first, input_tuple)
-
-        return first[0]
-
-    if not is_dry_run():
-        session.execute(
-            insert(Region)
-            .values({
-                Region.c.id: id,
-                Region.c.name: name,
-                Region.c.area_id: area_id,
-                Region.c.longitude: longitude,
-                Region.c.latitude: latitude
-            })
-        )
-    logger.verbose_info('Inserted region %s', input_tuple)
-
-    return id
+            logger.verbose_info('Updated %s from %s to %s', model.name, first, input_tuple)
+    else:
+        if not is_dry_run():
+            session.execute(
+                insert(model)
+                .values(values)
+            )
+        logger.verbose_info('Inserted %s %s', model.name, input_tuple)
 
 
-def insert_mun(session: Session, region_id: int, mun: str) -> int:
-    first = session.execute(
-        select(Municipality.c.id).where(
-            Municipality.c.region_id == region_id,
-            Municipality.c.name == mun
-        )
-    ).first()
-    if first and first[0]:
-        logger.verbose_info('Found municipality "%s" with id %d', mun, first[0])
-        return first[0]
-
-    id_max = _get_max_value(session, Municipality.c.id)
-    id = id_max + 1
-
-    if not is_dry_run():
-        session.execute(
-            insert(Municipality)
-            .values({
-                'id': id,
-                'region_id': region_id,
-                'name': mun
-            })
-        )
-    logger.verbose_info('Inserted municipality "%s" with id %d', mun, id)
-
-    return id
+def insert_region(session: Session, id: str, name: str, area_id: str, longitude: str, latitude: str):
+    insert_object(
+        session, Region, Region.c.id, OrderedDict([
+            (Region.c.id, id),
+            (Region.c.name, name),
+            (Region.c.area_id, area_id),
+            (Region.c.longitude, longitude),
+            (Region.c.latitude, latitude)
+        ])
+    )
 
 
 def insert_mun(session: Session, id: str, region_id: str, name: str, area_id: str, longitude: str, latitude: str) -> str:
-    input_tuple = (id, region_id, name, area_id, longitude, latitude)
-
-    first = session.execute(
-        select(Municipality.c.id, Municipality.c.region_id, Municipality.c.name,
-               Municipality.c.area_id, Municipality.c.longitude, Municipality.c.latitude).
-        where(
-            Municipality.c.id == id
-        )
-    ).first()
-
-    if first:
-        if first == input_tuple:
-            logger.verbose_info('Found municipality %s', input_tuple)
-        else:
-            if not is_dry_run():
-                session.execute(
-                    update(Municipality)
-                    .where(Municipality.c.id == id)
-                    .values({
-                        Municipality.c.name: name,
-                        Municipality.c.region_id: region_id,
-                        Municipality.c.area_id: area_id,
-                        Municipality.c.longitude: longitude,
-                        Municipality.c.latitude: latitude,
-                    })
-                )
-            logger.verbose_info('Update municipality from %s to %s', input_tuple, first)
-
-        return first[0]
-
-    if not is_dry_run():
-        session.execute(
-            insert(Municipality)
-            .values({
-                Municipality.c.id: id,
-                Municipality.c.name: name,
-                Municipality.c.region_id: region_id,
-                Municipality.c.area_id: area_id,
-                Municipality.c.longitude: longitude,
-                Municipality.c.latitude: latitude,
-            })
-        )
-    logger.verbose_info('Inserted municipality %s', input_tuple)
-
-    return id
+    insert_object(
+        session, Municipality, Municipality.c.id, OrderedDict([
+            (Municipality.c.id, id),
+            (Municipality.c.name, name),
+            (Municipality.c.region_id, region_id),
+            (Municipality.c.area_id, area_id),
+            (Municipality.c.longitude, longitude),
+            (Municipality.c.latitude, latitude)
+        ])
+    )
 
 
 def insert_place(session: Session, id: str, mun_id: str, name: str, place_type: str, area_id: str, longitude: str, latitude: str) -> str:
-    input_tuple = (id, mun_id, name, place_type, area_id, longitude, latitude)
-
-    first = session.execute(
-        select(Place.c.id, Place.c.municipality_id, Place.c.name, Place.c.type,
-               Place.c.area_id, Place.c.longitude, Place.c.latitude).
-        where(
-            Place.c.id == id
-        )
-    ).first()
-
-    if first:
-        if first == input_tuple:
-            logger.verbose_info('Found place %s:', first)
-        else:
-            if not is_dry_run():
-                session.execute(
-                    update(Place)
-                    .where(Place.c.id == id)
-                    .values({
-                        Place.c.name: name,
-                        Place.c.municipality_id: mun_id,
-                        Place.c.type: place_type,
-                        Place.c.area_id: area_id,
-                        Place.c.longitude: longitude,
-                        Place.c.latitude: latitude,
-                    })
-                )
-            logger.verbose_info('Update place from %s to %s', input_tuple, first)
-
-        return first[0]
-
-    if not is_dry_run():
-        session.execute(
-            insert(Place)
-            .values({
-                Place.c.id: id,
-                Place.c.name: name,
-                Place.c.municipality_id: mun_id,
-                Place.c.type: place_type,
-                Place.c.area_id: area_id,
-                Place.c.longitude: longitude,
-                Place.c.latitude: latitude,
-            })
-        )
-    logger.verbose_info('Inserted place %s', input_tuple)
-
-    return id
+    insert_object(
+        session, Place, Place.c.id, OrderedDict([
+            (Place.c.id, id),
+            (Place.c.name, name),
+            (Place.c.municipality_id, mun_id),
+            (Place.c.type, place_type),
+            (Place.c.area_id, area_id),
+            (Place.c.longitude, longitude),
+            (Place.c.latitude, latitude)
+        ])
+    )
 
 
 def insert_school(session: Session, place_id: int, school_id: str, school_name: str) -> None:
