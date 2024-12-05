@@ -2,6 +2,7 @@ from enum import Enum
 from sqlalchemy import insert, select, update, Table
 from sqlalchemy.orm import Session
 from collections import OrderedDict
+from typing import Any
 
 from .models import Subject, Region, Municipality, Place, School, Examination, ExaminationScore
 from .runtime import getLogger, is_dry_run
@@ -55,12 +56,12 @@ def insert_or_update_subject(session: Session, id: str, name: str, abbr: list[st
         logger.verbose_info('Inserted subject %s, %s, %s', id, name, abbreviations)
 
 
-def insert_object(session: Session, model: Table, id_name: str, values: OrderedDict) -> None:
+def insert_or_update_object(session: Session, model: Table, id_col: Any, values: OrderedDict) -> None:
     input_tuple = tuple(values.values())
 
     first = session.execute(
         select(values.keys()).
-        where(id_name == values[id_name])
+        where(id_col == values[id_col])
     ).first()
 
     if first:
@@ -69,10 +70,10 @@ def insert_object(session: Session, model: Table, id_name: str, values: OrderedD
         else:
             if not is_dry_run():
                 values_for_update = values.copy()
-                values_for_update.pop(id_name)
+                values_for_update.pop(id_col)
                 session.execute(
                     update(model)
-                    .where(id_name == values[id_name])
+                    .where(id_col == values[id_col])
                     .values(values_for_update)
                 )
             logger.verbose_info('Updated %s from %s to %s', model.name, first, input_tuple)
@@ -86,42 +87,18 @@ def insert_object(session: Session, model: Table, id_name: str, values: OrderedD
 
 
 def insert_region(session: Session, id: str, name: str, area_id: str, longitude: str, latitude: str):
-    insert_object(
-        session, Region, Region.c.id, OrderedDict([
-            (Region.c.id, id),
-            (Region.c.name, name),
-            (Region.c.area_id, area_id),
-            (Region.c.longitude, longitude),
-            (Region.c.latitude, latitude)
-        ])
-    )
+    # TODO: delete when all the code is not using this
+    pass
 
 
 def insert_mun(session: Session, id: str, region_id: str, name: str, area_id: str, longitude: str, latitude: str) -> str:
-    insert_object(
-        session, Municipality, Municipality.c.id, OrderedDict([
-            (Municipality.c.id, id),
-            (Municipality.c.name, name),
-            (Municipality.c.region_id, region_id),
-            (Municipality.c.area_id, area_id),
-            (Municipality.c.longitude, longitude),
-            (Municipality.c.latitude, latitude)
-        ])
-    )
+    # TODO: delete when all the code is not using this
+    pass
 
 
-def insert_place(session: Session, id: str, mun_id: str, name: str, place_type: str, area_id: str, longitude: str, latitude: str) -> str:
-    insert_object(
-        session, Place, Place.c.id, OrderedDict([
-            (Place.c.id, id),
-            (Place.c.name, name),
-            (Place.c.municipality_id, mun_id),
-            (Place.c.type, place_type),
-            (Place.c.area_id, area_id),
-            (Place.c.longitude, longitude),
-            (Place.c.latitude, latitude)
-        ])
-    )
+def insert_place():
+    # TODO: delete when all the code is not using this
+    pass
 
 
 def insert_school(session: Session, place_id: int, school_id: str, school_name: str) -> None:

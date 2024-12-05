@@ -1,20 +1,24 @@
-import requests
 import re
 from SPARQLWrapper import SPARQLWrapper, JSON
+from sqlalchemy import Table
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from typing import Optional
-from decimal import Decimal
+from collections import OrderedDict
 
 from .runtime import getLogger
-from .db_actions import insert_region, insert_mun, insert_place
+from .db_actions import insert_or_update_object
 from .db import get_db_engine
+from .models import Region, Municipality, Place, School
 
 
 logger = getLogger(__name__)
 
+# NB: Look here for details around wikidata entries for Bulgaria
 # https://www.wikidata.org/wiki/Wikidata:WikiProject_Bulgaria/Administrative_Entities
 
-
+# NB: Use this query to explore all relations for particular subject
+#
 # SELECT ?property ?propertyLabel ?value ?valueLabel
 # WHERE {
 #   wd:Q12294213 ?prop ?value .
@@ -32,51 +36,72 @@ DISPLAY_PLACE_TYPE = {
 }
 
 REGION_SPARQL = '''
-SELECT distinct ?region ?regionLabel ?coordinates ?areaId WHERE {
+SELECT distinct ?id ?name ?coordinates ?area_id WHERE {
 
   ?region wdt:P31 wd:Q209824;
     wdt:P625 ?coordinates.
-  OPTIONAL { ?region wdt:P982 ?areaId. }.
+  OPTIONAL { ?region wdt:P982 ?area_id. }.
 
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "bg". }
+  BIND(?region AS ?id).
+
+  SERVICE wikibase:label {
+    bd:serviceParam wikibase:language "bg".
+    ?region rdfs:label ?name.
+  }
 }
-order by ?regionLabel
+order by ?name
 '''
 
 MUN_SPARQL = '''
-SELECT distinct ?region ?mun ?munLabel ?coordinates ?areaId  WHERE {
+SELECT distinct ?region_id ?id ?name ?coordinates ?area_id  WHERE {
 
   ?mun wdt:P31 wd:Q1906268;
        wdt:P131 ?region;
        wdt:P625 ?coordinates.
 
-  OPTIONAL { ?mun wdt:P982 ?areaId. }.
+  OPTIONAL { ?mun wdt:P982 ?area_id. }.
 
   ?region wdt:P31 wd:Q209824.
 
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "bg". }
+  BIND(?mun as ?id).
+  BIND(?region as ?region_id).
+
+  SERVICE wikibase:label {
+    bd:serviceParam wikibase:language "bg".
+    ?mun rdfs:label ?name.
+    ?region rdfs:label ?regionLabel.
+  }
 }
-order by ?munLabel
+order by ?regionLabel ?munLabel
 '''
 
 PLACE_SPARQL = '''
-SELECT distinct ?place ?placeLabel ?munLabel ?mun ?coordinates ?areaId WHERE {{
+SELECT distinct ?municipality_id ?id ?name ?coordinates ?area_od WHERE {{
   ?place wdt:P31 {0};
    wdt:P131 ?mun;
    wdt:P625 ?coordinates.
 
-  OPTIONAL {{ ?place wdt:P982 ?areaId. }}.
+  OPTIONAL {{ ?place wdt:P982 ?area_id. }}.
 
   ?mun wdt:P31 wd:Q1906268;
        wdt:P131 ?region.
 
-  SERVICE wikibase:label {{ bd:serviceParam wikibase:language "bg". }}
+  BIND(?place as ?id).
+  BIND(?mun as ?municipality_id).
+
+
+  SERVICE wikibase:label {{
+    bd:serviceParam wikibase:language "bg".
+    ?place rdfs:label ?name.
+    ?mun rdfs:label ?munLabel.
+
+  }}
 }}
-order by ?munLabel ?placeLabel
+order by ?munLabel ?name
 '''
 
 SCHOOL_QUERY = '''
-SELECT distinct ?place ?placeLabel ?school ?schoolLabel ?bgSchoolIdLabel ?coordinates WHERE {
+SELECT distinct ?place_id ?id ?name ?wikidata_id ?coordinates WHERE {
   ?school wdt:P31 wd:Q3914;
           wdt:P9034 ?bgSchoolId;
           wdt:P625 ?coordinates;
@@ -84,11 +109,19 @@ SELECT distinct ?place ?placeLabel ?school ?schoolLabel ?bgSchoolIdLabel ?coordi
 
   ?place wdt:P31 ?placeType.
 
+  BIND(?place as ?place_id).
+  BIND(?school as ?wikidata_id).
+
   FILTER(?placeType in (wd:Q89487741, wd:Q15630849)).
 
-  SERVICE wikibase:label { bd:serviceParam wikibase:language "bg". }
+  SERVICE wikibase:label {
+    bd:serviceParam wikibase:language "bg".
+    ?school rdfs:label ?name.
+    ?place rdfs:label ?placeLabel.
+    ?bgSchoolId rdfs:label ?id.
+  }
 }
-order by ?placeLabel ?schoolLabel
+order by ?placeLabel ?id ?name
 '''
 
 
@@ -97,15 +130,6 @@ order by ?placeLabel ?schoolLabel
 #
 CONTACT_EMAIL = 'info+semantic-schools@data-for-good.bg'
 USER_AGENT = f'User-Agent: semantic-schools/0.1 (https://data-for-good.bg/; {CONTACT_EMAIL}) semantic-schools/0.1'
-
-
-def _extract_wikidata_via_requests():
-    url = 'https://query.wikidata.org/bigdata/namespace/wdq/sparql'
-    query = PLACE_SPARQL.format(CITY_IN_BULGARIA)
-    logger.info(query)
-
-    data = requests.get(url, params={'query': query, 'format': 'json'}).text
-    print(data)
 
 
 def _flatten_sparql_json_result(sparql_json_result: dict) -> list[dict]:
@@ -147,65 +171,74 @@ def _extract_coordinates(point: str) -> tuple[Optional[str], Optional[str]]:
         return (None, None)
 
 
-def _extract_arae_id(wikidata_row: dict) -> str:
-    if 'areaId' in wikidata_row and wikidata_row['areaId']:
-        return f'https://musicbrainz.org/area/{wikidata_row["areaId"]}'
-    else:
-        return ''
+def _update_coordinates(wikidata_item: dict):
+    if 'coordinates' in wikidata_item:
+        longitude = None
+        latitude = None
+        if wikidata_item['coordinates']:
+            longitude, latitude = _extract_coordinates(wikidata_item['coordinates'])
+
+        wikidata_item.pop('coordinates')
+        wikidata_item['longitude'] = longitude
+        wikidata_item['latitude'] = latitude
 
 
-def _import_regions(session: Session):
-    regions = _extract_wikidata_via_sparql(REGION_SPARQL)
-    for region in regions:
-        area_id = _extract_arae_id(region)
-        coordinates = _extract_coordinates(region['coordinates'])
-        insert_region(session, region['region'], region['regionLabel'], area_id, *coordinates)
+def _update_area_id(wikidata_item: dict):
+    if 'area_id' in wikidata_item:
+        if wikidata_item['area_id']:
+            full_area_id = f'https://musicbrainz.org/area/{wikidata_item["area_id"]}'
+            wikidata_item['area_id'] = full_area_id
 
 
-def _import_municipalities(session: Session):
-    muns = _extract_wikidata_via_sparql(MUN_SPARQL)
-    known_muns = set()
-    for mun in muns:
-        if mun['mun'] in known_muns:
-            logger.verbose_info('skipping muncipliaty %s', mun)
-            # some municiaplities has two relations for coordinates, so in the result
-            # we get two rows for them. We work only with the first row here, the other
-            # rows are ignored. I don't think there's a clear way to do this with SPARQL
+def _import_sparql_result(session: Session, sparql: str, model: Table, constant_values: Optional[dict] = None):
+    if constant_values is None:
+        constant_values = {}
+
+    sparql_result = _extract_wikidata_via_sparql(sparql)
+    known = set()
+    for result_item in sparql_result:
+        if result_item['id'] in known:
+            # TODO: explain why we skip objects
+            logger.verbose_info('Skipping %s %s', model.name, result_item)
             continue
 
-        area_id = _extract_arae_id(mun)
-        coordinates = _extract_coordinates(mun['coordinates'])
+        known.add(result_item['id'])
 
-        insert_mun(session, mun['mun'], mun['region'], mun['munLabel'], area_id, *coordinates)
-        known_muns.add(mun['mun'])
+        _update_area_id(result_item)
+        _update_coordinates(result_item)
 
+        key_values = []
+        for col in model.columns:
+            value = result_item[col.name] \
+                if col.name in result_item \
+                else None
+            if value is None:
+                value = constant_values[col.name] \
+                    if col.name in constant_values \
+                    else None
 
-def _import_places(session: Session, place_type: str):
-    places = _extract_wikidata_via_sparql(PLACE_SPARQL.format(place_type))
-    known_place = set()
-    for place in places:
-        if place['place'] in known_place:
-            logger.verbose_info('skipping place %s', place)
-            # some places has two relations for coordinates, so in the result
-            # we get two rows for them. We work only with the first row here, the other
-            # rows are ignored. I don't think there's a clear way to do this with SPARQL
-            continue
+            key_values.append( (col, value) )
 
-        area_id = _extract_arae_id(place)
-        coordinates = _extract_coordinates(place['coordinates'])
+        od = OrderedDict(key_values)
 
-        insert_place(session, place['place'], place['mun'],
-                     place['placeLabel'], DISPLAY_PLACE_TYPE[place_type],
-                     area_id, *coordinates)
-        known_place.add(place['place'])
+        try:
+            insert_or_update_object(session, model, model.columns['id'], od)
+            session.commit()
+        except IntegrityError as e:
+            values_tuple = tuple(od.values())
+            logger.verbose_info('Failed processing %s because of %s', values_tuple, e)
+            session.rollback()
 
 
 def extract_wikidata():
 
     db = get_db_engine()
     with Session(db) as session:
-        # _import_regions(session)
-        # _import_municipalities(session)
-        _import_places(session, CITY_IN_BULGARIA)
-        _import_places(session, VILLAGE_IN_BULGARIA)
+        # _import_sparql_result(session, REGION_SPARQL, Region)
+        # _import_sparql_result(session, MUN_SPARQL, Municipality)
+        # for place_type in [CITY_IN_BULGARIA, VILLAGE_IN_BULGARIA]:
+        #     _import_sparql_result(session, PLACE_SPARQL.format(place_type), Place, {'type': DISPLAY_PLACE_TYPE[place_type]})
+
+        _import_sparql_result(session, SCHOOL_QUERY, School)
+
         session.commit()

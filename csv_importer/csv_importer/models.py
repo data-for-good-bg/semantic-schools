@@ -76,7 +76,8 @@ School: Table = Table(
     Column('name', String(150), nullable=False),
     Column('place_id', ForeignKey('place.id'), nullable=False),
     Column('longitude', Longitude),
-    Column('latitude', Latitude)
+    Column('latitude', Latitude),
+    Column('wikidata_id', WikidataId)
 )
 
 # Examination table representation one examination session or "Изпитна сесия".
