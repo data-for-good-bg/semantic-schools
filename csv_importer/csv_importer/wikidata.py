@@ -4,10 +4,10 @@ from sqlalchemy import Table
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from typing import Optional
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 from .runtime import getLogger
-from .db_actions import insert_or_update_object
+from .db_actions import insert_or_update_object, ImportAction
 from .db import get_db_engine
 from .models import Region, Municipality, Place, School
 
@@ -76,7 +76,7 @@ order by ?regionLabel ?munLabel
 '''
 
 PLACE_SPARQL = '''
-SELECT distinct ?municipality_id ?id ?name ?coordinates ?area_od WHERE {{
+SELECT distinct ?municipality_id ?id ?name ?coordinates ?area_id WHERE {{
   ?place wdt:P31 {0};
    wdt:P131 ?mun;
    wdt:P625 ?coordinates.
@@ -99,6 +99,42 @@ SELECT distinct ?municipality_id ?id ?name ?coordinates ?area_od WHERE {{
 }}
 order by ?munLabel ?name
 '''
+
+# NB: This query is similar to the above one, but extracts cities or villages
+#     through an additional relation, district.
+#     This query was used to because gr. Bankya does not belong directly to
+#     municipality and some schools failed to import.
+#     It turned out that gr. Bankya is the only exception, so it is handled
+#     specially, see below.
+#
+# DISTRICT_PLACE_SPARQL = '''
+# SELECT distinct ?municipality_id ?id ?name ?coordinates ?area_id WHERE {{
+#   ?place wdt:P31 {0};
+#    wdt:P131 ?district;
+#    wdt:P625 ?coordinates.
+
+#   OPTIONAL {{ ?place wdt:P982 ?area_id. }}.
+
+#   ?district wdt:P31 wd:Q7553685;
+#             wdt:P131 ?mun.
+
+#   ?mun wdt:P31 wd:Q1906268;
+#        wdt:P131 ?region.
+
+#   BIND(?place as ?id).
+#   BIND(?mun as ?municipality_id).
+
+
+#   SERVICE wikibase:label {{
+#     bd:serviceParam wikibase:language "bg".
+#     ?place rdfs:label ?name.
+#     ?mun rdfs:label ?munLabel.
+
+#   }}
+# }}
+# order by ?munLabel ?name
+# '''
+
 
 SCHOOL_QUERY = '''
 SELECT distinct ?place_id ?id ?name ?wikidata_id ?coordinates WHERE {
@@ -145,9 +181,6 @@ def _flatten_sparql_json_result(sparql_json_result: dict) -> list[dict]:
 
 
 def _extract_wikidata_via_sparql(query: str):
-    # query = PLACE_SPARQL.format(CITY_IN_BULGARIA)
-    # query = PLACE_SPARQL.format(VILLAGE_IN_BULGARIA)
-    # query = SCHOOL_QUERY
     logger.info(query)
 
     sparql = SPARQLWrapper('https://query.wikidata.org/sparql', USER_AGENT)
@@ -190,7 +223,8 @@ def _update_area_id(wikidata_item: dict):
             wikidata_item['area_id'] = full_area_id
 
 
-def _import_sparql_result(session: Session, sparql: str, model: Table, constant_values: Optional[dict] = None):
+def _import_sparql_result(session: Session, sparql: str, model: Table, constant_values: Optional[dict] = None) -> dict[ImportAction, int]:
+    counts = defaultdict(int)
     if constant_values is None:
         constant_values = {}
 
@@ -222,23 +256,53 @@ def _import_sparql_result(session: Session, sparql: str, model: Table, constant_
         od = OrderedDict(key_values)
 
         try:
-            insert_or_update_object(session, model, model.columns['id'], od)
+            action = insert_or_update_object(session, model, model.columns['id'], od)
             session.commit()
+
+            counts[action] += 1
         except IntegrityError as e:
             values_tuple = tuple(od.values())
             logger.verbose_info('Failed processing %s because of %s', values_tuple, e)
             session.rollback()
+            counts[ImportAction.Failed] += 1
+
+    return counts
 
 
 def extract_wikidata():
 
+    counters = dict()
+
     db = get_db_engine()
     with Session(db) as session:
-        # _import_sparql_result(session, REGION_SPARQL, Region)
-        # _import_sparql_result(session, MUN_SPARQL, Municipality)
-        # for place_type in [CITY_IN_BULGARIA, VILLAGE_IN_BULGARIA]:
-        #     _import_sparql_result(session, PLACE_SPARQL.format(place_type), Place, {'type': DISPLAY_PLACE_TYPE[place_type]})
+        counters[Region.name] = _import_sparql_result(session, REGION_SPARQL, Region)
 
-        _import_sparql_result(session, SCHOOL_QUERY, School)
+        counters[Municipality.name] = _import_sparql_result(session, MUN_SPARQL, Municipality)
+
+        for place_type in [CITY_IN_BULGARIA, VILLAGE_IN_BULGARIA]:
+            counters[Place.name+'-'+place_type] = _import_sparql_result(session, PLACE_SPARQL.format(place_type), Place, {'type': DISPLAY_PLACE_TYPE[place_type]})
+
+        # Bankya is handled specially, because it is the only city in Bulgaria
+        # which does not belong (P:131) to a municipality of Bulgaria. So
+        # because of this it is not imported as all other cities and viligies
+        insert_or_update_object(session, Place, Place.c.id, OrderedDict([
+            (Place.c.id, 'http://www.wikidata.org/entity/Q806817'),
+            (Place.c.name, 'Банкя'),
+            (Place.c.municipality_id, 'http://www.wikidata.org/entity/Q4442915'),
+            (Place.c.type, 'град'),
+            (Place.c.area_id, None),
+            (Place.c.longitude, '23.147239'),
+            (Place.c.latitude, '42.706945')
+        ]))
+
+        counters[School.name] = _import_sparql_result(session, SCHOOL_QUERY, School)
 
         session.commit()
+
+    logger.info('Summary of operations per model')
+
+    for model_name, counts in counters.items():
+        cnt_items = [f'{op_type}: {op_cnt}' for op_type, op_cnt in counts.items()]
+        cnts_str = ', '.join(cnt_items)
+        msg = f'Operation counts for model "{model_name}" --- {cnts_str}'
+        logger.info(msg)

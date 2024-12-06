@@ -20,6 +20,7 @@ class ImportAction(Enum):
     AlreadyExists = 0
     Insert = 1
     Update = 2
+    Failed = 3
 
 
 def insert_or_update_subject(session: Session, id: str, name: str, abbr: list[str]):
@@ -56,7 +57,7 @@ def insert_or_update_subject(session: Session, id: str, name: str, abbr: list[st
         logger.verbose_info('Inserted subject %s, %s, %s', id, name, abbreviations)
 
 
-def insert_or_update_object(session: Session, model: Table, id_col: Any, values: OrderedDict) -> None:
+def insert_or_update_object(session: Session, model: Table, id_col: Any, values: OrderedDict) -> ImportAction:
     input_tuple = tuple(values.values())
 
     first = session.execute(
@@ -67,6 +68,7 @@ def insert_or_update_object(session: Session, model: Table, id_col: Any, values:
     if first:
         if first == input_tuple:
             logger.verbose_info('Found %s: %s', model.name, first)
+            return ImportAction.AlreadyExists
         else:
             if not is_dry_run():
                 values_for_update = values.copy()
@@ -77,6 +79,7 @@ def insert_or_update_object(session: Session, model: Table, id_col: Any, values:
                     .values(values_for_update)
                 )
             logger.verbose_info('Updated %s from %s to %s', model.name, first, input_tuple)
+            return ImportAction.Update
     else:
         if not is_dry_run():
             session.execute(
@@ -84,6 +87,7 @@ def insert_or_update_object(session: Session, model: Table, id_col: Any, values:
                 .values(values)
             )
         logger.verbose_info('Inserted %s %s', model.name, input_tuple)
+        return ImportAction.Insert
 
 
 def insert_region(session: Session, id: str, name: str, area_id: str, longitude: str, latitude: str):
