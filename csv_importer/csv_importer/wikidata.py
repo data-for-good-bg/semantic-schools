@@ -275,12 +275,12 @@ def extract_wikidata():
 
     db = get_db_engine()
     with Session(db) as session:
-        # counters[Region.name] = _import_sparql_result(session, REGION_SPARQL, Region)
+        counters[Region.name] = _import_sparql_result(session, REGION_SPARQL, Region)
 
-        # counters[Municipality.name] = _import_sparql_result(session, MUN_SPARQL, Municipality)
+        counters[Municipality.name] = _import_sparql_result(session, MUN_SPARQL, Municipality)
 
-        # for place_type in [CITY_IN_BULGARIA, VILLAGE_IN_BULGARIA]:
-        #     counters[Place.name+'-'+place_type] = _import_sparql_result(session, PLACE_SPARQL.format(place_type), Place, {'type': DISPLAY_PLACE_TYPE[place_type]})
+        for place_type in [CITY_IN_BULGARIA, VILLAGE_IN_BULGARIA]:
+            counters[Place.name+'-'+place_type] = _import_sparql_result(session, PLACE_SPARQL.format(place_type), Place, {'type': DISPLAY_PLACE_TYPE[place_type]})
 
         # # Bankya is handled specially, because it is the only city in Bulgaria
         # # which does not belong (P:131) to a municipality of Bulgaria. So
@@ -295,7 +295,7 @@ def extract_wikidata():
             (Place.c.latitude, '42.706945')
         ]))
 
-        # counters[School.name] = _import_sparql_result(session, SCHOOL_QUERY, School)
+        counters[School.name] = _import_sparql_result(session, SCHOOL_QUERY, School)
 
         session.commit()
 

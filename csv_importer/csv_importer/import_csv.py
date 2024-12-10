@@ -33,6 +33,14 @@ PLACE = 'place'
 
 
 def try_find_place(session: Session, place_name: str, mun: str, region: str) -> str:
+    # Here we have some hardcoded cleaning actions,
+    # Some of them make sense to be here, but some of them probably can be
+    # generalized.
+    # TODO:
+    # Also in refince_csv there's code which capitlizes only the first letter
+    # of the place names, which probably has impact here. Also that code in
+    # refine_csv was added after I put some of the "magics" below...
+
     if region.lower() == 'софия-град':
         region = 'София Столица'
     if region.lower() == 'софия-област':
