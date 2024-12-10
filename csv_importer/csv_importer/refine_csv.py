@@ -481,12 +481,19 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
         if not value:
             return value
 
+        def _upper_first(s: str) -> str:
+            if not s:
+                return s
+
+            s = s.strip()
+            return s[0].upper() + s[1:].lower()
+
         try:
             if '.' in value:
                 prefix, name = value.split('.')
-                return f'{prefix.strip().lower()}. {name.strip().title()}'
+                return f'{prefix.strip().lower()}. {_upper_first(name)}'
             else:
-                return value.strip().title()
+                return _upper_first(value.strip())
         except:
             logger.error('Failed to make prety place from value %s', value)
             raise

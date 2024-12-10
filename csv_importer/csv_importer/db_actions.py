@@ -60,9 +60,17 @@ def insert_or_update_subject(session: Session, id: str, name: str, abbr: list[st
 def insert_or_update_object(session: Session, model: Table, id_col: Any, values: OrderedDict) -> ImportAction:
     input_tuple = tuple(values.values())
 
+    if not isinstance(id_col, list):
+        id_col = [id_col]
+
+    where_filters = [
+        col == values[col]
+        for col in id_col
+    ]
+
     first = session.execute(
         select(values.keys()).
-        where(id_col == values[id_col])
+        where(*where_filters)
     ).first()
 
     if first:
@@ -72,10 +80,11 @@ def insert_or_update_object(session: Session, model: Table, id_col: Any, values:
         else:
             if not is_dry_run():
                 values_for_update = values.copy()
-                values_for_update.pop(id_col)
+                for col in id_col:
+                    values_for_update.pop(col)
                 session.execute(
                     update(model)
-                    .where(id_col == values[id_col])
+                    .where(*where_filters)
                     .values(values_for_update)
                 )
             logger.verbose_info('Updated %s from %s to %s', model.name, first, input_tuple)
@@ -90,19 +99,25 @@ def insert_or_update_object(session: Session, model: Table, id_col: Any, values:
         return ImportAction.Insert
 
 
-def insert_region(session: Session, id: str, name: str, area_id: str, longitude: str, latitude: str):
-    # TODO: delete when all the code is not using this
-    pass
+def insert_place(session: Session, place_name: str, place_type: str, mun_id: str, region_id: str) -> str:
+    place_id = f'{region_id}-{mun_id}-{place_type}-{place_name}'
+
+    insert_or_update_object(session, Place, Place.c.id, OrderedDict([
+        (Place.c.id, place_id),
+        (Place.c.municipality_id, mun_id),
+        (Place.c.name, place_name),
+        (Place.c.type, place_type)
+    ]))
+
+    return place_id
 
 
-def insert_mun(session: Session, id: str, region_id: str, name: str, area_id: str, longitude: str, latitude: str) -> str:
-    # TODO: delete when all the code is not using this
-    pass
+def check_school_exists(session: Session, school_id: str) -> bool:
+    first = session.execute(
+        select(School.c.id).where(School.c.id == school_id)
+    ).first()
 
-
-def insert_place():
-    # TODO: delete when all the code is not using this
-    pass
+    return first and first[0]
 
 
 def insert_school(session: Session, place_id: int, school_id: str, school_name: str) -> None:
@@ -125,70 +140,34 @@ def insert_school(session: Session, place_id: int, school_id: str, school_name: 
     logger.verbose_info('Inserted school "%s" with id %s', school_name, school_id)
 
 
-def insert_examination(session: Session, examination_type: str, year: int, grade: int) -> str:
+def insert_examination(session: Session, examination_type: str, year: int, grade: int) -> tuple[str, ImportAction]:
     id = f'{examination_type}-{grade}-{year}'
-    first = session.execute(
-        select(Examination.c.id).where(Examination.c.id == id)
-    ).first()
-    if first and first[0]:
-        logger.verbose_info('Examination with id %s already exists.', id)
-        return id
-
     # a bit hacky way to translate, works only for two types
     translated_type = 'НВО' if examination_type == 'nvo' else 'ДЗИ'
 
-    if not is_dry_run():
-        session.execute(
-            insert(Examination).values({
-                'id': id,
-                'type': translated_type,
-                'year': year,
-                'grade_level': grade
-            })
-        )
 
-    logger.verbose_info('Inserted Examination with id %s.', id)
-    return id
+    action = insert_or_update_object(session, Examination, Examination.c.id, OrderedDict([
+        (Examination.c.id, id),
+        (Examination.c.type, translated_type),
+        (Examination.c.year, year),
+        (Examination.c.grade_level, grade),
+    ]))
+
+    return id, action
 
 
 def insert_or_update_score(session: Session, examination_id: str, school_id: str, subject: str, people: int, score: float, max_possible_score: float) -> ImportAction:
-    first = session.execute(
-        select(ExaminationScore.c.score, ExaminationScore.c.people, ExaminationScore.c.max_possible_score)
-        .where(ExaminationScore.c.examination_id == examination_id,
-               ExaminationScore.c.school_id == school_id,
-               ExaminationScore.c.subject == subject)
-    ).first()
-    if first:
-        if float(first[0]) != score or first[1] != people or float(first[2]) != max_possible_score:
-            if not is_dry_run():
-                session.execute(
-                    update(ExaminationScore)
-                    .where(ExaminationScore.c.examination_id == examination_id,
-                            ExaminationScore.c.school_id == school_id,
-                            ExaminationScore.c.subject == subject)
-                    .values({
-                        'score': score,
-                        'people': people,
-                        'max_possible_score': max_possible_score
-                    })
-                )
-            logger.verbose_info('Updated examination score %s, %s, %s, %d, %f, %f', examination_id, school_id, subject, people, score, max_possible_score)
-            return ImportAction.Update
-        else:
-            logger.verbose_info('Already existing examination score %s, %s, %s, %d, %f, %f', examination_id, school_id, subject, people, score, max_possible_score)
-            return ImportAction.AlreadyExists
-    else:
-        if not is_dry_run():
-            session.execute(
-                insert(ExaminationScore)
-                .values({
-                    'examination_id': examination_id,
-                    'school_id': school_id,
-                    'subject': subject,
-                    'people': people,
-                    'score': score,
-                    'max_possible_score': max_possible_score
-                })
-            )
-        logger.verbose_info('Inserted examination score %s, %s, %s, %d, %f, %f', examination_id, school_id, subject, people, score, max_possible_score)
-        return ImportAction.Insert
+
+    values = OrderedDict([
+        (ExaminationScore.c.examination_id, examination_id),
+        (ExaminationScore.c.school_id, school_id),
+        (ExaminationScore.c.subject, subject),
+        (ExaminationScore.c.people, people),
+        (ExaminationScore.c.score, score),
+        (ExaminationScore.c.max_possible_score, max_possible_score)
+    ])
+    id_cols = [ExaminationScore.c.examination_id, ExaminationScore.c.school_id, ExaminationScore.c.subject]
+
+    return insert_or_update_object(
+        session, ExaminationScore, id_cols, values
+    )

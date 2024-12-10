@@ -5,11 +5,11 @@ In this file are added functions DB management functions.
 from dataclasses import dataclass
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
-
+from collections import OrderedDict
 
 from .db import get_db_engine
-from .db_actions import insert_or_update_subject
-from .models import Examination, ExaminationScore, Subject
+from .db_actions import insert_or_update_subject, insert_or_update_object
+from .models import Examination, ExaminationScore, Subject, Region, Municipality
 from .runtime import is_dry_run, getLogger
 
 
@@ -96,8 +96,18 @@ def init_db():
     """
     Initializes a new Database.
     Currently it fills the Subject table.
-    TODO: This could be implemented as alembic migration.
+    TODO: This could be implemented as an alembic migration.
     """
+
+    db = get_db_engine()
+
+    with Session(db) as session:
+        _init_subects(session)
+        _init_region_and_municipality(session)
+        session.commit()
+
+
+def _init_subects(session: Session):
 
     language_levels = ['Б1', 'Б1.1', 'Б2']
 
@@ -148,13 +158,21 @@ def init_db():
         SubjectItem(id='ЧП', abbreviations=[], name='Човекът и природата'),
     ]
 
-    db = get_db_engine()
+    for subject_item in default_subject_items:
+        insert_or_update_subject(session, subject_item.id, subject_item.name, subject_item.abbreviations)
 
-    with Session(db) as session:
-        for subject_item in default_subject_items:
-            insert_or_update_subject(session, subject_item.id, subject_item.name, subject_item.abbreviations)
 
-        session.commit()
+def _init_region_and_municipality(session: Session):
+    insert_or_update_object(session, Region, Region.c.id, OrderedDict([
+        (Region.c.id, 'Чужбина'),
+        (Region.c.name, 'Чужбина')
+    ]))
+
+    insert_or_update_object(session, Municipality, Municipality.c.id, OrderedDict([
+        (Municipality.c.id, 'Чужбина'),
+        (Municipality.c.name, 'Чужбина'),
+        (Municipality.c.region_id, 'Чужбина')
+    ]))
 
 
 def list_examinations():
