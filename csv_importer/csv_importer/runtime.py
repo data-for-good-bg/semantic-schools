@@ -11,12 +11,19 @@ It respects the current state of is_verbose().
 
 import logging
 import sys
+import os
+
+from functools import cache
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 
 # These two variables keep the state of the current execution of the
 # application or DAG.
 _verbose = False
 _dry_run = False
+
+_now = datetime.now(ZoneInfo('UTC')).strftime('%Y-%m-%dT%H-%M-%S')
 
 
 def enable_verbose_logging():
@@ -35,6 +42,16 @@ def enable_dry_run():
 
 def is_dry_run() -> bool:
     return _dry_run
+
+
+@cache
+def edit_stamp() -> str:
+    user = os.environ.get('USER', 'unknown')
+    airflow_run_id = os.environ.get('AIRFLOW_CTX_DAG_RUN_ID')
+    if airflow_run_id:
+        return f'{airflow_run_id}-{user}'
+    else:
+        return f'{_now}-{user}'
 
 
 class VerboseLogger(logging.getLoggerClass()):

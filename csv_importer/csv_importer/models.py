@@ -21,6 +21,9 @@ WikidataId = String(100)
 AreaId = String(100)
 Longitude = String(15)
 Latitude = String(15)
+EditStampType = String(60)
+
+EDIT_STAMP = 'edit_stamp'
 
 # Describes the adminstrative teritorial unit Region -> Област.
 # The ID is auto-inc value implemented in db_actions.py
@@ -31,7 +34,8 @@ Region: Table = Table(
     Column('name', String(20)),
     Column('area_id', AreaId),
     Column('longitude', Longitude),
-    Column('latitude', Latitude)
+    Column('latitude', Latitude),
+    Column(EDIT_STAMP, EditStampType)
 )
 
 # Describes the adminstrative teritorial unit Municipality -> Община.
@@ -44,7 +48,8 @@ Municipality: Table = Table(
     Column('region_id', ForeignKey('region.id'), nullable=False),
     Column('area_id', AreaId),
     Column('longitude', Longitude),
-    Column('latitude', Latitude)
+    Column('latitude', Latitude),
+    Column(EDIT_STAMP, EditStampType)
 )
 
 # Describes the cities and villages.
@@ -58,7 +63,8 @@ Place: Table = Table(
     Column('type', String(4)),
     Column('area_id', AreaId),
     Column('longitude', Longitude),
-    Column('latitude', Latitude)
+    Column('latitude', Latitude),
+    Column(EDIT_STAMP, EditStampType)
 )
 
 # Describes the builgarian schools.
@@ -77,7 +83,8 @@ School: Table = Table(
     Column('place_id', ForeignKey('place.id'), nullable=False),
     Column('longitude', Longitude),
     Column('latitude', Latitude),
-    Column('wikidata_id', WikidataId)
+    Column('wikidata_id', WikidataId),
+    Column(EDIT_STAMP, EditStampType)
 )
 
 # Examination table representation one examination session or "Изпитна сесия".
@@ -100,6 +107,7 @@ Examination: Table = Table(
     Column('type', String(5)),
     Column('year', Integer),
     Column('grade_level', Integer),
+    Column(EDIT_STAMP, EditStampType)
 )
 
 
@@ -126,7 +134,8 @@ ExaminationScore: Table = Table(
 
     Column('people', Integer),
     Column('score', Numeric),
-    Column('max_possible_score', Numeric)
+    Column('max_possible_score', Numeric),
+    Column(EDIT_STAMP, EditStampType)
 )
 
 # This table describes all possible Subjects and their different

@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 from collections import OrderedDict
 from typing import Any
 
-from .models import Subject, Place, School, Examination, ExaminationScore
-from .runtime import getLogger, is_dry_run
+from .models import Subject, Place, School, Examination, ExaminationScore, EDIT_STAMP
+from .runtime import getLogger, is_dry_run, edit_stamp
 
 
 logger = getLogger(__name__)
@@ -58,6 +58,10 @@ def insert_or_update_subject(session: Session, id: str, name: str, abbr: list[st
 
 
 def insert_or_update_object(session: Session, model: Table, id_col: Any, values: OrderedDict) -> ImportAction:
+    edit_stamp_col = None
+    if EDIT_STAMP in model.columns:
+        edit_stamp_col = model.columns[EDIT_STAMP]
+
     input_tuple = tuple(values.values())
 
     if not isinstance(id_col, list):
@@ -82,6 +86,10 @@ def insert_or_update_object(session: Session, model: Table, id_col: Any, values:
                 values_for_update = values.copy()
                 for col in id_col:
                     values_for_update.pop(col)
+
+                if edit_stamp_col is not None:
+                    values_for_update[edit_stamp_col] = edit_stamp()
+
                 session.execute(
                     update(model)
                     .where(*where_filters)
@@ -91,9 +99,15 @@ def insert_or_update_object(session: Session, model: Table, id_col: Any, values:
             return ImportAction.Update
     else:
         if not is_dry_run():
+            values_for_update = values
+
+            if edit_stamp_col is not None:
+                values_for_update = values.copy()
+                values_for_update[edit_stamp_col] = edit_stamp()
+
             session.execute(
                 insert(model)
-                .values(values)
+                .values(values_for_update)
             )
         logger.verbose_info('Inserted %s %s', model.name, input_tuple)
         return ImportAction.Insert
