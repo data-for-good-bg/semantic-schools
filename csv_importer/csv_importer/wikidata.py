@@ -1,10 +1,11 @@
+import os
 import re
 from SPARQLWrapper import SPARQLWrapper, JSON
 from sqlalchemy import Table
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from typing import Optional
 from collections import OrderedDict, defaultdict
+from cache_decorator import Cache
 
 from .runtime import getLogger
 from .db_actions import insert_or_update_object, ImportAction
@@ -14,10 +15,39 @@ from .models import Region, Municipality, Place, School
 
 logger = getLogger(__name__)
 
+
+def _ensure_cache_dir():
+    value = None
+    for name in ['HOME', 'TMP', 'TMPDIR']:
+        value = os.environ.get(name)
+        if value:
+            break
+    else:
+        value = '/tmp'
+
+    cache_dir = os.path.join(value, '.cache', 'data-for-good', 'semantic_schools', 'wikidata')
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir, exist_ok=True)
+
+    return cache_dir
+
+
+CACHE_DIR = _ensure_cache_dir()
+
+
+# To use wikidata query endpoint we need to provide user-agent as it is
+# documented here: https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy
+#
+# Additionally the results from queries made against wikidata are cached on
+# the file system for a day.
+CONTACT_EMAIL = 'info+semantic-schools@data-for-good.bg'
+USER_AGENT = f'User-Agent: semantic-schools/0.1 (https://data-for-good.bg/; {CONTACT_EMAIL}) semantic-schools/0.1'
+
+
 # NB: Look here for details around wikidata entries for Bulgaria
 # https://www.wikidata.org/wiki/Wikidata:WikiProject_Bulgaria/Administrative_Entities
 
-# NB: Use this query to explore all relations for particular subject
+# NB: Use this query to explore all properties for particular subject.
 #
 # SELECT ?property ?propertyLabel ?value ?valueLabel
 # WHERE {
@@ -27,13 +57,11 @@ logger = getLogger(__name__)
 # }
 # ORDER BY ?property
 
-CITY_IN_BULGARIA = 'wd:Q89487741'
-VILLAGE_IN_BULGARIA = 'wd:Q15630849'
 
-DISPLAY_PLACE_TYPE = {
-    CITY_IN_BULGARIA: 'град',
-    VILLAGE_IN_BULGARIA: 'село'
-}
+# NB:
+# The SPARQL queries below are processed by the function _import_sparql_result.
+# Its documentation explains the convention about the naming of the columns
+# in the SPARQL queries.
 
 REGION_SPARQL = '''
 SELECT distinct ?id ?name ?coordinates ?area_id WHERE {
@@ -74,6 +102,19 @@ SELECT distinct ?region_id ?id ?name ?coordinates ?area_id  WHERE {
 }
 order by ?regionLabel ?munLabel
 '''
+
+
+# These constants are used to build SPARQL query for extracting cities and
+# villages via the PLACE_SPARQL query.
+
+CITY_IN_BULGARIA = 'wd:Q89487741'
+VILLAGE_IN_BULGARIA = 'wd:Q15630849'
+
+DISPLAY_PLACE_TYPE = {
+    CITY_IN_BULGARIA: 'град',
+    VILLAGE_IN_BULGARIA: 'село'
+}
+
 
 PLACE_SPARQL = '''
 SELECT distinct ?municipality_id ?id ?name ?coordinates ?area_id WHERE {{
@@ -161,13 +202,6 @@ order by ?placeLabel ?id ?name
 '''
 
 
-# To use SPQRQL query endpoint we need to provide user-agent as it is
-# documented here: https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy
-#
-CONTACT_EMAIL = 'info+semantic-schools@data-for-good.bg'
-USER_AGENT = f'User-Agent: semantic-schools/0.1 (https://data-for-good.bg/; {CONTACT_EMAIL}) semantic-schools/0.1'
-
-
 def _flatten_sparql_json_result(sparql_json_result: dict) -> list[dict]:
     result = []
     for item in sparql_json_result['results']['bindings']:
@@ -180,6 +214,11 @@ def _flatten_sparql_json_result(sparql_json_result: dict) -> list[dict]:
     return result
 
 
+@Cache(
+    cache_path='/'.join(['{cache_dir}','{function_name}-{_hash}.json']),
+    validity_duration='1d',
+    cache_dir=CACHE_DIR
+)
 def _extract_wikidata_via_sparql(query: str):
     logger.info(query)
 
@@ -193,6 +232,10 @@ def _extract_wikidata_via_sparql(query: str):
 
 
 def _extract_coordinates(point: str) -> tuple[Optional[str], Optional[str]]:
+    """
+    Pareses coordinates from string like `Point(24.666666666 43.416666666)`
+    to two string values representing the coordinates.
+    """
     # Point(24.666666666 43.416666666)
     # Longitude, Latitude
     coordinates_re = r'Point\(([0-9]+\.[0-9]+) ([0-9]+\.[0-9]+)\)'
@@ -205,6 +248,11 @@ def _extract_coordinates(point: str) -> tuple[Optional[str], Optional[str]]:
 
 
 def _update_coordinates(wikidata_item: dict):
+    """
+    If the dictionary contains `coordinates` element it will replace it
+    with `longitude` and `latitude` elements parsed by _extract_coordinates
+    function.
+    """
     if 'coordinates' in wikidata_item:
         longitude = None
         latitude = None
@@ -224,6 +272,37 @@ def _update_area_id(wikidata_item: dict):
 
 
 def _import_sparql_result(session: Session, sparql: str, model: Table, constant_values: Optional[dict] = None) -> dict[ImportAction, int]:
+    """
+    This function runs a SPARQL query and for each result item it will
+    insert or update record in the table specified via the model param.
+
+    The following conventions are implemented here:
+    * The target table should have column named `id`
+    * The function will use the columns from the SPARQL query which names
+      match a column from the target table.
+      So for the Region table with columns (id, name, area_id) the SPARQL
+      query should have the same set of columns.
+    * There is special support for:
+      * geographical coordinates which represent latitude and longitude:
+        The column extracted as property of `wdt:P625` type should be named
+        `coordinates`. The function will parse its value `Point(...., ......)`
+        and replace it with two other columns - `longitude` and `latitude`.
+        The target table should have columns named like this.
+      * area_id - if SPARQL query contains column `area_id` and the value is not
+        empty, then the value will be converted to URI to musicbrainz.org
+
+
+    Parameters:
+      session: SQLAlchemy session which will execute the DB operations
+      sparql: The SPARQL query
+      mode: The SQLAlchemy Table object representing the target table
+      constant_values: An optional dictionary with values that should be
+      added to all records.
+
+    Returns:
+      A dictionary providing information for the number of performed operations
+      (insert, update, error, already-existing),
+    """
     counts = defaultdict(int)
     if constant_values is None:
         constant_values = {}
@@ -232,7 +311,13 @@ def _import_sparql_result(session: Session, sparql: str, model: Table, constant_
     known = set()
     for result_item in sparql_result:
         if result_item['id'] in known:
-            # TODO: explain why we skip objects
+            # All wikidata queries may return multiple records with the same ID
+            # This might be caused by different reasons. In some cases
+            # a region/place/municipality has multiple instances of Coordinates
+            # property. In other cases multiple schools with the same bg_school_id.
+            #
+            # In all these cases what we do is to use the first record from
+            # the query result and skip the other.
             logger.verbose_info('Skipping %s %s', model.name, result_item)
             continue
 
@@ -255,21 +340,17 @@ def _import_sparql_result(session: Session, sparql: str, model: Table, constant_
 
         od = OrderedDict(key_values)
 
-        try:
-            action = insert_or_update_object(session, model, model.columns['id'], od)
-            session.commit()
-
-            counts[action] += 1
-        except IntegrityError as e:
-            values_tuple = tuple(od.values())
-            logger.verbose_info('Failed processing %s because of %s', values_tuple, e)
-            session.rollback()
-            counts[ImportAction.Failed] += 1
+        action = insert_or_update_object(session, model, model.columns['id'], od)
+        counts[action] += 1
 
     return counts
 
 
-def extract_wikidata():
+def import_from_wikidata():
+    """
+    Imports information for regions, municipalities, places (cities and villages)
+    and schools from wikidata into the relational DB.
+    """
 
     counters = dict()
 
@@ -280,7 +361,7 @@ def extract_wikidata():
         counters[Municipality.name] = _import_sparql_result(session, MUN_SPARQL, Municipality)
 
         for place_type in [CITY_IN_BULGARIA, VILLAGE_IN_BULGARIA]:
-            counters[Place.name+'-'+place_type] = _import_sparql_result(session, PLACE_SPARQL.format(place_type), Place, {'type': DISPLAY_PLACE_TYPE[place_type]})
+            counters[Place.name+'-' + DISPLAY_PLACE_TYPE[place_type]] = _import_sparql_result(session, PLACE_SPARQL.format(place_type), Place, {'type': DISPLAY_PLACE_TYPE[place_type]})
 
         # # Bankya is handled specially, because it is the only city in Bulgaria
         # # which does not belong (P:131) to a municipality of Bulgaria. So
@@ -304,5 +385,5 @@ def extract_wikidata():
     for model_name, counts in counters.items():
         cnt_items = [f'{op_type}: {op_cnt}' for op_type, op_cnt in counts.items()]
         cnts_str = ', '.join(cnt_items)
-        msg = f'Operation counts for model "{model_name}" --- {cnts_str}'
+        msg = f'Operation counts for "{model_name}" --- {cnts_str}'
         logger.info(msg)

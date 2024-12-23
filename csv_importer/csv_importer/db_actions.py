@@ -1,6 +1,7 @@
 from enum import Enum
 from sqlalchemy import insert, select, update, Table
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from collections import OrderedDict
 from typing import Any
 
@@ -77,40 +78,49 @@ def insert_or_update_object(session: Session, model: Table, id_col: Any, values:
         where(*where_filters)
     ).first()
 
-    if first:
-        if first == input_tuple:
-            logger.verbose_info('Found %s: %s', model.name, first)
-            return ImportAction.AlreadyExists
+    try:
+        if first:
+            if first == input_tuple:
+                logger.verbose_info('Found %s: %s', model.name, first)
+                return ImportAction.AlreadyExists
+            else:
+                if not is_dry_run():
+                    values_for_update = values.copy()
+                    for col in id_col:
+                        values_for_update.pop(col)
+
+                    if edit_stamp_col is not None:
+                        values_for_update[edit_stamp_col] = edit_stamp()
+
+                    session.execute(
+                        update(model)
+                        .where(*where_filters)
+                        .values(values_for_update)
+                    )
+                    session.commit()
+
+                logger.verbose_info('Updated %s from %s to %s', model.name, first, input_tuple)
+                return ImportAction.Update
         else:
             if not is_dry_run():
-                values_for_update = values.copy()
-                for col in id_col:
-                    values_for_update.pop(col)
+                values_for_update = values
 
                 if edit_stamp_col is not None:
+                    values_for_update = values.copy()
                     values_for_update[edit_stamp_col] = edit_stamp()
 
                 session.execute(
-                    update(model)
-                    .where(*where_filters)
+                    insert(model)
                     .values(values_for_update)
                 )
-            logger.verbose_info('Updated %s from %s to %s', model.name, first, input_tuple)
-            return ImportAction.Update
-    else:
-        if not is_dry_run():
-            values_for_update = values
+                session.commit()
 
-            if edit_stamp_col is not None:
-                values_for_update = values.copy()
-                values_for_update[edit_stamp_col] = edit_stamp()
-
-            session.execute(
-                insert(model)
-                .values(values_for_update)
-            )
-        logger.verbose_info('Inserted %s %s', model.name, input_tuple)
-        return ImportAction.Insert
+            logger.verbose_info('Inserted %s %s', model.name, input_tuple)
+            return ImportAction.Insert
+    except IntegrityError as e:
+        logger.error('Failed to process %s item %s because %s', model.name, input_tuple, e)
+        session.rollback()
+        return ImportAction.Failed
 
 
 def insert_place(session: Session, place_name: str, place_type: str, mun_id: str, region_id: str) -> str:
@@ -134,27 +144,29 @@ def check_school_exists(session: Session, school_id: str) -> bool:
     return first and first[0]
 
 
-def insert_school(session: Session, place_id: int, school_id: str, school_name: str) -> None:
-    first = session.execute(
-        select(School.c.id).where(School.c.id == school_id)
-    ).first()
-    if first and first[0]:
-        logger.verbose_info('Found school with id %s', school_id)
-        return
-
+def insert_school(session: Session, place_id: int, school_id: str, school_name: str) -> ImportAction:
     if not is_dry_run():
-        session.execute(
-            insert(School)
-            .values({
+        try:
+            values = {
                 'id': school_id,
                 'name': school_name,
                 'place_id': place_id
-            })
-        )
-    logger.verbose_info('Inserted school "%s" with id %s', school_name, school_id)
+            }
+            session.execute(
+                insert(School)
+                .values(values)
+            )
+            session.commit()
+
+            logger.verbose_info('Inserted school %s', values)
+            return ImportAction.Insert
+        except IntegrityError as e:
+            logger.error('Failed to insert school %s because %s', values, e)
+            session.rollback()
+            return ImportAction.Failed
 
 
-def insert_examination(session: Session, examination_type: str, year: int, grade: int) -> tuple[str, ImportAction]:
+def insert_examination(session: Session, examination_type: str, year: int, grade: int, max_possible_score: float) -> tuple[str, ImportAction]:
     id = f'{examination_type}-{grade}-{year}'
     # a bit hacky way to translate, works only for two types
     translated_type = 'НВО' if examination_type == 'nvo' else 'ДЗИ'
@@ -165,12 +177,13 @@ def insert_examination(session: Session, examination_type: str, year: int, grade
         (Examination.c.type, translated_type),
         (Examination.c.year, year),
         (Examination.c.grade_level, grade),
+        (Examination.c.max_possible_score, max_possible_score)
     ]))
 
     return id, action
 
 
-def insert_or_update_score(session: Session, examination_id: str, school_id: str, subject: str, people: int, score: float, max_possible_score: float) -> ImportAction:
+def insert_or_update_score(session: Session, examination_id: str, school_id: str, subject: str, people: int, score: float) -> ImportAction:
 
     values = OrderedDict([
         (ExaminationScore.c.examination_id, examination_id),
@@ -178,7 +191,6 @@ def insert_or_update_score(session: Session, examination_id: str, school_id: str
         (ExaminationScore.c.subject, subject),
         (ExaminationScore.c.people, people),
         (ExaminationScore.c.score, score),
-        (ExaminationScore.c.max_possible_score, max_possible_score)
     ])
     id_cols = [ExaminationScore.c.examination_id, ExaminationScore.c.school_id, ExaminationScore.c.subject]
 

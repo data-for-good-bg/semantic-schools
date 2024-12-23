@@ -1,9 +1,10 @@
 import os
 
+from decimal import Decimal
 from collections import defaultdict
 
 from sqlalchemy.engine import Engine
-from sqlalchemy.exc import IntegrityError
+
 
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -37,7 +38,7 @@ def try_find_place(session: Session, place_name: str, mun: str, region: str) -> 
     # Some of them make sense to be here, but some of them probably can be
     # generalized.
     # TODO:
-    # Also in refince_csv there's code which capitlizes only the first letter
+    # Also in refine_csv there's code which capitalizes only the first letter
     # of the place names, which probably has impact here. Also that code in
     # refine_csv was added after I put some of the "magics" below...
 
@@ -105,13 +106,27 @@ def try_find_place(session: Session, place_name: str, mun: str, region: str) -> 
         return None
 
 
-def _import_schools(db: Engine, schools: pd.DataFrame) -> None:
+def _import_schools(db: Engine, schools: pd.DataFrame) -> dict[ImportAction, int]:
     """
-    Imports information about schools, places (cities and villeges),
-    municipalities and regions.
+    Imports information for schools. The assumption is that most of the
+    schools are already in the database, because they are imported from
+    wikidata. The goal of this function is to import those schools which
+    are not in wikidata.
+
+    The function also handles another special case - bulgarian schools in
+    foreign countries. For them it will insert a city (place) "Чужбина".
+
+    The function matches schools only by their school_id, the administrative
+    number of the school which consists of 6 or 7 digits.
+
+    If a certain shool_id is found in the database it is assumed that the
+    school described in the data frame fully matches the school in the database.
+    This means that no additional comparisons are made - the school names are
+    not compared, nor are the place, municipality and region.
     """
 
     schools = schools.sort_values(by=[REGION, MUN, PLACE])
+    ops_counts = defaultdict(int)
 
     with Session(db) as session:
         for i in schools.index:
@@ -121,48 +136,47 @@ def _import_schools(db: Engine, schools: pd.DataFrame) -> None:
             school_exists = check_school_exists(session, id)
             if school_exists:
                 logger.verbose_info('Found school: %s', id)
+                ops_counts[ImportAction.AlreadyExists] += 1
             else:
-                logger.verbose_info('School does not exist: %s %s %s %s', id, school[REGION], school[MUN], school[PLACE])
+                school_tuple = (id, school['school'], school[REGION], school[MUN], school[PLACE])
+                logger.verbose_info('School does not exist: %s', school_tuple)
                 place_id = try_find_place(session, school[PLACE], school[MUN], school[REGION])
                 if not place_id and 'Чужбина' == school[MUN] == school[REGION]:
+                    # TODO: what does insert region and municipality 'Чужбина'?!
                     place_id = insert_place(session, school[PLACE], 'град', 'Чужбина', 'Чужбина')
                 if place_id:
-                    insert_school(session, place_id, school['school_admin_id'], school['school'])
+                    r = insert_school(session, place_id, school['school_admin_id'], school['school'])
+                    ops_counts[r] += 1
+                else:
+                    logger.error('Cannot find in the database the place for school: %s', school_tuple)
+                    ops_counts[ImportAction.Failed] += 1
 
-        session.commit()
+    return ops_counts
 
 
 def _import_scores(db: Engine, examination_type: str, year: int, grade: int, scores: pd.DataFrame) -> dict[ImportAction, int]:
     """
     Imports information for examination and all examination scores.
     """
+
     ops_count = defaultdict(int)
     with Session(db) as session:
-        exam_id, _ = insert_examination(session, examination_type, year, grade)
-        session.commit()
+        first_score = scores.loc[0]
+        exam_id, _ = insert_examination(session, examination_type, year, grade, Decimal(str(first_score['max_possible_score'])))
 
         for i in scores.index:
             score = scores.loc[i]
             subject = score['subject']
 
-            try:
-                r = insert_or_update_score(
-                    session,
-                    exam_id,
-                    score['school_admin_id'],
-                    subject,
-                    int(score['people']),
-                    float(score['score']),
-                    float(score['max_possible_score']),
-                )
-                ops_count[r] += 1
-                session.commit()
-            except IntegrityError as e:
-                logger.verbose_info('Failed to process score item %s because %s', score, e)
-                session.rollback()
-                ops_count[ImportAction.Failed] += 1
-
-        session.commit()
+            r = insert_or_update_score(
+                session,
+                exam_id,
+                score['school_admin_id'],
+                subject,
+                int(score['people']),
+                Decimal(str(score['score'])),
+            )
+            ops_count[r] += 1
 
     return ops_count
 
@@ -213,7 +227,8 @@ def import_file(csv_file: str, examination_type: str, grade: int, year: int):
 
     db = get_db_engine()
 
-    _import_schools(db, schools_data)
+    schools_ops_count = _import_schools(db, schools_data)
+    logger.info('Operations over school: %s', schools_ops_count)
 
     scores_ops_count = _import_scores(db, examination_type, year, grade, scores_data)
-    logger.info('Summary of what has been done with examination_score table: %s', scores_ops_count)
+    logger.info('Operations over examination_score: %s', scores_ops_count)

@@ -644,6 +644,7 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
     result = pd.concat(subject_df, ignore_index=True)
     result = result[result['score'] > 0]
     result = result.sort_values('school_admin_id')
+    result = result.reset_index()
 
     return result
 

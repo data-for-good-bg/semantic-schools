@@ -23,10 +23,22 @@ Longitude = String(15)
 Latitude = String(15)
 EditStampType = String(60)
 
+
+# This is the name of the column added in most of the tables and it contains
+# information for the last edition of the row. In case the update is done
+# from Airflow DAG it will contain the DAG RUN_ID, which contains a timestamp.
+# In case the edition is then by running the app manually, then the column
+# will contain timestamp + the value of USER env var.
 EDIT_STAMP = 'edit_stamp'
 
-# Describes the adminstrative teritorial unit Region -> Област.
-# The ID is auto-inc value implemented in db_actions.py
+
+# Describes the administrative territorial unit Region -> Област.
+# The ID is a string which in most of the cases should be the wikidata URI
+# of the region subject.
+# There's one special case for the Bulgarian schools in foreign countries,
+# their region is `Чужбина` for id and name.
+#
+# There area_id, longitude and latitude are extracted from wikidata.
 Region: Table = Table(
     'region',
     Models,
@@ -38,8 +50,9 @@ Region: Table = Table(
     Column(EDIT_STAMP, EditStampType)
 )
 
-# Describes the adminstrative teritorial unit Municipality -> Община.
-# The ID is auto-inc value implemented in db_actions.py
+
+# Describes the administrative territorial unit Municipality -> Община.
+# Check the comments for Region model, all of them are applicable here.
 Municipality: Table = Table(
     'municipality',
     Models,
@@ -52,8 +65,10 @@ Municipality: Table = Table(
     Column(EDIT_STAMP, EditStampType)
 )
 
+
 # Describes the cities and villages.
-# The ID is auto-inc value implemented in db_actions.py
+# Check the comments for Region model, all of them are applicable here.
+# The `type` column has two possible values - `село` and `град`.
 Place: Table = Table(
     'place',
     Models,
@@ -67,14 +82,16 @@ Place: Table = Table(
     Column(EDIT_STAMP, EditStampType)
 )
 
+
 # Describes the builgarian schools.
-# The ID is string value found in the NVO and DZI CSV files. The column
-# in different CSV files is known as "Код по АДМИН", "Код" or "Код по НЕИСПОУ"
+# The ID is string value found in wikidata or in the NVO and DZI CSV files.
+# The wikidata property for bg_school_id is wdt:P9034.
+# In the CSV files school_id is known differently - "Код по АДМИН", "Код" or "Код по НЕИСПОУ"
 # and it is assumed to be unique and the same for each school in all CSV files.
 #
-# The name of the school is the value from the CSV file where certain school
-# is found for the first time. On subsequent imports if a school is found
-# by its id in the database, the name will not be updated.
+# The name of the school is the value from wikidata or from the CSV file where
+# certain school is found for the first time. On subsequent imports if a
+# school is found by its id in the database, the name will not be updated.
 School: Table = Table(
     'school',
     Models,
@@ -87,6 +104,7 @@ School: Table = Table(
     Column(EDIT_STAMP, EditStampType)
 )
 
+
 # Examination table representation one examination session or "Изпитна сесия".
 # An examination session is described
 # * with type of the session - 'nvo' or 'dzi'
@@ -94,7 +112,9 @@ School: Table = Table(
 # * with grade_level
 #   * for NVO possible values are 4, 7 and 10
 #   * for DZI the value is always 12
-#
+# * max_possible_score - describes the max possible score, it could be 6
+#   for DZI and 65 or 100 for NVO.
+
 # The id is a string in the form '<type>-<year>-<grade_level>'
 #
 Examination: Table = Table(
@@ -107,6 +127,7 @@ Examination: Table = Table(
     Column('type', String(5)),
     Column('year', Integer),
     Column('grade_level', Integer),
+    Column('max_possible_score', Numeric),
     Column(EDIT_STAMP, EditStampType)
 )
 
@@ -116,11 +137,8 @@ Examination: Table = Table(
 # * of given school - school_id
 # * on given subject - this is the unique abbreviation of the subject, check
 #   the documentation of SubjectItem class in db_manage.py
-# * people - number of attented people on that subject from that school
+# * people - number of attended people on that subject from that school
 # * score - the average score of the attendees
-# * max_possible_score - describes the max possible score, it could be 6
-#   for DZI and 65 or 100 for NVO.
-#   TODO: This column belongs to Examination and could be moved there.
 #
 ExaminationScore: Table = Table(
     'examination_score',
@@ -134,9 +152,9 @@ ExaminationScore: Table = Table(
 
     Column('people', Integer),
     Column('score', Numeric),
-    Column('max_possible_score', Numeric),
     Column(EDIT_STAMP, EditStampType)
 )
+
 
 # This table describes all possible Subjects and their different
 # abbreviations.
