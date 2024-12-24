@@ -10,7 +10,7 @@ from cache_decorator import Cache
 from .runtime import getLogger
 from .db_actions import insert_or_update_object, ImportAction
 from .db import get_db_engine
-from .models import Region, Municipality, Place, School
+from .db_models import Region, Municipality, Place, School
 
 
 logger = getLogger(__name__)

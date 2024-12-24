@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from collections import OrderedDict
 from typing import Any
 
-from .models import Subject, Place, School, Examination, ExaminationScore, EDIT_STAMP
+from .db_models import Subject, Place, School, Examination, ExaminationScore, EDIT_STAMP
 from .runtime import getLogger, is_dry_run, edit_stamp
 
 

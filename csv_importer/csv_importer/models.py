@@ -1,169 +1,104 @@
-"""
-This module defines the database models (or tables) with SQLAlchemy.
+from dataclasses import dataclass
 
-It uses the SQLAlchemy Database Metadata classes Table and Column.
-It seems the "Database Metadata" is the SQLAlchemy lower level API,
-while SQLAlechemy also provides the "ORM declartive form" where tables are
-declared as sub-clasess of DeclarativeBase class.
-
-The "Database Metadata" classes were chosen here mainly because I [vitali]
-didn't have any knowledge about SQLAlchemy.
-"""
-
-from sqlalchemy import (
-    MetaData, Table, Column,
-    Integer, String, ForeignKey, Numeric
-)
-
-Models = MetaData()
-
-WikidataId = String(100)
-AreaId = String(100)
-Longitude = String(15)
-Latitude = String(15)
-EditStampType = String(60)
+# Constant used for working with bulgarian schools in foreign countries.
+FOREIGN_COUNTRY = 'Чужбина'
 
 
-# This is the name of the column added in most of the tables and it contains
-# information for the last edition of the row. In case the update is done
-# from Airflow DAG it will contain the DAG RUN_ID, which contains a timestamp.
-# In case the edition is then by running the app manually, then the column
-# will contain timestamp + the value of USER env var.
-EDIT_STAMP = 'edit_stamp'
+@dataclass
+class SubjectItem:
+    """
+    This class facilitates working with Subjects and the fact some of the
+    have multiple abbreviations.
+    The problem: For example Испански Език in different CSV files is found
+    with ИЕ and ИспЕ. In the database we want to have just one subject abbreviation
+
+    The `id` attribute is always an abbreviation of the subject, the `name` is
+    the full name of the subject. The `abbreviations` is list of all other
+    abbreviations known for the subject. This list could be empty.
+
+    The `raw_strings()` method returns list of lowercased all possible
+    abbreviations. This list is used to build a dictionary where the keys
+    are abbreviations, the values are SubjectItem instances. Such dictionary
+    is used in refine_csv for mapping the found subject abbreviation in certain
+    CSV to the chosen one.
+
+    In the database there is a table Subject which has the same columns - id,
+    name and abbreviations. This table is used as source of information
+    for SubjectItem instances.
+    Check the function load_subject_abbr_map() below.
+
+    The foreign languages subjects (English, Spanish, Russian, etc.) have
+    variations with different levels - Б1, Б1.1 and Б2. They are treated as
+    different subject items, so in the Subject table there are records for
+    'АЕ', 'АЕ-Б1', 'АЕ-Б1.1', 'АЕ-Б2', and similar records for all other foreign
+    languages.
+
+    Below in the init_db() function there's is manually initialized list
+    of SubjectItems which is used to fill the Subject table in the database.
+
+    """
+    id: str
+    name: str
+    abbreviations: list[str]
+
+    def __post_init__(self):
+        self.id = self.id.upper()
+
+    def raw_strings(self):
+        result = []
+        for a in [self.id, *self.abbreviations]:
+            result.append(f'{a.lower()}')
+        return result
 
 
-# Describes the administrative territorial unit Region -> Област.
-# The ID is a string which in most of the cases should be the wikidata URI
-# of the region subject.
-# There's one special case for the Bulgarian schools in foreign countries,
-# their region is `Чужбина` for id and name.
-#
-# There area_id, longitude and latitude are extracted from wikidata.
-Region: Table = Table(
-    'region',
-    Models,
-    Column('id', WikidataId, primary_key=True),
-    Column('name', String(20)),
-    Column('area_id', AreaId),
-    Column('longitude', Longitude),
-    Column('latitude', Latitude),
-    Column(EDIT_STAMP, EditStampType)
-)
+def get_default_subjects() -> list[SubjectItem]:
+    language_levels = ['Б1', 'Б1.1', 'Б2']
+
+    def _variations(this: SubjectItem, variations: list[str]) -> list[SubjectItem]:
+        result = [this]
+        for v in variations:
+            result.append(
+                SubjectItem(
+                    id=f'{this.id}-{v}',
+                    name=f'{this.name} {v}',
+                abbreviations=[f'{a}-{v}' for a in this.abbreviations]
+                )
+            )
+
+        return result
 
 
-# Describes the administrative territorial unit Municipality -> Община.
-# Check the comments for Region model, all of them are applicable here.
-Municipality: Table = Table(
-    'municipality',
-    Models,
-    Column('id', WikidataId, primary_key=True),
-    Column('name', String(20)),
-    Column('region_id', ForeignKey('region.id'), nullable=False),
-    Column('area_id', AreaId),
-    Column('longitude', Longitude),
-    Column('latitude', Latitude),
-    Column(EDIT_STAMP, EditStampType)
-)
+    def _lang_variations(this: SubjectItem) -> list[SubjectItem]:
+        return _variations(this, language_levels)
 
+    default_subject_items = [
+        *_lang_variations(SubjectItem(id='АЕ', abbreviations=[], name='Английски език')),
+        SubjectItem(id='БЕЛ', abbreviations=[], name='Български език и литература'),
+        SubjectItem(id='БЗО', abbreviations=[], name='Биология и здравно образование'),
+        SubjectItem(id='ГЕО', abbreviations=['ГИ'], name='География и икономика'),
+        SubjectItem(id='ДИППК', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация'),
+        SubjectItem(id='ДИППК-п.р', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - писмена работа по теория на професията + практика'),
+        SubjectItem(id='ДИППК-тест', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - писмен тест по теория на професията + практика'),
+        SubjectItem(id='ДИППК-Д.Пр', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - дипломен проект'),
+        SubjectItem(id='ДИППК-пр', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - практика '),
+        SubjectItem(id='ИИ', abbreviations=[], name='Изобразително изкуство'),
+        SubjectItem(id='ИНФ', abbreviations=[], name='Информатика'),
+        *_lang_variations(SubjectItem(id='ИспЕ', abbreviations=['ИЕ', 'ИсЕ'], name='Испански език')),
+        SubjectItem(id='ИСТ', abbreviations=['ИЦ'], name='История и цивилизация'),
+        *_lang_variations(SubjectItem(id='ИтЕ', abbreviations=[], name='Италиански език')),
+        SubjectItem(id='ИТ', abbreviations=[], name='Информационни технологии'),
+        SubjectItem(id='МУЗ', abbreviations=[], name='Музика'),
+        SubjectItem(id='МАТ', abbreviations=[], name='Математика'),
+        *_lang_variations(SubjectItem(id='НЕ', abbreviations=[], name='Немски език')),
+        *_lang_variations(SubjectItem(id='ПЕ', abbreviations=[], name='Португалски език')),
+        SubjectItem(id='ПР', abbreviations=[], name='Предприемачество'),
+        *_lang_variations(SubjectItem(id='РЕ', abbreviations=[], name='Руски език')),
+        SubjectItem(id='ФА', abbreviations=[], name='Физика и астрономия'),
+        SubjectItem(id='ФИЛ', abbreviations=[], name='Философия'),
+        *_lang_variations(SubjectItem(id='ФрЕ', abbreviations=['ФЕ'], name='Френски език')),
+        SubjectItem(id='ХООС', abbreviations=[], name='Химия и опазване на околната среда'),
+        SubjectItem(id='ЧО', abbreviations=[], name='Човекът и обществото'),
+        SubjectItem(id='ЧП', abbreviations=[], name='Човекът и природата'),
+    ]
 
-# Describes the cities and villages.
-# Check the comments for Region model, all of them are applicable here.
-# The `type` column has two possible values - `село` and `град`.
-Place: Table = Table(
-    'place',
-    Models,
-    Column('id', WikidataId, primary_key=True),
-    Column('name', String(40)),
-    Column('municipality_id', ForeignKey('municipality.id'), nullable=False),
-    Column('type', String(4)),
-    Column('area_id', AreaId),
-    Column('longitude', Longitude),
-    Column('latitude', Latitude),
-    Column(EDIT_STAMP, EditStampType)
-)
-
-
-# Describes the builgarian schools.
-# The ID is string value found in wikidata or in the NVO and DZI CSV files.
-# The wikidata property for bg_school_id is wdt:P9034.
-# In the CSV files school_id is known differently - "Код по АДМИН", "Код" or "Код по НЕИСПОУ"
-# and it is assumed to be unique and the same for each school in all CSV files.
-#
-# The name of the school is the value from wikidata or from the CSV file where
-# certain school is found for the first time. On subsequent imports if a
-# school is found by its id in the database, the name will not be updated.
-School: Table = Table(
-    'school',
-    Models,
-    Column('id', String(10), primary_key=True),
-    Column('name', String(150), nullable=False),
-    Column('place_id', ForeignKey('place.id'), nullable=False),
-    Column('longitude', Longitude),
-    Column('latitude', Latitude),
-    Column('wikidata_id', WikidataId),
-    Column(EDIT_STAMP, EditStampType)
-)
-
-
-# Examination table representation one examination session or "Изпитна сесия".
-# An examination session is described
-# * with type of the session - 'nvo' or 'dzi'
-# * with year - possible values 2024, 2023, etc
-# * with grade_level
-#   * for NVO possible values are 4, 7 and 10
-#   * for DZI the value is always 12
-# * max_possible_score - describes the max possible score, it could be 6
-#   for DZI and 65 or 100 for NVO.
-
-# The id is a string in the form '<type>-<year>-<grade_level>'
-#
-Examination: Table = Table(
-    'examination',
-    Models,
-    # id will be in the form: nvo-4-2022
-    Column('id', String(15), primary_key=True),
-
-    # type will be НВО or ДЗИ
-    Column('type', String(5)),
-    Column('year', Integer),
-    Column('grade_level', Integer),
-    Column('max_possible_score', Numeric),
-    Column(EDIT_STAMP, EditStampType)
-)
-
-
-# Examination score table supplements the Examination table.
-# In this table each record describes the result:
-# * of given school - school_id
-# * on given subject - this is the unique abbreviation of the subject, check
-#   the documentation of SubjectItem class in db_manage.py
-# * people - number of attended people on that subject from that school
-# * score - the average score of the attendees
-#
-ExaminationScore: Table = Table(
-    'examination_score',
-    Models,
-
-    Column('examination_id', ForeignKey('examination.id'), nullable=False, primary_key=True),
-    Column('school_id', ForeignKey('school.id'), nullable=False, primary_key=True),
-
-    # subject will be МАТ, БЕЛ,...
-    Column('subject', String(10), nullable=False, primary_key=True),
-
-    Column('people', Integer),
-    Column('score', Numeric),
-    Column(EDIT_STAMP, EditStampType)
-)
-
-
-# This table describes all possible Subjects and their different
-# abbreviations.
-# Check the documentation of SubjectItem class in db_manage.py
-Subject: Table = Table(
-    'subject',
-    Models,
-
-    Column('id', String(10), primary_key=True),
-    Column('name', String(120)),
-    Column('abbreviations', String(30))
-)
+    return default_subject_items

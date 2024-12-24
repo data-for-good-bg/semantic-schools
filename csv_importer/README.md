@@ -113,7 +113,7 @@ alembic init alembic
 
 ```
 
-Then csv_importer/alembic/env.py was changed to point to Models object from models.py
+Then csv_importer/alembic/env.py was changed to point to Models object from db_models.py
 
 The alembic.ini was changed:
 * to point local sqlite db.

@@ -16,13 +16,15 @@ from .db_actions import (
     insert_examination, insert_or_update_score, check_school_exists,
     insert_school, insert_place, ImportAction
 )
+from .db_manage import load_subject_abbr_map
 from .runtime import getLogger
 from .refine_csv import (
     load_csv, refine_csv_column_names, refine_data,
     extract_school_data, extract_scores_data
 )
 
-from .models import Place, Municipality, Region
+from .db_models import Place, Municipality, Region
+from .models import FOREIGN_COUNTRY
 
 
 logger = getLogger(__name__)
@@ -141,9 +143,8 @@ def _import_schools(db: Engine, schools: pd.DataFrame) -> dict[ImportAction, int
                 school_tuple = (id, school['school'], school[REGION], school[MUN], school[PLACE])
                 logger.verbose_info('School does not exist: %s', school_tuple)
                 place_id = try_find_place(session, school[PLACE], school[MUN], school[REGION])
-                if not place_id and 'Чужбина' == school[MUN] == school[REGION]:
-                    # TODO: what does insert region and municipality 'Чужбина'?!
-                    place_id = insert_place(session, school[PLACE], 'град', 'Чужбина', 'Чужбина')
+                if not place_id and FOREIGN_COUNTRY == school[MUN] == school[REGION]:
+                    place_id = insert_place(session, school[PLACE], 'град', FOREIGN_COUNTRY, FOREIGN_COUNTRY)
                 if place_id:
                     r = insert_school(session, place_id, school['school_admin_id'], school['school'])
                     ops_counts[r] += 1
@@ -216,7 +217,8 @@ def import_file(csv_file: str, examination_type: str, grade: int, year: int):
     raw_data = load_csv(csv_file)
     raw_data = refine_csv_column_names(raw_data)
 
-    refined_data = refine_data(raw_data)
+    subject_mapping = load_subject_abbr_map()
+    refined_data = refine_data(raw_data, subject_mapping)
     logger.info('CSV file successfully loaded')
 
     schools_data = extract_school_data(refined_data)

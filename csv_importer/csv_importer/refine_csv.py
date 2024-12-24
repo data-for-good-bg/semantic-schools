@@ -22,6 +22,7 @@ from io import StringIO
 
 from .runtime import getLogger
 from .db_manage import load_subject_abbr_map
+from .models import SubjectItem
 
 
 logger = getLogger(__name__)
@@ -434,7 +435,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     return output
 
 
-def refine_data(csv_data: StringIO) -> pd.DataFrame:
+def refine_data(csv_data: StringIO, subject_mapping: dict[str, SubjectItem]) -> pd.DataFrame:
     """
     This function loads a CSV file into pandas DataFrame and
     refines the data.
@@ -549,15 +550,8 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     # The loop below:
     # 1. Builds a dictionary with column new->old names.
     # 2. Raise an exception in case unknown subject is found.
-    #
-    # TODO: The load_subject_abbr_map loads data from DB, this dependency
-    #       to the database is not really good. The initial intention was
-    #       refine_csv module to be used for importing data in both relational
-    #       and graph DB. Probably the function could load the data from the
-    #       constant in the code.
-
     logger.verbose_info('Columns before subject remapping: %s', data.columns)
-    subject_mapping = load_subject_abbr_map()
+
     renamings_map = {}
     for c in data.columns:
         if is_subject_column(c):
@@ -650,13 +644,17 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
 
 
 def main():
+    """
+    This main function is used only for testing.
+    """
 
     csv_file = sys.argv[1]
     raw_data = load_csv(csv_file)
     raw_data = refine_csv_column_names(raw_data)
     raw_data.seek(0)
 
-    refined_data = refine_data(raw_data)
+    subject_mapping = load_subject_abbr_map()
+    refined_data = refine_data(raw_data, subject_mapping)
     print(refined_data.loc[:3])
 
     schools_data = extract_school_data(refined_data)
