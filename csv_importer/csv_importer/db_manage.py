@@ -4,11 +4,11 @@ In this file are added functions DB management functions.
 
 from sqlalchemy import select, delete
 from sqlalchemy.orm import Session
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 from .models import SubjectItem, get_default_subjects, FOREIGN_COUNTRY
 from .db import get_db_engine
-from .db_actions import insert_or_update_subject, insert_or_update_object
+from .db_actions import insert_or_update_object
 from .db_models import Examination, ExaminationScore, Subject, Region, Municipality
 from .runtime import is_dry_run, getLogger
 
@@ -62,8 +62,17 @@ def init_db():
 
 def _init_subects(session: Session):
     default_subject_items = get_default_subjects()
+    ops_counts = defaultdict(int)
     for subject_item in default_subject_items:
-        insert_or_update_subject(session, subject_item.id, subject_item.name, subject_item.abbreviations)
+        abbreviations = ','.join(subject_item.abbreviations)
+        r = insert_or_update_object(session, Subject, Subject.c.id, OrderedDict([
+            (Subject.c.id, subject_item.id),
+            (Subject.c.name, subject_item.name),
+            (Subject.c.abbreviations, abbreviations)
+        ]))
+        ops_counts[r] += 1
+
+    logger.info('Operations over Subject: %s', ops_counts)
 
 
 def _init_region_and_municipality(session: Session):

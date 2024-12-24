@@ -165,5 +165,6 @@ Subject: Table = Table(
 
     Column('id', String(10), primary_key=True),
     Column('name', String(120)),
-    Column('abbreviations', String(30))
+    Column('abbreviations', String(30)),
+    Column(EDIT_STAMP, EditStampType)
 )

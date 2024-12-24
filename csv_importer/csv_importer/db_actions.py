@@ -24,40 +24,6 @@ class ImportAction(Enum):
     Failed = 3
 
 
-def insert_or_update_subject(session: Session, id: str, name: str, abbr: list[str]):
-    abbreviations = ','.join(abbr)
-
-    existing_object = session.execute(
-        select(Subject.c.name, Subject.c.abbreviations).where(Subject.c.id == id)
-    ).first()
-
-    if existing_object:
-        if existing_object[0] == name and existing_object[1] == abbreviations:
-            logger.verbose_info('Subject %s already exist', id)
-        else:
-            if not is_dry_run():
-                session.execute(
-                    update(Subject)
-                    .where(Subject.c.id == id)
-                    .values({
-                        Subject.c.name.name: name,
-                        Subject.c.abbreviations.name: abbreviations
-                    })
-                )
-            logger.verbose_info('Updated subject %s, %s, %s', id, name, abbreviations)
-    else:
-        if not is_dry_run():
-            session.execute(
-                insert(Subject)
-                .values({
-                    Subject.c.id.name: id,
-                    Subject.c.name.name: name,
-                    Subject.c.abbreviations.name: abbreviations
-                })
-            )
-        logger.verbose_info('Inserted subject %s, %s, %s', id, name, abbreviations)
-
-
 def insert_or_update_object(session: Session, model: Table, id_col: Any, values: OrderedDict) -> ImportAction:
     edit_stamp_col = None
     if EDIT_STAMP in model.columns:
