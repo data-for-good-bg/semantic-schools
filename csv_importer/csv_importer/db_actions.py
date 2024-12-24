@@ -22,6 +22,7 @@ class ImportAction(Enum):
     Insert = 1
     Update = 2
     Failed = 3
+    Skipped = 4
 
 
 def insert_or_update_object(session: Session, model: Table, id_col: Any, values: OrderedDict) -> ImportAction:
@@ -111,25 +112,11 @@ def check_school_exists(session: Session, school_id: str) -> bool:
 
 
 def insert_school(session: Session, place_id: int, school_id: str, school_name: str) -> ImportAction:
-    if not is_dry_run():
-        try:
-            values = {
-                'id': school_id,
-                'name': school_name,
-                'place_id': place_id
-            }
-            session.execute(
-                insert(School)
-                .values(values)
-            )
-            session.commit()
-
-            logger.verbose_info('Inserted school %s', values)
-            return ImportAction.Insert
-        except IntegrityError as e:
-            logger.error('Failed to insert school %s because %s', values, e)
-            session.rollback()
-            return ImportAction.Failed
+    return insert_or_update_object(session, School, School.c.id, OrderedDict([
+        (School.c.id, school_id),
+        (School.c.name, school_name),
+        (School.c.place_id, place_id)
+    ]))
 
 
 def insert_examination(session: Session, examination_type: str, year: int, grade: int, max_possible_score: float) -> tuple[str, ImportAction]:

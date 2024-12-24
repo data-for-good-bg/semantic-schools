@@ -1,8 +1,8 @@
-"""init
+"""initial
 
-Revision ID: 5d8323448434
+Revision ID: ff01b33adfe6
 Revises: 
-Create Date: 2024-12-02 22:06:02.235157
+Create Date: 2024-12-24 12:10:23.752999
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '5d8323448434'
+revision: str = 'ff01b33adfe6'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,6 +25,8 @@ def upgrade() -> None:
     sa.Column('type', sa.String(length=5), nullable=True),
     sa.Column('year', sa.Integer(), nullable=True),
     sa.Column('grade_level', sa.Integer(), nullable=True),
+    sa.Column('max_possible_score', sa.Numeric(), nullable=True),
+    sa.Column('edit_stamp', sa.String(length=60), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('region',
@@ -33,12 +35,14 @@ def upgrade() -> None:
     sa.Column('area_id', sa.String(length=100), nullable=True),
     sa.Column('longitude', sa.String(length=15), nullable=True),
     sa.Column('latitude', sa.String(length=15), nullable=True),
+    sa.Column('edit_stamp', sa.String(length=60), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('subject',
     sa.Column('id', sa.String(length=10), nullable=False),
     sa.Column('name', sa.String(length=120), nullable=True),
     sa.Column('abbreviations', sa.String(length=30), nullable=True),
+    sa.Column('edit_stamp', sa.String(length=60), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('municipality',
@@ -48,6 +52,7 @@ def upgrade() -> None:
     sa.Column('area_id', sa.String(length=100), nullable=True),
     sa.Column('longitude', sa.String(length=15), nullable=True),
     sa.Column('latitude', sa.String(length=15), nullable=True),
+    sa.Column('edit_stamp', sa.String(length=60), nullable=True),
     sa.ForeignKeyConstraint(['region_id'], ['region.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -59,6 +64,7 @@ def upgrade() -> None:
     sa.Column('area_id', sa.String(length=100), nullable=True),
     sa.Column('longitude', sa.String(length=15), nullable=True),
     sa.Column('latitude', sa.String(length=15), nullable=True),
+    sa.Column('edit_stamp', sa.String(length=60), nullable=True),
     sa.ForeignKeyConstraint(['municipality_id'], ['municipality.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -68,6 +74,8 @@ def upgrade() -> None:
     sa.Column('place_id', sa.String(length=100), nullable=False),
     sa.Column('longitude', sa.String(length=15), nullable=True),
     sa.Column('latitude', sa.String(length=15), nullable=True),
+    sa.Column('wikidata_id', sa.String(length=100), nullable=True),
+    sa.Column('edit_stamp', sa.String(length=60), nullable=True),
     sa.ForeignKeyConstraint(['place_id'], ['place.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -77,7 +85,7 @@ def upgrade() -> None:
     sa.Column('subject', sa.String(length=10), nullable=False),
     sa.Column('people', sa.Integer(), nullable=True),
     sa.Column('score', sa.Numeric(), nullable=True),
-    sa.Column('max_possible_score', sa.Numeric(), nullable=True),
+    sa.Column('edit_stamp', sa.String(length=60), nullable=True),
     sa.ForeignKeyConstraint(['examination_id'], ['examination.id'], ),
     sa.ForeignKeyConstraint(['school_id'], ['school.id'], ),
     sa.PrimaryKeyConstraint('examination_id', 'school_id', 'subject')

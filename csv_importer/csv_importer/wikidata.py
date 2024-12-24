@@ -10,10 +10,13 @@ from cache_decorator import Cache
 from .runtime import getLogger
 from .db_actions import insert_or_update_object, ImportAction
 from .db import get_db_engine
-from .db_models import Region, Municipality, Place, School
+from .db_models import Region, Municipality, Place, School, EDIT_STAMP
 
 
 logger = getLogger(__name__)
+
+
+SUPPORTED_IMPORT_WIKIDATA_TYPES = ('regions', 'muns', 'places', 'schools')
 
 
 def _ensure_cache_dir():
@@ -32,7 +35,7 @@ def _ensure_cache_dir():
     return cache_dir
 
 
-CACHE_DIR = _ensure_cache_dir()
+_CACHE_DIR = _ensure_cache_dir()
 
 
 # To use wikidata query endpoint we need to provide user-agent as it is
@@ -181,8 +184,9 @@ SCHOOL_QUERY = '''
 SELECT distinct ?place_id ?id ?name ?wikidata_id ?coordinates WHERE {
   ?school wdt:P31 wd:Q3914;
           wdt:P9034 ?bgSchoolId;
-          wdt:P625 ?coordinates;
          wdt:P131 ?place.
+
+  OPTIONAL { ?school wdt:P625 ?coordinates. }
 
   ?place wdt:P31 ?placeType.
 
@@ -217,7 +221,7 @@ def _flatten_sparql_json_result(sparql_json_result: dict) -> list[dict]:
 @Cache(
     cache_path='/'.join(['{cache_dir}','{function_name}-{_hash}.json']),
     validity_duration='1d',
-    cache_dir=CACHE_DIR
+    cache_dir=_CACHE_DIR
 )
 def _extract_wikidata_via_sparql(query: str):
     logger.info(query)
@@ -318,7 +322,8 @@ def _import_sparql_result(session: Session, sparql: str, model: Table, constant_
             #
             # In all these cases what we do is to use the first record from
             # the query result and skip the other.
-            logger.verbose_info('Skipping %s %s', model.name, result_item)
+            logger.warning('Skipping %s %s', model.name, result_item)
+            counts[ImportAction.Skipped] += 1
             continue
 
         known.add(result_item['id'])
@@ -328,6 +333,9 @@ def _import_sparql_result(session: Session, sparql: str, model: Table, constant_
 
         key_values = []
         for col in model.columns:
+            if col.name == EDIT_STAMP:
+                continue
+
             value = result_item[col.name] \
                 if col.name in result_item \
                 else None
@@ -346,7 +354,7 @@ def _import_sparql_result(session: Session, sparql: str, model: Table, constant_
     return counts
 
 
-def import_from_wikidata():
+def import_from_wikidata(to_import = SUPPORTED_IMPORT_WIKIDATA_TYPES):
     """
     Imports information for regions, municipalities, places (cities and villages)
     and schools from wikidata into the relational DB.
@@ -356,27 +364,31 @@ def import_from_wikidata():
 
     db = get_db_engine()
     with Session(db) as session:
-        counters[Region.name] = _import_sparql_result(session, REGION_SPARQL, Region)
+        if 'regions' in to_import:
+            counters[Region.name] = _import_sparql_result(session, REGION_SPARQL, Region)
 
-        counters[Municipality.name] = _import_sparql_result(session, MUN_SPARQL, Municipality)
+        if 'muns' in to_import:
+            counters[Municipality.name] = _import_sparql_result(session, MUN_SPARQL, Municipality)
 
-        for place_type in [CITY_IN_BULGARIA, VILLAGE_IN_BULGARIA]:
-            counters[Place.name+'-' + DISPLAY_PLACE_TYPE[place_type]] = _import_sparql_result(session, PLACE_SPARQL.format(place_type), Place, {'type': DISPLAY_PLACE_TYPE[place_type]})
+        if 'places' in to_import:
+            for place_type in [CITY_IN_BULGARIA, VILLAGE_IN_BULGARIA]:
+                counters[Place.name+'-' + DISPLAY_PLACE_TYPE[place_type]] = _import_sparql_result(session, PLACE_SPARQL.format(place_type), Place, {'type': DISPLAY_PLACE_TYPE[place_type]})
 
-        # # Bankya is handled specially, because it is the only city in Bulgaria
-        # # which does not belong (P:131) to a municipality of Bulgaria. So
-        # # because of this it is not imported as all other cities and viligies
-        insert_or_update_object(session, Place, Place.c.id, OrderedDict([
-            (Place.c.id, 'http://www.wikidata.org/entity/Q806817'),
-            (Place.c.name, 'Банкя'),
-            (Place.c.municipality_id, 'http://www.wikidata.org/entity/Q4442915'),
-            (Place.c.type, 'град'),
-            (Place.c.area_id, None),
-            (Place.c.longitude, '23.147239'),
-            (Place.c.latitude, '42.706945')
-        ]))
+            # # Bankya is handled specially, because it is the only city in Bulgaria
+            # # which does not belong (P:131) to a municipality of Bulgaria. So
+            # # because of this it is not imported as all other cities and viligies
+            insert_or_update_object(session, Place, Place.c.id, OrderedDict([
+                (Place.c.id, 'http://www.wikidata.org/entity/Q806817'),
+                (Place.c.name, 'Банкя'),
+                (Place.c.municipality_id, 'http://www.wikidata.org/entity/Q4442915'),
+                (Place.c.type, 'град'),
+                (Place.c.area_id, None),
+                (Place.c.longitude, '23.147239'),
+                (Place.c.latitude, '42.706945')
+            ]))
 
-        counters[School.name] = _import_sparql_result(session, SCHOOL_QUERY, School)
+        if 'schools' in to_import:
+            counters[School.name] = _import_sparql_result(session, SCHOOL_QUERY, School)
 
         session.commit()
 
