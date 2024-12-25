@@ -455,9 +455,19 @@ def refine_data(csv_data: StringIO, subject_mapping: dict[str, SubjectItem]) -> 
     # string contains '.0' at the end, i.e. '1000002.0' should become '1000002'
     data['school_admin_id'] = data['school_admin_id'].replace('\.0', '', regex=True)
 
-    # dzi-2018 contains two rows for РУО, those rows do not have place, that's
-    # why we delete these rows
-    data = data[data['place'].isna() == False]
+    # In some CSV files there are lines not for school, but for "Регионално
+    # управление на образованието" or "РУО". Usually these lines are for small
+    # number of students.
+    #
+    # Some of these lines do not have city, municipality. In that cases
+    # we use the value from the parent administrative unit.
+    for nan_col, value_col in [ ('municipality', 'region'), ('place', 'municipality')]:
+        data.loc[data[nan_col].isna(), nan_col] = data[value_col].where(data[nan_col].isna())
+
+    # In the DZI CSV for 2017 There are results for two РУО without school_admin_id
+    # Here we fill the school_admin_id, because we know it from other years.
+    data.loc[(data['school_admin_id'] == 'nan') & (data['place'] == 'Велико Търново'), 'school_admin_id'] = '3400'
+    data.loc[(data['school_admin_id'] == 'nan') & (data['place'] == 'Пазарджик'), 'school_admin_id'] = '1300'
 
     # unify all variations of Чужбина regions/municipalities
     def _unify_foreign_country(v):
