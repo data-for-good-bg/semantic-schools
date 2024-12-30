@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 """
-A tool for generating airflow cli commands for triggering DAGs executions.
+A tool for generating airflow or app.py cli commands for easier starting of
+multiple DAGs or multiple app.py executions.
+
 This is helpful when all the CSV data needs to be re-imported.
 """
 

@@ -3,8 +3,8 @@ This module defines the database models (or tables) with SQLAlchemy.
 
 It uses the SQLAlchemy Database Metadata classes Table and Column.
 It seems the "Database Metadata" is the SQLAlchemy lower level API,
-while SQLAlechemy also provides the "ORM declartive form" where tables are
-declared as sub-clasess of DeclarativeBase class.
+while SQLAlchemy also provides the "ORM declarative form" where tables are
+declared as sub-classes of DeclarativeBase class.
 
 The "Database Metadata" classes were chosen here mainly because I [vitali]
 didn't have any knowledge about SQLAlchemy.
@@ -83,7 +83,7 @@ Place: Table = Table(
 )
 
 
-# Describes the builgarian schools.
+# Describes the bulgarian schools.
 # The ID is string value found in wikidata or in the NVO and DZI CSV files.
 # The wikidata property for bg_school_id is wdt:P9034.
 # In the CSV files school_id is known differently - "Код по АДМИН", "Код" or "Код по НЕИСПОУ"

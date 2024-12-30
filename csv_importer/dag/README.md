@@ -71,7 +71,7 @@ The virtual env is created by:
 * __Installing__ apache-airflow in the DAG's virtual env. This is needed,
   because the DAG uses Airflow APIs for accessing variables.
 
-Unfortunatelly having apache-airflow in the venv comes with undesired consequences,
+Unfortunately having apache-airflow in the venv comes with undesired consequences,
 because apache-airflow comes with huge amount of dependencies, which may
 create version conflict with the DAG's dependencies.
 
@@ -79,7 +79,7 @@ Example: one of Airflow dependencies is SQLAlchemy with version 1.4.52.
 Originally the csv_importer modules was using SQLAlchemy 2.0.29, but it was
 downgraded in order to avoid version conflict.
 
-An attempt to run the DAG with SQLAlchmey 2.0.29 was made, but then the DAG
+An attempt to run the DAG with SQLAlchemy 2.0.29 was made, but then the DAG
 fails with some initialization error.
 
 ## Finding the DAG's venv
@@ -113,7 +113,7 @@ var.json or even start using Airflow connection.
 The `csv_importer/pyproject.toml` file is the simplest possible.
 When interpreted by `pip install -e .` pip assumes that the build system is
 `setuptools`, despite build system is not configured explicitly.
-That's the toml file contians `tool.setuptools` section.
+That's the toml file contains `tool.setuptools` section.
 
 # What has been tried and did not work
 
@@ -123,7 +123,7 @@ According to the Airflow documentation a dag can be packaged as ZIP
 ([doc link](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/dags.html#packaging-dags)).
 
 This was tried with `@task.external_python` and `@task.virtualenv`
-decatorators.
+decorators.
 In both cases the dag task which was trying to import `csv_importer` was failing
 to import it.
 (vitali) I gave up on this approach, because it was not obvious why this does
@@ -131,7 +131,7 @@ not work.
 
 ## Working with @task.virtualenv
 
-This decrator allows passing set of requirements via decorator argument.
+This decorator allows passing set of requirements via decorator argument.
 
 In general the decorator works really well, especially when cached venvs are used
 (via `venv_cache_path` argument).

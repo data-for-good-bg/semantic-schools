@@ -26,7 +26,7 @@ def check_db_version(db: Engine):
 
 def get_db_engine() -> Engine:
     """
-    Returens initialized SQLAlchemy Engine, also verifies that the database
+    Returns initialized SQLAlchemy Engine, also verifies that the database
     is update to the expected alembic (schema) version.
 
     All DB consumers should use this function to obtain SQLAlchemy engine.

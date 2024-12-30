@@ -15,7 +15,7 @@ logger = getLogger(__name__)
 class ImportAction(Enum):
     """
     It is used as result of some of the methods below. It could be used
-    for providing summary of inserted, updated or alredy exissting records
+    for providing summary of inserted, updated or already existing records
     during execution of CLI app or DAG.
     """
     AlreadyExists = 0

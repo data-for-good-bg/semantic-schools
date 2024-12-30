@@ -4,7 +4,7 @@
 # This script installs the csv_importer DAGs on the Airflow machine.
 # 1. It creates python virtual environment under directory specified via
 #    AIRFLOW_VENV_DIR env var.
-#    The venv cconsists of:
+#    The venv consists of:
 #      * requirements described in csv_importer/requirements.txt
 #      * the csv_importer module installed in editable mode
 #      * the apache-airflow python package with version specified via

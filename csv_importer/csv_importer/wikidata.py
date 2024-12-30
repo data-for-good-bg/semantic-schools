@@ -376,7 +376,7 @@ def import_from_wikidata(to_import = SUPPORTED_IMPORT_WIKIDATA_TYPES):
 
             # # Bankya is handled specially, because it is the only city in Bulgaria
             # # which does not belong (P:131) to a municipality of Bulgaria. So
-            # # because of this it is not imported as all other cities and viligies
+            # # because of this it is not imported as all other cities and villages
             insert_or_update_object(session, Place, Place.c.id, OrderedDict([
                 (Place.c.id, 'http://www.wikidata.org/entity/Q806817'),
                 (Place.c.name, 'Банкя'),
@@ -396,6 +396,6 @@ def import_from_wikidata(to_import = SUPPORTED_IMPORT_WIKIDATA_TYPES):
 
     for model_name, counts in counters.items():
         cnt_items = [f'{op_type}: {op_cnt}' for op_type, op_cnt in counts.items()]
-        cnts_str = ', '.join(cnt_items)
-        msg = f'Operation counts for "{model_name}" --- {cnts_str}'
+        counts_str = ', '.join(cnt_items)
+        msg = f'Operation counts for "{model_name}" --- {counts_str}'
         logger.info(msg)

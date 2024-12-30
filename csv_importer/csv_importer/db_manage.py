@@ -55,12 +55,12 @@ def init_db():
     db = get_db_engine()
 
     with Session(db) as session:
-        _init_subects(session)
+        _init_subjects(session)
         _init_region_and_municipality(session)
         session.commit()
 
 
-def _init_subects(session: Session):
+def _init_subjects(session: Session):
     default_subject_items = get_default_subjects()
     ops_counts = defaultdict(int)
     for subject_item in default_subject_items:

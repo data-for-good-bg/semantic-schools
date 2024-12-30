@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This script contains functoins for working with NVO and DZI CSV files provided
+This script contains functions for working with NVO and DZI CSV files provided
 by data.egov.bg.
 
 It is supposed that these functions will be used by another script which
@@ -66,7 +66,7 @@ COL_RE_TRANSLATION_SPECIAL_POSITIONS = [
 
 # Some of the DZI CSV files contain columns titled '2дзи' with aggregated
 # information about 2nd DZI (i.e. non BEL DZI),
-# Some of the DZI CSV files contain coumns titled 'общо' with aggregated
+# Some of the DZI CSV files contain columns titled 'общо' with aggregated
 # information for all DZI.
 # If not removed these columns are treated as another subject, so we
 # delete them.
@@ -204,9 +204,9 @@ def load_csv(file: str) -> StringIO:
     # The first unicode sequence is the BOM mark,
     # The second one is another weird unicode sequence found in a column name.
     # The third item is because one of the files contains: "<BOM>""Област"""
-    #   So the <BOM> will be replaced, then we handle the trippled quotes
+    #   So the <BOM> will be replaced, then we handle the tripled quotes
     #   It is handled by this special way, because it is not good idea to handle
-    #   trippled quotes in the whole file.
+    #   tripled quotes in the whole file.
     to_replace = {
         '\ufeff': '',
         '\u00a0': '',
@@ -228,7 +228,7 @@ def load_csv(file: str) -> StringIO:
 def fill_empty_cells_from_previous(input: list[str]) -> list[str]:
     """
     Takes a list of strings as input and returns another list in which the
-    where empty elements will be filled with the value from the preceeding
+    where empty elements will be filled with the value from the preceding
     element.
 
     Example:
@@ -277,7 +277,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     * nvo-4-2022
         "Област","Община","Населено място","Училище","Код по АДМИН","БЕЛ Явили се","БЕЛ Ср. успех в точки","МАТ Явили се","МАТ  Ср. успех в точки"
 
-    2. In some cases this line is preceeded by several additional lines
+    2. In some cases this line is preceded by several additional lines
     which describe what the file is about. These lines are not well structured
     and this function ignores them.
     There's loop below which skips all lines before the line starting with
@@ -285,7 +285,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
 
     Examples: nvo-7-2018
 
-    3. In scome case the line with column names is followed by one or two
+    3. In some case the line with column names is followed by one or two
     lines which contain additional descriptors (or options) for the columns.
 
     Several examples:
@@ -314,9 +314,9 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     For dzi-2023 we'll have columns like:
     "БЕЛ(ООП) З Бр.", "БЕЛ(ООП) З Ср.усп."
 
-    NB: In dzi-2023 example there is colimn "БЕЛ(ПП)" followed by empty column,
+    NB: In dzi-2023 example there is column "БЕЛ(ПП)" followed by empty column,
     then "Мат(ПП)" and again empty column. The empty columns are filled
-    from their preceeding column.
+    from their preceding column.
 
     ---
 
@@ -344,7 +344,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     we have 'Явили се' columns for all subjects, then 'Среден успех' columns
     for all subjects.
 
-    At the end this function retruns the input StringIO changed to contain
+    At the end this function returns the input StringIO changed to contain
     only one line with column names. This way it is ready to be imported
     by Pandas.
     """
@@ -483,7 +483,7 @@ def refine_data(csv_data: StringIO, subject_mapping: dict[str, SubjectItem]) -> 
     data['municipality'] = data['municipality'].str.title()
 
 
-    def _get_prety_place(value: str) -> str:
+    def _get_pretty_place(value: str) -> str:
         """
         Formats cities and villages in standard way.
         TODO: Some places do not contain `гр.` and `с.` prefixes, as result
@@ -506,19 +506,19 @@ def refine_data(csv_data: StringIO, subject_mapping: dict[str, SubjectItem]) -> 
             else:
                 return _upper_first(value.strip())
         except:
-            logger.error('Failed to make prety place from value %s', value)
+            logger.error('Failed to make pretty place from value %s', value)
             raise
 
-    data['place'] = data['place'].apply(_get_prety_place)
+    data['place'] = data['place'].apply(_get_pretty_place)
 
-    # Conver people columns to int
+    # Convert people columns to int
     people_cols = [c for c in data.columns if is_people_column(c)]
     for c in people_cols:
         logger.verbose_info('converting to int people column %s', c)
         data[c] = data[c].fillna(-1).astype('int32')
 
 
-    # Conver score columns to float
+    # Convert score columns to float
     score_cols = [c for c in data.columns if is_score_column(c)]
     for c in score_cols:
         logger.verbose_info('converting to float score column %s', c)
