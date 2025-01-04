@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-This script contains functoins for working with NVO and DZI CSV files provided
+This script contains functions for working with NVO and DZI CSV files provided
 by data.egov.bg.
 
 It is supposed that these functions will be used by another script which
@@ -22,6 +22,7 @@ from io import StringIO
 
 from .runtime import getLogger
 from .db_manage import load_subject_abbr_map
+from .models import SubjectItem
 
 
 logger = getLogger(__name__)
@@ -65,7 +66,7 @@ COL_RE_TRANSLATION_SPECIAL_POSITIONS = [
 
 # Some of the DZI CSV files contain columns titled '2дзи' with aggregated
 # information about 2nd DZI (i.e. non BEL DZI),
-# Some of the DZI CSV files contain coumns titled 'общо' with aggregated
+# Some of the DZI CSV files contain columns titled 'общо' with aggregated
 # information for all DZI.
 # If not removed these columns are treated as another subject, so we
 # delete them.
@@ -203,9 +204,9 @@ def load_csv(file: str) -> StringIO:
     # The first unicode sequence is the BOM mark,
     # The second one is another weird unicode sequence found in a column name.
     # The third item is because one of the files contains: "<BOM>""Област"""
-    #   So the <BOM> will be replaced, then we handle the trippled quotes
+    #   So the <BOM> will be replaced, then we handle the tripled quotes
     #   It is handled by this special way, because it is not good idea to handle
-    #   trippled quotes in the whole file.
+    #   tripled quotes in the whole file.
     to_replace = {
         '\ufeff': '',
         '\u00a0': '',
@@ -227,7 +228,7 @@ def load_csv(file: str) -> StringIO:
 def fill_empty_cells_from_previous(input: list[str]) -> list[str]:
     """
     Takes a list of strings as input and returns another list in which the
-    where empty elements will be filled with the value from the preceeding
+    where empty elements will be filled with the value from the preceding
     element.
 
     Example:
@@ -276,7 +277,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     * nvo-4-2022
         "Област","Община","Населено място","Училище","Код по АДМИН","БЕЛ Явили се","БЕЛ Ср. успех в точки","МАТ Явили се","МАТ  Ср. успех в точки"
 
-    2. In some cases this line is preceeded by several additional lines
+    2. In some cases this line is preceded by several additional lines
     which describe what the file is about. These lines are not well structured
     and this function ignores them.
     There's loop below which skips all lines before the line starting with
@@ -284,7 +285,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
 
     Examples: nvo-7-2018
 
-    3. In scome case the line with column names is followed by one or two
+    3. In some case the line with column names is followed by one or two
     lines which contain additional descriptors (or options) for the columns.
 
     Several examples:
@@ -313,9 +314,9 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     For dzi-2023 we'll have columns like:
     "БЕЛ(ООП) З Бр.", "БЕЛ(ООП) З Ср.усп."
 
-    NB: In dzi-2023 example there is colimn "БЕЛ(ПП)" followed by empty column,
+    NB: In dzi-2023 example there is column "БЕЛ(ПП)" followed by empty column,
     then "Мат(ПП)" and again empty column. The empty columns are filled
-    from their preceeding column.
+    from their preceding column.
 
     ---
 
@@ -343,7 +344,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     we have 'Явили се' columns for all subjects, then 'Среден успех' columns
     for all subjects.
 
-    At the end this function retruns the input StringIO changed to contain
+    At the end this function returns the input StringIO changed to contain
     only one line with column names. This way it is ready to be imported
     by Pandas.
     """
@@ -434,7 +435,7 @@ def refine_csv_column_names(input: StringIO) -> StringIO:
     return output
 
 
-def refine_data(csv_data: StringIO) -> pd.DataFrame:
+def refine_data(csv_data: StringIO, subject_mapping: dict[str, SubjectItem]) -> pd.DataFrame:
     """
     This function loads a CSV file into pandas DataFrame and
     refines the data.
@@ -454,9 +455,19 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     # string contains '.0' at the end, i.e. '1000002.0' should become '1000002'
     data['school_admin_id'] = data['school_admin_id'].replace('\.0', '', regex=True)
 
-    # dzi-2018 contains two rows for РУО, those rows do not have place, that's
-    # why we delete these rows
-    data = data[data['place'].isna() == False]
+    # In some CSV files there are lines not for school, but for "Регионално
+    # управление на образованието" or "РУО". Usually these lines are for small
+    # number of students.
+    #
+    # Some of these lines do not have city, municipality. In that cases
+    # we use the value from the parent administrative unit.
+    for nan_col, value_col in [ ('municipality', 'region'), ('place', 'municipality')]:
+        data.loc[data[nan_col].isna(), nan_col] = data[value_col].where(data[nan_col].isna())
+
+    # In the DZI CSV for 2017 There are results for two РУО without school_admin_id
+    # Here we fill the school_admin_id, because we know it from other years.
+    data.loc[(data['school_admin_id'] == 'nan') & (data['place'] == 'Велико Търново'), 'school_admin_id'] = '3400'
+    data.loc[(data['school_admin_id'] == 'nan') & (data['place'] == 'Пазарджик'), 'school_admin_id'] = '1300'
 
     # unify all variations of Чужбина regions/municipalities
     def _unify_foreign_country(v):
@@ -472,7 +483,7 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     data['municipality'] = data['municipality'].str.title()
 
 
-    def _get_prety_place(value: str) -> str:
+    def _get_pretty_place(value: str) -> str:
         """
         Formats cities and villages in standard way.
         TODO: Some places do not contain `гр.` and `с.` prefixes, as result
@@ -481,26 +492,33 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
         if not value:
             return value
 
+        def _upper_first(s: str) -> str:
+            if not s:
+                return s
+
+            s = s.strip()
+            return s[0].upper() + s[1:].lower()
+
         try:
             if '.' in value:
                 prefix, name = value.split('.')
-                return f'{prefix.strip().lower()}. {name.strip().title()}'
+                return f'{prefix.strip().lower()}. {_upper_first(name)}'
             else:
-                return value.strip().title()
+                return _upper_first(value.strip())
         except:
-            logger.error('Failed to make prety place from value %s', value)
+            logger.error('Failed to make pretty place from value %s', value)
             raise
 
-    data['place'] = data['place'].apply(_get_prety_place)
+    data['place'] = data['place'].apply(_get_pretty_place)
 
-    # Conver people columns to int
+    # Convert people columns to int
     people_cols = [c for c in data.columns if is_people_column(c)]
     for c in people_cols:
         logger.verbose_info('converting to int people column %s', c)
         data[c] = data[c].fillna(-1).astype('int32')
 
 
-    # Conver score columns to float
+    # Convert score columns to float
     score_cols = [c for c in data.columns if is_score_column(c)]
     for c in score_cols:
         logger.verbose_info('converting to float score column %s', c)
@@ -542,15 +560,8 @@ def refine_data(csv_data: StringIO) -> pd.DataFrame:
     # The loop below:
     # 1. Builds a dictionary with column new->old names.
     # 2. Raise an exception in case unknown subject is found.
-    #
-    # TODO: The load_subject_abbr_map loads data from DB, this dependency
-    #       to the database is not really good. The initial intention was
-    #       refine_csv module to be used for importing data in both relational
-    #       and graph DB. Probably the function could load the data from the
-    #       constant in the code.
-
     logger.verbose_info('Columns before subject remapping: %s', data.columns)
-    subject_mapping = load_subject_abbr_map()
+
     renamings_map = {}
     for c in data.columns:
         if is_subject_column(c):
@@ -637,18 +648,23 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
     result = pd.concat(subject_df, ignore_index=True)
     result = result[result['score'] > 0]
     result = result.sort_values('school_admin_id')
+    result = result.reset_index()
 
     return result
 
 
 def main():
+    """
+    This main function is used only for testing.
+    """
 
     csv_file = sys.argv[1]
     raw_data = load_csv(csv_file)
     raw_data = refine_csv_column_names(raw_data)
     raw_data.seek(0)
 
-    refined_data = refine_data(raw_data)
+    subject_mapping = load_subject_abbr_map()
+    refined_data = refine_data(raw_data, subject_mapping)
     print(refined_data.loc[:3])
 
     schools_data = extract_school_data(refined_data)

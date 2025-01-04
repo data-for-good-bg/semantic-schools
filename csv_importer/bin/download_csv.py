@@ -39,7 +39,7 @@ def main():
                             for chunk in r.iter_content(chunk_size=8192):
                                 f.write(chunk)
                 else:
-                    logger.info('Resource %s is already downloaed to %s', resource_id, target_file)
+                    logger.info('Resource %s is already downloaded to %s', resource_id, target_file)
 
 
 if __name__ == '__main__':

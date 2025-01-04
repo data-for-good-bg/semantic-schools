@@ -1,124 +1,104 @@
-"""
-This module defines the database models (or tables) with SQLAlchemy.
+from dataclasses import dataclass
 
-It uses the SQLAlchemy Database Metadata classes Table and Column.
-It seems the "Database Metadata" is the SQLAlchemy lower level API,
-while SQLAlechemy also provides the "ORM declartive form" where tables are
-declared as sub-clasess of DeclarativeBase class.
-
-The "Database Metadata" classes were chosen here mainly because I [vitali]
-didn't have any knowledge about SQLAlchemy.
-"""
-
-from sqlalchemy import (
-    MetaData, Table, Column,
-    Integer, String, ForeignKey, Numeric
-)
-
-Models = MetaData()
-
-# Describes the adminstrative teritorial unit Region -> Област.
-# The ID is auto-inc value implemented in db_actions.py
-Region: Table = Table(
-    'region',
-    Models,
-    Column('id', Integer, primary_key=True),
-    Column('name', String(20))
-)
-
-# Describes the adminstrative teritorial unit Municipality -> Община.
-# The ID is auto-inc value implemented in db_actions.py
-Municipality: Table = Table(
-    'municipality',
-    Models,
-    Column('id', Integer, primary_key=True),
-    Column('name', String(20)),
-    Column('region_id', ForeignKey('region.id'), nullable=False)
-)
-
-# Describes the cities and villages.
-# The ID is auto-inc value implemented in db_actions.py
-Place: Table = Table(
-    'place',
-    Models,
-    Column('id', Integer, primary_key=True),
-    Column('name', String(40)),
-    Column('municipality_id', ForeignKey('municipality.id'), nullable=False)
-)
-
-# Describes the builgarian schools.
-# The ID is string value found in the NVO and DZI CSV files. The column
-# in different CSV files is known as "Код по АДМИН", "Код" or "Код по НЕИСПОУ"
-# and it is assumed to be unique and the same for each school in all CSV files.
-#
-# The name of the school is the value from the CSV file where certain school
-# is found for the first time. On subsequent imports if a school is found
-# by its id in the database, the name will not be updated.
-School: Table = Table(
-    'school',
-    Models,
-    Column('id', String(10), primary_key=True),
-    Column('name', String(150), nullable=False),
-    Column('place_id', ForeignKey('place.id'), nullable=False)
-)
-
-# Examination table representation one examination session or "Изпитна сесия".
-# An examination session is described
-# * with type of the session - 'nvo' or 'dzi'
-# * with year - possible values 2024, 2023, etc
-# * with grade_level
-#   * for NVO possible values are 4, 7 and 10
-#   * for DZI the value is always 12
-#
-# The id is a string in the form '<type>-<year>-<grade_level>'
-#
-Examination: Table = Table(
-    'examination',
-    Models,
-    # id will be in the form: nvo-4-2022
-    Column('id', String(15), primary_key=True),
-
-    # type will be НВО or ДЗИ
-    Column('type', String(5)),
-    Column('year', Integer),
-    Column('grade_level', Integer),
-)
+# Constant used for working with bulgarian schools in foreign countries.
+FOREIGN_COUNTRY = 'Чужбина'
 
 
-# Examination score table supplements the Examination table.
-# In this table each record describes the result:
-# * of given school - school_id
-# * on given subject - this is the unique abbreviation of the subject, check
-#   the documentation of SubjectItem class in db_manage.py
-# * people - number of attented people on that subject from that school
-# * score - the average score of the attendees
-# * max_possible_score - describes the max possible score, it could be 6
-#   for DZI and 65 or 100 for NVO.
-#   TODO: This column belongs to Examination and could be moved there.
-#
-ExaminationScore: Table = Table(
-    'examination_score',
-    Models,
+@dataclass
+class SubjectItem:
+    """
+    This class facilitates working with Subjects and the fact some of the
+    have multiple abbreviations.
+    The problem: For example Испански Език in different CSV files is found
+    with ИЕ and ИспЕ. In the database we want to have just one subject abbreviation
 
-    Column('examination_id', ForeignKey('examination.id'), nullable=False, primary_key=True),
-    Column('school_id', ForeignKey('school.id'), nullable=False, primary_key=True),
+    The `id` attribute is always an abbreviation of the subject, the `name` is
+    the full name of the subject. The `abbreviations` is list of all other
+    abbreviations known for the subject. This list could be empty.
 
-    # subject will be МАТ, БЕЛ,...
-    Column('subject', String(10), nullable=False, primary_key=True),
+    The `raw_strings()` method returns list of lowercased all possible
+    abbreviations. This list is used to build a dictionary where the keys
+    are abbreviations, the values are SubjectItem instances. Such dictionary
+    is used in refine_csv for mapping the found subject abbreviation in certain
+    CSV to the chosen one.
 
-    Column('people', Integer),
-    Column('score', Numeric),
-    Column('max_possible_score', Numeric)
-)
+    In the database there is a table Subject which has the same columns - id,
+    name and abbreviations. This table is used as source of information
+    for SubjectItem instances.
+    Check the function load_subject_abbr_map() below.
 
-# This table describes all possible Subjects and their different
-# abbreviations.
-# Check the documentation of SubjectItem class in db_manage.py
-Subject: Table = Table(
-    'subject',
-    Models,
+    The foreign languages subjects (English, Spanish, Russian, etc.) have
+    variations with different levels - Б1, Б1.1 and Б2. They are treated as
+    different subject items, so in the Subject table there are records for
+    'АЕ', 'АЕ-Б1', 'АЕ-Б1.1', 'АЕ-Б2', and similar records for all other foreign
+    languages.
 
-    Column('id', String(10), primary_key=True),
-    Column('name', String(120)),
-    Column('abbreviations', String(30))
-)
+    Below in the init_db() function there's is manually initialized list
+    of SubjectItems which is used to fill the Subject table in the database.
+
+    """
+    id: str
+    name: str
+    abbreviations: list[str]
+
+    def __post_init__(self):
+        self.id = self.id.upper()
+
+    def raw_strings(self):
+        result = []
+        for a in [self.id, *self.abbreviations]:
+            result.append(f'{a.lower()}')
+        return result
+
+
+def get_default_subjects() -> list[SubjectItem]:
+    language_levels = ['Б1', 'Б1.1', 'Б2']
+
+    def _variations(this: SubjectItem, variations: list[str]) -> list[SubjectItem]:
+        result = [this]
+        for v in variations:
+            result.append(
+                SubjectItem(
+                    id=f'{this.id}-{v}',
+                    name=f'{this.name} {v}',
+                abbreviations=[f'{a}-{v}' for a in this.abbreviations]
+                )
+            )
+
+        return result
+
+
+    def _lang_variations(this: SubjectItem) -> list[SubjectItem]:
+        return _variations(this, language_levels)
+
+    default_subject_items = [
+        *_lang_variations(SubjectItem(id='АЕ', abbreviations=[], name='Английски език')),
+        SubjectItem(id='БЕЛ', abbreviations=[], name='Български език и литература'),
+        SubjectItem(id='БЗО', abbreviations=[], name='Биология и здравно образование'),
+        SubjectItem(id='ГЕО', abbreviations=['ГИ'], name='География и икономика'),
+        SubjectItem(id='ДИППК', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация'),
+        SubjectItem(id='ДИППК-п.р', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - писмена работа по теория на професията + практика'),
+        SubjectItem(id='ДИППК-тест', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - писмен тест по теория на професията + практика'),
+        SubjectItem(id='ДИППК-Д.Пр', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - дипломен проект'),
+        SubjectItem(id='ДИППК-пр', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - практика '),
+        SubjectItem(id='ИИ', abbreviations=[], name='Изобразително изкуство'),
+        SubjectItem(id='ИНФ', abbreviations=[], name='Информатика'),
+        *_lang_variations(SubjectItem(id='ИспЕ', abbreviations=['ИЕ', 'ИсЕ'], name='Испански език')),
+        SubjectItem(id='ИСТ', abbreviations=['ИЦ'], name='История и цивилизация'),
+        *_lang_variations(SubjectItem(id='ИтЕ', abbreviations=[], name='Италиански език')),
+        SubjectItem(id='ИТ', abbreviations=[], name='Информационни технологии'),
+        SubjectItem(id='МУЗ', abbreviations=[], name='Музика'),
+        SubjectItem(id='МАТ', abbreviations=[], name='Математика'),
+        *_lang_variations(SubjectItem(id='НЕ', abbreviations=[], name='Немски език')),
+        *_lang_variations(SubjectItem(id='ПЕ', abbreviations=[], name='Португалски език')),
+        SubjectItem(id='ПР', abbreviations=[], name='Предприемачество'),
+        *_lang_variations(SubjectItem(id='РЕ', abbreviations=[], name='Руски език')),
+        SubjectItem(id='ФА', abbreviations=[], name='Физика и астрономия'),
+        SubjectItem(id='ФИЛ', abbreviations=[], name='Философия'),
+        *_lang_variations(SubjectItem(id='ФрЕ', abbreviations=['ФЕ'], name='Френски език')),
+        SubjectItem(id='ХООС', abbreviations=[], name='Химия и опазване на околната среда'),
+        SubjectItem(id='ЧО', abbreviations=[], name='Човекът и обществото'),
+        SubjectItem(id='ЧП', abbreviations=[], name='Човекът и природата'),
+    ]
+
+    return default_subject_items

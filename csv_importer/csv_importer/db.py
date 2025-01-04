@@ -5,7 +5,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 
-KNOWN_ALEMBIC_VERSION = '9f3355882c67'
+KNOWN_ALEMBIC_VERSION = 'ff01b33adfe6'
 
 DEFAULT_DB_URL = 'postgresql://postgres:data-for-good@localhost/eddata'
 
@@ -26,7 +26,7 @@ def check_db_version(db: Engine):
 
 def get_db_engine() -> Engine:
     """
-    Returens initialized SQLAlchemy Engine, also verifies that the database
+    Returns initialized SQLAlchemy Engine, also verifies that the database
     is update to the expected alembic (schema) version.
 
     All DB consumers should use this function to obtain SQLAlchemy engine.

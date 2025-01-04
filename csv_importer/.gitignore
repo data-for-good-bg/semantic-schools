@@ -3,3 +3,5 @@ sqlite/
 __pycache__/
 csv_importer.egg-info/
 csv_importer-*-py3-none-any.whl
+work/
+downloads/

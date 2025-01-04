@@ -7,7 +7,7 @@ data provided by egov.data.bg into relational or graph DB.
 Organization of the directory:
 * ./csv_importer/ directory is a python package.
 
-  Note that from repo root point of view there's ./csv_imporeter/csv_imporeter
+  Note that from repo root point of view there's ./csv_importer/csv_importer
   directory. The nested `csv_importer` had to be created in order
   to organize it as python package which is installable via `pip install`.
   The `pyproject.toml` (described below) is part of the python package description.
@@ -19,10 +19,15 @@ Organization of the directory:
 
   * import_csv.py - provide function for loading a CSV file and importing
     it into relational database.
-  * models.py describes the relational database models (tables) with SQLAlchemy
-    library
-  * The db*.py modules provide functions for working with relational database,
-    currently postgres. They also use SQLAlchemy library.
+  * models.py is the place to describe models which could be used for
+    relational and graph databases. An example for such model is the Subject
+    (учебен предмет) and all of instances.
+  * db_models.py is the module where are defined the SQLAlchemy models
+    for working with relational DBs
+  * The db.py, db_actions.py and db_manage.py modules provide functions for
+    working with relational database, currently postgres. They also use SQLAlchemy library.
+  * runtime.py defines classes and functions related to given execution of
+    the import application - logging, dry-run, etc.
   * ./alembic directory contains the Alembic configuration and DB migrations.
 
 * ./pyproject.toml - This pyproject file describes the `./csv_importer` package.
@@ -44,7 +49,7 @@ Organization of the directory:
   * uses the csv_importer.import_csv module to import the data.
 
 * ./app.py - this is a CLI application which is an entry point to the
-  ./csv_import package, mainly to ./csv_importer/import_csv.py.
+  ./csv_importer package, mainly to ./csv_importer/import_csv.py.
   Run `./app.py --help` for more information.
 
 * ./postgres - the key thing here is the `docker-compose.yaml` file which
@@ -93,9 +98,6 @@ also Alembic documentation is nice source of information.
    app.py (this action should be implemented as alembic db migration).
 
 
-
-
-
 ## Working with Alembic
 
 Alembic is a tool for managing DB migrations for applications using
@@ -113,10 +115,10 @@ alembic init alembic
 
 ```
 
-Then csv_importer/alembic/env.py was changed to point to Models object from models.py
+Then csv_importer/alembic/env.py was changed to point to Models object from db_models.py
 
 The alembic.ini was changed:
-* to point local sqlite db.
+* to point local postgres db.
 * to use naming for db migrations files which starts with timestamp
 
 ### Generating db migrations
@@ -124,16 +126,20 @@ The alembic.ini was changed:
 NB: All these actions are applied on the DB specified in the `sqlalchemy.url`
 in `csv_importer/alembic.ini` file.
 
-Before changing models.py you need to have a DB which is up-to-date with current migrations. Call this:
+The process of generating new DB migrations consists of these steps:
+* Ensure your development DB is up to date with current set of DB migrations
+  by calling this command:
 
 ```
+cd csv_importer/csv_importer/
 alembic upgrade head
 ```
 
-After you're ready with models.py updates call this to generate the new
-migrations file.
+* Change db_models.py (add/remove models, columns, indices, etc),
+  then call this command to generate the new migration file:
 
 ```
+cd csv_importer/csv_importer/
 alembic revision --autogenerate -m '<migration description>'
 ```
 
