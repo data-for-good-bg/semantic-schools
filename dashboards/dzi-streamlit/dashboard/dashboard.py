@@ -3,6 +3,9 @@ import pandas as pd
 import geopandas as gpd
 import altair as alt
 from io import StringIO
+import folium
+from streamlit_folium import folium_static
+import branca.colormap as cm
 
 import datalib
 import chartlib
@@ -122,8 +125,10 @@ with st.expander(label='**Поглед по области**', expanded=False):
         percent_tab.write(percent_chart)
         score_tab.write(score_chart)
 
+
 with st.expander(label='**Карта**', expanded=True):
-    st.write('Hello world')
+    st.write('### Географско разпределение на училищата')
+    st.write('Цветът на маркерите показва средния успех, а размерът - броя ученици')
 
     data = datalib.load_dzi_data_with_coords()
     grouped = data.groupby(['year', 'region', 'mun', 'place', 'school_id', 'school', 'subject_group', 'slongitude', 'slatitude']).agg(
@@ -133,54 +138,45 @@ with st.expander(label='**Карта**', expanded=True):
 
     grouped = grouped[grouped['year'] == 2024]
     grouped = grouped[grouped['subject_group'] == 'БЕЛ']
-    st.write(grouped)
-    st.write(grouped.dtypes)
 
+    # Create base map centered on Bulgaria
+    m = folium.Map(location=[42.7339, 25.4858], zoom_start=7)
 
-
-    # map_chart = (
-    #     alt.Chart(grouped)
-    #     .
-
-    # )
-
-
-    # url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
-    # gdf_ne = gpd.read_file(url)  # zipped shapefile
-    # gdf_ne = gdf_ne[["NAME", "CONTINENT", "POP_EST", 'geometry']]
-
-    # gdf_sel = gdf_ne.query("NAME == 'Bulgaria'")
-    # # st.write(gdf_sel)
-
-    # st.write(alt.Chart(gdf_sel).mark_geoshape())
-
-    # url_geojson = "https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_admin_0_countries.geojson"
-
-    # https://altair-viz.github.io/user_guide/data.html#geojson-file-by-url
-    url_geojson = 'https://raw.githubusercontent.com/yurukov/Bulgaria-geocoding/refs/heads/master/country.geojson'
-    data_url_geojson = alt.Data(url=url_geojson, format=alt.DataFormat(property="features"))
-    st.write(data_url_geojson)
-
-    charts_width = st.number_input('Chart width', value=400)
-
-    background = (
-        alt.Chart(data_url_geojson)
-        .mark_geoshape(fill='lightgrey', stroke='white', strokeWidth=0.5, clip=False)
-        .properties(width=charts_width)
-        .project()
+    # Create color map for scores
+    score_min = grouped['avg_score'].min()
+    score_max = grouped['avg_score'].max()
+    colormap = cm.LinearColormap(
+        colors=['red', 'yellow', 'green'],
+        vmin=score_min,
+        vmax=score_max
     )
 
-    school_points = (
-        alt.Chart(grouped)
-        .mark_circle(color='green')
-        .properties(width=charts_width)
-        .encode(
-            longitude='slongitude:Q',
-            latitude='slatitude:Q',
-            tooltip=['region', 'mun', 'place', 'school_id', 'school']
-        )
-    )
+    # Add colormap to map
+    colormap.add_to(m)
+    colormap.caption = 'Среден успех'
 
+    # Calculate marker sizes based on total_people
+    max_students = grouped['total_people'].max()
+    min_radius = 5
+    max_radius = 15
 
-    # st.altair_chart(background + school_points, use_container_width=False)
-    st.map(grouped, longitude='slongitude', latitude='slatitude')
+    # Add markers for each school
+    for _, row in grouped.iterrows():
+        # Scale marker size based on number of students
+        radius = min_radius + (row['total_people'] / max_students) * (max_radius - min_radius)
+
+        folium.CircleMarker(
+            location=[row['slatitude'], row['slongitude']],
+            radius=radius,
+            popup=f"Училище: {row['school']} "
+                  f"Регион: {row['region']} "
+                  f"Община: {row['mun']}"
+                  f"Среден успех: {row['avg_score']:.2f}<br>"
+                  f"Брой ученици: {int(row['total_people'])}",
+            color=colormap(row['avg_score']),
+            fill=True,
+            fill_opacity=0.7
+        ).add_to(m)
+
+    # Display the map
+    folium_static(m)
