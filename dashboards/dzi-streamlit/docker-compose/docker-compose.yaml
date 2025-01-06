@@ -6,5 +6,4 @@ services:
     volumes:
       - ./config:/dashboard/.streamlit/
     network_mode: host
-    # extra_hosts:
-    #   - "host.docker.internal:host-gateway"
+    restart: unless-stopped
