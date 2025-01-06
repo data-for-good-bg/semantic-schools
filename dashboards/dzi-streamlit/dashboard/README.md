@@ -19,6 +19,10 @@ To install the requirements in it:
 uv sync
 ```
 
+If you prefer to use another venv tool, you can use also the generated with uv
+requirements.txt file. Note that this file is manually exported and it might
+be outdated from the dependencies described in pyproject.toml
+
 # Start the dashboard
 
 Before starting the dashboard you need to connect to a database.
