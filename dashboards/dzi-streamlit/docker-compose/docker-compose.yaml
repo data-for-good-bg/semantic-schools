@@ -1,0 +1,10 @@
+services:
+  dashboard:
+    image: "dzi-streamlit"
+    ports:
+      - "127.0.0.1:8502:8502"
+    volumes:
+      - ./config:/dashboard/.streamlit/
+    network_mode: host
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"

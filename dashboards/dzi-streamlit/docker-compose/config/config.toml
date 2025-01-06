@@ -1,0 +1,42 @@
+# NB: The default streamlit config.toml file contains a lot of commented options
+#     This file is a stripped version where it is easier to see what actually
+#     settings are with non-default values.
+#
+#     One can generate default config file by running `streamlit config show`
+#
+# NB: The file is not included in the docker image, it should be mounted when
+#     the container is created.
+#
+[global]
+
+[logger]
+
+[client]
+
+showErrorDetails = false
+
+toolbarMode = "viewer"
+
+[runner]
+
+[server]
+
+fileWatcherType = "none"
+
+headless = true
+
+runOnSave = false
+
+port = 8502
+
+baseUrlPath = "/dashboards/dzi"
+
+[browser]
+
+gatherUsageStats = false
+
+[mapbox]
+
+[theme]
+
+[secrets]
