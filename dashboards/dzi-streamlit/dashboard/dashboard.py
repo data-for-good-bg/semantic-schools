@@ -1,19 +1,23 @@
 import streamlit as st
 import pandas as pd
+import geopandas as gpd
 import altair as alt
 from io import StringIO
+import folium
+from streamlit_folium import folium_static
+import branca.colormap as cm
 
 import datalib
 import chartlib
-
-
-raw_data = datalib.load_dzi_data()
-subject_data = datalib.extract_subject_data(raw_data)
 
 st.set_page_config(
     page_title='ДЗИ Данни',
     layout='wide'
 )
+
+raw_data = datalib.load_dzi_data()
+subject_data = datalib.extract_subject_data(raw_data)
+
 
 # change the font size of tab titles
 st.markdown("""
@@ -72,7 +76,7 @@ with st.expander(label='**Поглед по области**', expanded=False):
     regions = aggregated_data['region'].unique().tolist()
     st.write('##### Филтър по области')
     selected_regions = st.multiselect(
-        '',
+        'Филтър по области',
         options=regions,
         default=regions,
         label_visibility='hidden'
@@ -120,3 +124,59 @@ with st.expander(label='**Поглед по области**', expanded=False):
         value_tab.write(values_chart)
         percent_tab.write(percent_chart)
         score_tab.write(score_chart)
+
+
+with st.expander(label='**Карта**', expanded=True):
+    st.write('### Географско разпределение на училищата')
+    st.write('Цветът на маркерите показва средния успех, а размерът - броя ученици')
+
+    data = datalib.load_dzi_data_with_coords()
+    grouped = data.groupby(['year', 'region', 'mun', 'place', 'school_id', 'school', 'subject_group', 'slongitude', 'slatitude']).agg(
+        total_people=('people', 'sum'),
+        avg_score=('score', 'mean')
+    ).reset_index()
+
+    grouped = grouped[grouped['year'] == 2024]
+    grouped = grouped[grouped['subject_group'] == 'БЕЛ']
+
+    # Create base map centered on Bulgaria
+    m = folium.Map(location=[42.7339, 25.4858], zoom_start=7)
+
+    # Create color map for scores
+    score_min = grouped['avg_score'].min()
+    score_max = grouped['avg_score'].max()
+    colormap = cm.LinearColormap(
+        colors=['red', 'yellow', 'green'],
+        vmin=score_min,
+        vmax=score_max
+    )
+
+    # Add colormap to map
+    colormap.add_to(m)
+    colormap.caption = 'Среден успех'
+
+    # Calculate marker sizes based on total_people
+    max_students = grouped['total_people'].max()
+    min_radius = 5
+    max_radius = 15
+
+    # Add markers for each school
+    for _, row in grouped.iterrows():
+        # Scale marker size based on number of students
+        radius = min_radius + (row['total_people'] / max_students) * (max_radius - min_radius)
+
+        folium.CircleMarker(
+            location=[row['slatitude'], row['slongitude']],
+            radius=radius,
+            popup=f"Училище: {row['school']} "
+                  f"Регион: {row['region']} "
+                  f"Община: {row['mun']}"
+                  f"Среден успех: {row['avg_score']:.2f}<br>"
+                  f"Брой ученици: {int(row['total_people'])}",
+            color=colormap(row['avg_score']),
+            fill=True,
+            fill_opacity=0.7
+        ).add_to(m)
+
+    # Display the map
+    folium_static(m)
