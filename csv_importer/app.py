@@ -15,6 +15,7 @@ from csv_importer.runtime import enable_verbose_logging, enable_dry_run
 from csv_importer.db_manage import list_examinations, delete_examination, init_db
 from csv_importer.db import DEFAULT_DB_URL
 from csv_importer.wikidata import import_from_wikidata, SUPPORTED_IMPORT_WIKIDATA_TYPES
+from csv_importer.import_mon_csv import import_mon_csv
 
 
 _cli_help=\
@@ -80,6 +81,13 @@ def parse_args():
     parser_import_from_wikidata.add_argument('--to-import', type=str, nargs='*', default=default_wikidata_to_import, help=help_wikidata_to_import)
 
 
+    # Subparser for import-mon-schools
+    parser_import_mon_schools = subparsers.add_parser('import-mon-schools', help='Import MON schools data')
+    parser_import_mon_schools.add_argument('--csv', type=str, required=True, help='Path to the CSV file')
+    parser_import_mon_schools.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
+    parser_import_mon_schools.add_argument('-n', '--dry-run', action='store_true', help='Perform a dry run without making changes')
+
+
     args = parser.parse_args()
     if 'to_import' in args:
         if args.command == 'import-from-wikidata':
@@ -116,6 +124,8 @@ def main():
         delete_examination(args.id)
     elif args.command == 'import-from-wikidata':
         import_from_wikidata(args.to_import)
+    elif args.command == 'import-mon-schools':
+        import_mon_csv(args.csv)
     else:
         raise RuntimeError(f'Unsupported command: {args.command}')
 

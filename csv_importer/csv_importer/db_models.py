@@ -83,6 +83,16 @@ Place: Table = Table(
 )
 
 
+SchoolType: Table = Table(
+    'school_type',
+    Models,
+    Column('id', Integer, primary_key=True),
+    Column('name', String(50), nullable=False),
+    Column('details', String(60)),
+    Column(EDIT_STAMP, EditStampType)
+)
+
+
 # Describes the bulgarian schools.
 # The ID is string value found in wikidata or in the NVO and DZI CSV files.
 # The wikidata property for bg_school_id is wdt:P9034.
@@ -101,6 +111,7 @@ School: Table = Table(
     Column('longitude', Longitude),
     Column('latitude', Latitude),
     Column('wikidata_id', WikidataId),
+    Column('school_type_id', ForeignKey('school_type.id'), nullable=False),
     Column(EDIT_STAMP, EditStampType)
 )
 
