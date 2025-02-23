@@ -7,11 +7,10 @@ from sqlalchemy.orm import Session
 from .runtime import getLogger
 from .db import get_db_engine
 from .db_actions import insert_or_update_object
-from .db_models import SchoolType
+from .db_models import SchoolType, SchoolFundingSource
 
 
 logger = getLogger(__name__)
-
 
 # Mapping of Bulgarian column names to English
 COLUMN_MAP = {
@@ -50,11 +49,27 @@ def _import_school_type(session: Session, data: pd.DataFrame) -> None:
     logger.info('Imported school types: %s', counts)
 
 
+def _import_school_funding_source(session: Session, data: pd.DataFrame) -> None:
+    counts = defaultdict(int)
+    for _, row in data.iterrows():
+        result = insert_or_update_object(
+            session,
+            SchoolFundingSource,
+            id_col=[SchoolFundingSource.c.funding_type, SchoolFundingSource.c.funding_institution_name],
+            values=OrderedDict([
+                (SchoolFundingSource.c.funding_type, row['funding_type']),
+                (SchoolFundingSource.c.funding_institution_name, row['funded_by'])
+            ])
+        )
+        counts[result] += 1
+
+    logger.info('Imported funding sources: %s', counts)
+
+
 def import_mon_csv(csv_file: str) -> None:
     """
     Imports a MON CSV file.
     """
-
     data = pd.read_csv(csv_file)
     data.columns = data.columns.str.lower()
     data = data.rename(columns=COLUMN_MAP)
@@ -73,7 +88,14 @@ def import_mon_csv(csv_file: str) -> None:
     unique_types = data[type_columns].drop_duplicates().copy()
     logger.verbose_info(f'Found {len(unique_types)} unique institution types')
 
+    # extract unique funding sources
+    unique_funding_sources = data[['funding_type', 'funded_by']].drop_duplicates()
+    logger.verbose_info(f'Found {len(unique_funding_sources)} unique funding sources')
+
     db = get_db_engine()
     with Session(db) as session:
         _import_school_type(session, unique_types)
+        session.commit()
+
+        _import_school_funding_source(session, unique_funding_sources)
         session.commit()

@@ -32,6 +32,11 @@ def upgrade() -> None:
         "insert into school_type values(1, '-', '-', 'migration_2025_02_23')"
     )
 
+    # Reset the sequence to start after our inserted record
+    op.execute(
+        "SELECT setval(pg_get_serial_sequence('school_type', 'id'), (SELECT MAX(id) FROM school_type))"
+    )
+
     op.add_column('school', sa.Column('school_type_id', sa.Integer(), nullable=True))
 
     op.execute(

@@ -5,7 +5,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 
-KNOWN_ALEMBIC_VERSION = 'c4fb9d774a75'
+KNOWN_ALEMBIC_VERSION = '695adfe1596d'
 
 DEFAULT_DB_URL = 'postgresql://postgres:data-for-good@localhost/eddata'
 
