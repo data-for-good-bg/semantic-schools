@@ -166,3 +166,47 @@ Then before executing the app.py export DB_URL variable like this:
 ```
 export DB_URL="postgresql://eddata-writer:<password-goes-here>@localhost:5435/eddata"
 ```
+
+
+# Misc
+
+## To import a raw CSV file in postgres
+
+One
+1. can use the csv_max_lengths.py script to calculate the max lengths of
+of all columns.
+2. Create statement like this (tip: use LLM)
+  ```sql
+  CREATE TABLE schools_mon_test (
+      school_id VARCHAR(20),
+      name VARCHAR(150),
+      institution_type VARCHAR(50),
+      institution_type_detailed VARCHAR(60),
+      funding_type VARCHAR(50),
+      funded_by VARCHAR(60),
+      activity_address VARCHAR(150),
+      building_type VARCHAR(30),
+      cadastre_code VARCHAR(50),
+      latitude VARCHAR(15),
+      longitude VARCHAR(15),
+      region VARCHAR(20),
+      municipality VARCHAR(20),
+      place VARCHAR(40),
+      address VARCHAR(150)
+  );
+  ```
+3. Load the data
+
+```
+psql -d eddata
+
+# call the create table statement
+eddata=# create table .....
+
+# load the data with \copy command from a CSV file
+eddata=# \copy schools_mon_test from 'schools_mon.csv' with CSV HEADER;
+
+# grant select permissions to all tables to eddata-reader,
+# so that the new table(s) is also included
+eddata=# GRANT SELECT ON ALL TABLES IN SCHEMA public to "eddata-reader";
+```
