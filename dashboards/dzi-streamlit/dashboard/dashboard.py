@@ -4,7 +4,7 @@ import geopandas as gpd
 import altair as alt
 from io import StringIO
 import folium
-from streamlit_folium import folium_static
+from streamlit_folium import st_folium, folium_static
 import branca.colormap as cm
 
 import datalib
@@ -126,9 +126,9 @@ with st.expander(label='**Поглед по области**', expanded=False):
         score_tab.write(score_chart)
 
 
-with st.expander(label='**Карта**', expanded=True):
-    st.write('### Географско разпределение на училищата')
-    st.write('Цветът на маркерите показва средния успех, а размерът - броя ученици')
+with st.expander(label='**Карта с училища**', expanded=True):
+    st.write('### Географско разпределение на училищата спрямо техните резултати от ДЗИ')
+    st.write('Цветът на маркерите показва средния успех, а размерът - броя ученици. Избраните училища са с черна граница.')
 
     data = datalib.load_dzi_data_with_coords()
     grouped = data.groupby(['year', 'region', 'mun', 'place', 'school_id', 'school', 'subject_group', 'slongitude', 'slatitude']).agg(
@@ -136,8 +136,27 @@ with st.expander(label='**Карта**', expanded=True):
         avg_score=('score', 'mean')
     ).reset_index()
 
-    grouped = grouped[grouped['year'] == 2024]
-    grouped = grouped[grouped['subject_group'] == 'БЕЛ']
+    # Get unique years and create a selector
+    years = sorted(grouped['year'].unique().tolist(), reverse=True)
+    selected_year = st.selectbox(
+        'Изберете година',
+        years,
+        0,  # Default to the most recent year (first in the reversed list)
+    )
+
+    # Filter data by selected year
+    grouped = grouped[grouped['year'] == selected_year]
+
+    # Get unique subject groups and create a selector
+    subject_groups = grouped['subject_group'].unique().tolist()
+    selected_subject_group = st.selectbox(
+        'Изберете вид матура',
+        subject_groups,
+        subject_groups.index('БЕЛ') if 'БЕЛ' in subject_groups else 0,
+    )
+
+    # Filter data by selected subject group
+    grouped = grouped[grouped['subject_group'] == selected_subject_group]
 
     # Create base map centered on Bulgaria
     m = folium.Map(location=[42.7339, 25.4858], zoom_start=7)
@@ -160,23 +179,86 @@ with st.expander(label='**Карта**', expanded=True):
     min_radius = 5
     max_radius = 15
 
+    # Create feature groups for different school categories
+    highlighted_schools = folium.FeatureGroup(name='Училища от интерес')
+    regular_schools = folium.FeatureGroup(name='Всички останали училища')
+
+    # Input field for school IDs to highlight
+    school_ids_input = st.text_input(
+        'Въведете ID на училища от интерес (разделени със запетая)',
+        value='200112, 100110, 200221, 200234, 200216, 200230, 200605, 1302623, 2400130, 2218071, 2208075, 2212097',
+        help='Пример: 200112, 100110, 200221'
+    )
+
+    # Parse school IDs from input
+    schools_with_special_styling = []
+    if school_ids_input:
+        try:
+            # Split by comma and convert to strings (keeping them as strings since that's how they're stored)
+            schools_with_special_styling = [
+                school_id.strip()
+                for school_id in school_ids_input.split(',') if school_id.strip()
+            ]
+            st.success(f'Избрани училища от интерес: {len(schools_with_special_styling)}')
+        except ValueError:
+            st.error('Грешка: Моля, въведете ID-та, разделени със запетая')
+
     # Add markers for each school
     for _, row in grouped.iterrows():
         # Scale marker size based on number of students
         radius = min_radius + (row['total_people'] / max_students) * (max_radius - min_radius)
 
-        folium.CircleMarker(
-            location=[row['slatitude'], row['slongitude']],
-            radius=radius,
-            popup=f"Училище: {row['school']} "
-                  f"Регион: {row['region']} "
-                  f"Община: {row['mun']}"
-                  f"Среден успех: {row['avg_score']:.2f}<br>"
-                  f"Брой ученици: {int(row['total_people'])}",
-            color=colormap(row['avg_score']),
-            fill=True,
-            fill_opacity=0.7
-        ).add_to(m)
+        # Common parameters for all markers
+        popup_text = (
+            f"Училище: {row['school_id']} {row['school']}<br>"
+            f"Област: {row['region']}, Община: {row['mun']}, {row['place']}<br>"
+            f"Брой ученици: {int(row['total_people'])}<br>"
+            f"Среден успех: {row['avg_score']:.2f}"
+        )
+
+        common_params = {
+            'location': [row['slatitude'], row['slongitude']],
+            'radius': radius,
+            'tooltip': f"{row['school_id']} {row['school']} ",
+            'popup': folium.Popup(popup_text, max_width=300),
+            'fill': True,
+            'fill_opacity': 0.6,
+            'opacity': 1,
+            'weight': 2,
+        }
+
+        # Additional parameters based on styling
+        style_params = {}
+        if row['school_id'] in schools_with_special_styling:
+            # Special styling with black border
+            style_params = {
+                'color': 'black',
+                'fill_color': colormap(row['avg_score']),
+                'weight': 2,  # Thicker border for highlighted schools
+            }
+        else:
+            # Normal styling for non-highlighted schools
+            style_params = {
+                'color': colormap(row['avg_score']),
+            }
+
+        # Merge parameters and create marker
+        marker_params = {**common_params, **style_params}
+        marker = folium.CircleMarker(**marker_params)
+
+        # Add to the appropriate feature group
+        if row['school_id'] in schools_with_special_styling:
+            marker.add_to(highlighted_schools)
+        else:
+            marker.add_to(regular_schools)
+
+    # Add feature groups to the map
+    highlighted_schools.add_to(m)
+    regular_schools.add_to(m)
+
+    # Add layer control to toggle school groups
+    folium.LayerControl().add_to(m)
 
     # Display the map
+    # st_folium(m, use_container_width=True) #width=700)
     folium_static(m)
