@@ -89,6 +89,56 @@ with st.expander(label='### Визуализация на училищата с�
     # Handle schools that don't have previous year data
     merged_data['delta'] = merged_data['delta'].fillna(0)
 
+    # Show summary statistics
+    st.write("### Обобщена статистика")
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            'Максимален резултат',
+            f"{selected_year_data['score'].max():.2f}",
+            f"{selected_year_data['score'].max() - previous_year_data['score'].max():.2f}"
+        )
+        st.metric(
+            "Среден резултат",
+            f"{selected_year_data['score'].mean():.2f}",
+            f"{selected_year_data['score'].mean() - previous_year_data['score'].mean():.2f}"
+        )
+        st.metric(
+            "Минимален резултат",
+            f"{selected_year_data['score'].min():.2f}",
+            f"{selected_year_data['score'].min() - previous_year_data['score'].min():.2f}",
+        )
+
+    with col2:
+        improved_count = (merged_data['delta'] > 0).sum()
+        total_count = len(merged_data)
+        st.metric(
+            "Училища с подобрение",
+            f"{improved_count} ({improved_count/total_count*100:.1f}%)"
+        )
+        decreased_count = (merged_data['delta'] < 0).sum()
+        st.metric(
+            "Училища с влошаване",
+            f"{decreased_count} ({decreased_count/total_count*100:.1f}%)"
+        )
+        unchanged_count = (merged_data['delta'] == 0).sum()
+        st.metric(
+            "Училища без промяна",
+            f"{unchanged_count} ({unchanged_count/total_count*100:.1f}%)"
+        )
+
+    with col3:
+        st.metric(
+            "Най-голямо подобрение",
+            f"{merged_data['delta'].max():.2f}"
+        )
+        st.metric(
+            "Най-голямо влошаване",
+            f"{merged_data['delta'].min():.2f}"
+        )
+
+
     # Create base map centered on Bulgaria
     m = folium.Map(location=[42.7339, 25.4858], zoom_start=7)
 
@@ -157,28 +207,3 @@ with st.expander(label='### Визуализация на училищата с�
     - **Цвят на кръга**: Показва промяната в резултата спрямо предходната година (зелено = подобрение, червено = влошаване)
     - **Размер на кръга**: Показва големината на промяната (по-голям кръг = по-голяма промяна)
     """)
-
-    # Show summary statistics
-    st.write("### Обобщена статистика")
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(
-            "Среден резултат",
-            f"{selected_year_data['score'].mean():.2f}",
-            f"{selected_year_data['score'].mean() - previous_year_data['score'].mean():.2f}"
-        )
-
-    with col2:
-        improved_count = (merged_data['delta'] > 0).sum()
-        total_count = len(merged_data)
-        st.metric(
-            "Училища с подобрение",
-            f"{improved_count} ({improved_count/total_count*100:.1f}%)"
-        )
-
-    with col3:
-        st.metric(
-            "Най-голямо подобрение",
-            f"{merged_data['delta'].max():.2f}"
-        )
