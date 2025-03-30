@@ -164,6 +164,30 @@ with st.expander(label='### Визуализация на училищата с�
     min_radius = 5
     max_radius = 15
 
+    # Create feature groups for different school categories
+    highlighted_schools = folium.FeatureGroup(name='Училища от интерес')
+    regular_schools = folium.FeatureGroup(name='Всички останали училища')
+
+    # Input field for school IDs to highlight
+    school_ids_input = st.text_input(
+        'Въведете ID на училища от интерес (разделени със запетая)',
+        value='200112, 100110, 200221, 200234, 200216, 200230, 200605, 1302623, 2400130, 2218071, 2208075, 2212097',
+        help='Пример: 200112, 100110, 200221'
+    )
+
+    # Parse school IDs from input
+    schools_with_special_styling = []
+    if school_ids_input:
+        try:
+            # Split by comma and convert to strings (keeping them as strings since that's how they're stored)
+            schools_with_special_styling = [
+                school_id.strip()
+                for school_id in school_ids_input.split(',') if school_id.strip()
+            ]
+            st.success(f'Избрани училища от интерес: {len(schools_with_special_styling)}')
+        except ValueError:
+            st.error('Грешка: Моля, въведете ID-та, разделени със запетая')
+
     # Add markers for each school
     for _, row in merged_data.iterrows():
         # Skip schools with missing coordinates
@@ -184,18 +208,39 @@ with st.expander(label='### Визуализация на училищата с�
         Промяна: {row['delta']:.2f}
         """
 
+        # Determine if this school should be highlighted
+        is_highlighted = str(row['school_id']) in schools_with_special_styling
+
         # Create marker with appropriate styling
-        folium.CircleMarker(
+        marker_params = {
+            'radius': radius,
+            'popup': folium.Popup(popup_text, max_width=300),
+            'tooltip': f"{row['school']} ({row['delta']:.2f} == {row['score']:.2f} - {row['score_prev']:.2f})",
+            'fill': True,
+            'fill_color': colormap(row['delta']),
+            'color': 'black' if is_highlighted else 'gray',
+            'weight': 2 if is_highlighted else 1,
+            'fill_opacity': 0.7,
+        }
+
+        # Create the circle marker
+        circle = folium.CircleMarker(
             location=[row['slatitude'], row['slongitude']],
-            radius=radius,
-            popup=folium.Popup(popup_text, max_width=300),
-            tooltip=f"{row['school']} ({row['delta']:.2f} == {row['score']:.2f} - {row['score_prev']:.2f})",
-            fill=True,
-            fill_color=colormap(row['delta']),
-            color='gray',
-            weight=1,
-            fill_opacity=0.7
-        ).add_to(m)
+            **marker_params
+        )
+
+        # Add to appropriate feature group
+        if is_highlighted:
+            circle.add_to(highlighted_schools)
+        else:
+            circle.add_to(regular_schools)
+
+    # Add feature groups to map
+    regular_schools.add_to(m)
+    highlighted_schools.add_to(m)
+
+    # Add layer control
+    folium.LayerControl().add_to(m)
 
     # Display the map
     st.write(f'Карта на промяната в резултатите между {previous_year} и {selected_year} година за {selected_subject}')
