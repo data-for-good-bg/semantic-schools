@@ -79,7 +79,7 @@ order by e."year", region, mun, place, school_id, subject
     conn = st.connection('eddata', type='sql')
 
     raw_data = conn.query(sql, ttl='1h')
-    # raw_data = pd.read_csv('dzi-data.csv')
+
     raw_data['subject_group'] = raw_data['subject'].map(_SUBJECT_TO_GROUP_MAPPING).fillna('ДРУГИ')
 
     # some schools do not have coordinates, they take the coordinates from the place
@@ -98,17 +98,63 @@ order by e."year", region, mun, place, school_id, subject
     raw_data['slongitude'] = raw_data['slongitude'].apply(convert_to_str)
     raw_data['slatitude'] = raw_data['slatitude'].apply(convert_to_str)
 
-    # raw_data['slongitude'] = raw_data['slongitude'].astype(str)
-    # raw_data['slatitude'] = raw_data['slatitude'].as
+    return raw_data
+
+
+def load_nvo_data_with_coords(grade_level: int, subject: str) -> pd.DataFrame:
+    sql = '''
+select e."year", r."name" as region, m."name" as mun, p."name" as place, es.school_id, s."name" as school, es.subject, es.people, es.score,
+r.longitude as rlongitude, r.latitude as rlatitude,
+m.longitude as mlongitude, m.latitude as mlatitude,
+p.longitude as plongitude, p.latitude as platitude,
+s.longitude as slongitude, s.latitude as slatitude
+from examination e
+        inner join examination_score es on e.id = es.examination_id
+        inner join school s on s.id = es.school_id
+        inner join place p on s.place_id = p.id
+        inner join municipality m on p.municipality_id = m.id
+        inner join region r on m.region_id = r.id
+where e."type" = 'НВО' and e.grade_level = :grade_level and es.subject = :subject
+order by e."year", region, mun, place, school_id, subject
+'''
+
+    conn = st.connection('eddata', type='sql')
+
+    params = {'grade_level': grade_level, 'subject': subject}
+    raw_data = conn.query(sql, params=params, ttl='1h')
+
+    raw_data['subject_group'] = raw_data['subject'].map(_SUBJECT_TO_GROUP_MAPPING).fillna('ДРУГИ')
+
+    # some schools do not have coordinates, they take the coordinates from the place
+    raw_data.loc[raw_data['slongitude'].isna() | raw_data['slatitude'].isna(), ['slongitude', 'slatitude']] = \
+        raw_data[['plongitude', 'platitude']].where(raw_data['slongitude'].isna() | raw_data['slatitude'].isna())
+
+
+    for bad_school_id in ['2217151', '2212553', '2208123', '2218071']:
+        raw_data.loc[raw_data['school_id'] == bad_school_id , ['slongitude', 'slatitude']] = \
+            raw_data[['plongitude', 'platitude']].where(raw_data['school_id'] == bad_school_id)
+
+
+    def convert_to_str(v):
+        return float(v)
+
+    raw_data['slongitude'] = raw_data['slongitude'].apply(convert_to_str)
+    raw_data['slatitude'] = raw_data['slatitude'].apply(convert_to_str)
 
     return raw_data
 
 
-# def get_subjects_by_subjectgroup(data: pd.DataFrame, subject_group: str) -> list[str]:
-#     unique_combinations = data[['subject', 'subject_group']].drop_duplicates()
-#     filtered = unique_combinations.loc[unique_combinations['subject_group'] == subject_group]
-#     as_list = sorted(filtered['subject'].unique().tolist())
-#     return as_list
+def load_nvo_examinations() -> pd.DataFrame:
+    sql = '''
+select distinct e."year", e.grade_level, es.subject
+from examination e
+	inner join examination_score es on e.id = es.examination_id
+where e."type" = 'НВО'
+order by e."year" desc, e.grade_level
+'''
+
+    conn = st.connection('eddata', type='sql')
+    return conn.query(sql, ttl='1h')
 
 
 def group_by_year_region_subjectgroup(data: pd.DataFrame) -> pd.DataFrame:
