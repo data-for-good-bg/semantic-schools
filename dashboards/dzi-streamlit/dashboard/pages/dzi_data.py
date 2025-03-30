@@ -7,8 +7,8 @@ import folium
 from streamlit_folium import st_folium, folium_static
 import branca.colormap as cm
 
-import datalib
-import chartlib
+from lib import data
+from lib import chart
 
 
 # change the font size of tab titles
@@ -19,8 +19,8 @@ st.markdown("""
     }
 </style>""", unsafe_allow_html=True)
 
-raw_data = datalib.load_dzi_data()
-subject_data = datalib.extract_subject_data(raw_data)
+raw_data = data.load_dzi_data()
+subject_data = data.extract_subject_data(raw_data)
 
 st.write('# ДЗИ Данни')
 
@@ -28,7 +28,7 @@ def _write_subject_group_data_per_years(subject_group: str):
     html_text = StringIO()
 
     html_text.write(f'<ul style="font-size: 12px">{subject_group} предмети са:\n')
-    for years_str, subjects_str in datalib.extract_subjects_of_group_per_years(subject_data, subject_group):
+    for years_str, subjects_str in data.extract_subjects_of_group_per_years(subject_data, subject_group):
         html_text.write(f'  <li>За години {years_str} : {subjects_str}</li>')
 
     html_text.write('</ul></span>')
@@ -48,14 +48,14 @@ def _write_all_subject_groups():
 
 with st.expander(label='**Поглед за цяла Бълагрия**', expanded=False):
 
-    aggregated_data = datalib.extract_subjectgroup_aggregated_data(
+    aggregated_data = data.extract_subjectgroup_aggregated_data(
         raw_data, ['year']
     )
 
     def _customize(chart: alt.Chart) -> alt.Chart:
         return chart.properties(width=400)
 
-    values_chart, percent_chart, score_chart = chartlib.create_subjectgroup_charts(aggregated_data, _customize)
+    values_chart, percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data, _customize)
 
     _write_all_subject_groups()
 
@@ -65,7 +65,7 @@ with st.expander(label='**Поглед за цяла Бълагрия**', expand
 with st.expander(label='**Поглед по области**', expanded=False):
     _write_all_subject_groups()
 
-    aggregated_data = datalib.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region'])
+    aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region'])
 
     regions = aggregated_data['region'].unique().tolist()
     st.write('##### Филтър по области')
@@ -100,7 +100,7 @@ with st.expander(label='**Поглед по области**', expanded=False):
                 .resolve_scale(y='independent', x='independent')
             )
 
-        values_chart, percent_chart, score_chart = chartlib.create_subjectgroup_charts(aggregated_data, _customize)
+        values_chart, percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data, _customize)
 
         # selector for subject_group
         subject_groups = aggregated_data['subject_group'].unique().tolist()
@@ -110,7 +110,7 @@ with st.expander(label='**Поглед по области**', expanded=False):
             subject_groups.index('БЕЛ'),
         )
 
-        summary_chart = chartlib.create_total_people_chart(
+        summary_chart = chart.create_total_people_chart(
             aggregated_data[aggregated_data['subject_group'] == selected_subject_group]
         )
 
@@ -124,7 +124,7 @@ with st.expander(label='**Карта с училища**', expanded=True):
     st.write('### Географско разпределение на училищата спрямо техните резултати от ДЗИ')
     st.write('Цветът на маркерите показва средния успех, а размерът - броя ученици. Избраните училища са с черна граница.')
 
-    data = datalib.load_dzi_data_with_coords()
+    data = data.load_dzi_data_with_coords()
     grouped = data.groupby(['year', 'region', 'mun', 'place', 'school_id', 'school', 'subject_group', 'slongitude', 'slatitude']).agg(
         total_people=('people', 'sum'),
         avg_score=('score', 'mean')
