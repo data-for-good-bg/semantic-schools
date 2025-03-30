@@ -1,10 +1,8 @@
 import streamlit as st
-import pandas as pd
-import geopandas as gpd
 import altair as alt
 from io import StringIO
 import folium
-from streamlit_folium import st_folium, folium_static
+from streamlit_folium import folium_static
 import branca.colormap as cm
 
 from lib import data

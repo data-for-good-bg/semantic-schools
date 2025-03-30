@@ -1,4 +1,184 @@
 import streamlit as st
+import pandas as pd
+import numpy as np
+import folium
+from streamlit_folium import folium_static
+import branca.colormap as cm
 
+from lib import data
+from lib import chart
 
 st.write('# НВО Данни')
+
+
+# Load NVO data with coordinates
+nvo_examinations = data.load_nvo_examinations()
+
+# Create an expander for the map and filters
+with st.expander(label='### Визуализация на училищата спрямо промяната в резултатите от НВО', expanded=True):
+
+    st.write('### Визуализация на училищата спрямо промяната в резултатите от НВО')
+    # Extract grade level from subject
+
+    years = sorted(nvo_examinations['year'].unique(), reverse=True)
+    # exclude the latest year
+    years = years[0:-1]
+    latest_year = years[0] if years else None
+
+    grade_levels = sorted(nvo_examinations['grade_level'].unique())
+
+    subjects = sorted(nvo_examinations['subject'].unique())
+
+    # Create columns for filters
+    col1, col2, col3 = st.columns(3)
+
+    # Year selector
+    with col1:
+        selected_year = int(st.selectbox(
+            'Изберете година',
+            options=years,
+            index=0,  # Default to the latest year
+            key='nvo_year_selector'
+        ))
+
+    # Grade level selector
+    with col2:
+        selected_grade = int(st.selectbox(
+            'Изберете клас',
+            options=grade_levels,
+            index=0,  # Default to the first grade level
+            key='nvo_grade_selector'
+        ))
+
+    # Subject selector
+    with col3:
+        selected_subject = st.selectbox(
+            'Изберете предмет',
+            options=subjects,
+            index=0,  # Default to the first subject
+            key='nvo_subject_selector'
+        )
+
+    # This is now our grade_data (already filtered by grade and subject)
+    grade_data = data.load_nvo_data_with_coords(selected_grade, selected_subject)
+
+    # Filter data for the selected year
+    selected_year_data = grade_data[grade_data['year'] == selected_year]
+
+    # Find the previous year's data
+    previous_year = selected_year - 1
+
+    previous_year_data = grade_data[
+        (grade_data['year'] == previous_year)
+    ]
+
+    # Merge current and previous year data
+    merged_data = selected_year_data.merge(
+        previous_year_data[['school_id', 'score', 'people']],
+        on='school_id',
+        how='left',
+        suffixes=('', '_prev')
+    )
+
+    # Fill with 0 when `people` in the previous year is NaN
+    merged_data['people_prev'] = merged_data['people_prev'].fillna(0)
+
+    # Calculate delta
+    merged_data['delta'] = merged_data['score'] - merged_data['score_prev']
+
+    # Handle schools that don't have previous year data
+    merged_data['delta'] = merged_data['delta'].fillna(0)
+
+    # Create base map centered on Bulgaria
+    m = folium.Map(location=[42.7339, 25.4858], zoom_start=7)
+
+    # Create color map for delta scores
+    delta_min = merged_data['delta'].min()
+    delta_max = merged_data['delta'].max()
+
+    # Ensure colormap range is symmetric around zero
+    abs_max = max(abs(delta_min), abs(delta_max))
+    colormap = cm.LinearColormap(
+        colors=['red', 'yellow', 'green'],
+        vmin=-abs_max,
+        vmax=abs_max
+    )
+
+    # Add colormap to map
+    colormap.add_to(m)
+    colormap.caption = 'Промяна в резултата спрямо предходната година'
+
+    # Calculate marker sizes based on absolute delta
+    merged_data['abs_delta'] = merged_data['delta'].abs()
+    max_abs_delta = merged_data['abs_delta'].max()
+    min_radius = 5
+    max_radius = 15
+
+    # Add markers for each school
+    for _, row in merged_data.iterrows():
+        # Skip schools with missing coordinates
+        if pd.isna(row['slongitude']) or pd.isna(row['slatitude']):
+            continue
+
+        radius = min_radius + (row['abs_delta'] / max_abs_delta) * (max_radius - min_radius)
+
+        # Create popup text
+        popup_text = f"""
+        <b>{row['school']}</b><br>
+        ID: {row['school_id']}<br>
+        Област: {row['region']}<br>
+        Община: {row['mun']}<br>
+        Населено място: {row['place']}<br>
+        Резултат {selected_year}: {row['score']:.2f} т., брой ученици: {int(row['people'])}<br>
+        Резултат {previous_year}: {row['score_prev']:.2f} т., брой ученици: {int(row['people_prev'])}<br>
+        Промяна: {row['delta']:.2f}
+        """
+
+        # Create marker with appropriate styling
+        folium.CircleMarker(
+            location=[row['slatitude'], row['slongitude']],
+            radius=radius,
+            popup=folium.Popup(popup_text, max_width=300),
+            tooltip=f"{row['school']} ({row['delta']:.2f} == {row['score']:.2f} - {row['score_prev']:.2f})",
+            fill=True,
+            fill_color=colormap(row['delta']),
+            color='gray',
+            weight=1,
+            fill_opacity=0.7
+        ).add_to(m)
+
+    # Display the map
+    st.write(f'Карта на промяната в резултатите между {previous_year} и {selected_year} година за {selected_subject}')
+    folium_static(m, width=1000, height=600)
+
+    # Add explanatory text
+    st.markdown("""
+    **Легенда:**
+    - **Цвят на кръга**: Показва промяната в резултата спрямо предходната година (зелено = подобрение, червено = влошаване)
+    - **Размер на кръга**: Показва големината на промяната (по-голям кръг = по-голяма промяна)
+    """)
+
+    # Show summary statistics
+    st.write("### Обобщена статистика")
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            "Среден резултат",
+            f"{selected_year_data['score'].mean():.2f}",
+            f"{selected_year_data['score'].mean() - previous_year_data['score'].mean():.2f}"
+        )
+
+    with col2:
+        improved_count = (merged_data['delta'] > 0).sum()
+        total_count = len(merged_data)
+        st.metric(
+            "Училища с подобрение",
+            f"{improved_count} ({improved_count/total_count*100:.1f}%)"
+        )
+
+    with col3:
+        st.metric(
+            "Най-голямо подобрение",
+            f"{merged_data['delta'].max():.2f}"
+        )
