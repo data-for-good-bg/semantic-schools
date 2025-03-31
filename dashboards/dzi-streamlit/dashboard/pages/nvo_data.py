@@ -186,11 +186,52 @@ with st.expander(label='### Визуализация на училищата с�
         except ValueError:
             st.error('Грешка: Моля, въведете ID-та, разделени със запетая')
 
+    # Add delta boundary filters
+    st.write('### Филтриране по промяна в резултата')
+    st.write('Можете да оставите полетата празни, за да видите всички училища.')
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        min_delta_input = st.text_input('Минимална промяна (напр. -5)', value='', help='Ще се показват само училища с промяна над тази стойност. Натиснете Enter за да приложите филтъра.')
+
+    with col2:
+        max_delta_input = st.text_input('Максимална промяна (напр. 5)', value='', help='Ще се показват само училища с промяна под тази стойност. Натиснете Enter за да приложите филтъра.')
+
+    # Parse delta boundaries
+    min_delta = None
+    max_delta = None
+
+    try:
+        if min_delta_input.strip():
+            min_delta = float(min_delta_input)
+    except ValueError:
+        st.error('Невалидна стойност за минимална промяна')
+
+    try:
+        if max_delta_input.strip():
+            max_delta = float(max_delta_input)
+    except ValueError:
+        st.error('Невалидна стойност за максимална промяна')
+
     # Add markers for each school
     for _, row in merged_data.iterrows():
         # Skip schools with missing coordinates
         if pd.isna(row['slongitude']) or pd.isna(row['slatitude']):
             continue
+
+        # Check if school should be filtered out based on delta boundaries
+        # Schools of interest are always shown regardless of delta filters
+        is_highlighted = str(row['school_id']) in schools_with_special_styling
+
+        if not is_highlighted:
+            # Apply min delta filter if specified
+            if min_delta is not None and row['delta'] < min_delta:
+                continue
+
+            # Apply max delta filter if specified
+            if max_delta is not None and row['delta'] > max_delta:
+                continue
 
         radius = min_radius + (row['abs_delta'] / max_abs_delta) * (max_radius - min_radius)
 
@@ -205,9 +246,6 @@ with st.expander(label='### Визуализация на училищата с�
         Резултат {previous_year}: {row['score_prev']:.2f} т., брой ученици: {int(row['people_prev'])}<br>
         Промяна: {row['delta']:.2f}
         """
-
-        # Determine if this school should be highlighted
-        is_highlighted = str(row['school_id']) in schools_with_special_styling
 
         # Create marker with appropriate styling
         marker_params = {
@@ -242,6 +280,7 @@ with st.expander(label='### Визуализация на училищата с�
 
     # Display the map
     st.write(f'Карта на промяната на НВО резултатите по {selected_subject} на {selected_grade} клас между {previous_year} и {selected_year} година .')
+    st.write(f'Щракнете върху училищата за да видите повече информация.')
     folium_static(m, width=1000, height=600)
 
     # Add explanatory text
