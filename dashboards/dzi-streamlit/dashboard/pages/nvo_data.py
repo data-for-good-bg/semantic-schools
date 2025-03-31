@@ -186,17 +186,27 @@ with st.expander(label='### Визуализация на училищата с�
         except ValueError:
             st.error('Грешка: Моля, въведете ID-та, разделени със запетая')
 
-    # Add delta boundary filters
-    st.write('### Филтриране по промяна в резултата')
-    st.write('Можете да оставите полетата празни, за да видите всички училища.')
+    # Add filters section
+    st.write('### Филтриране')
+    st.markdown('''
+    * Филтрите не се прилагат върху училищата от интерес
+    * Оставете полетата празни, за да видите всички училища
+    * Натиснете Enter за да приложите филтъра
+    ''')
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        min_delta_input = st.text_input('Минимална промяна (напр. -5)', value='', help='Ще се показват само училища с промяна над тази стойност. Натиснете Enter за да приложите филтъра.')
+        min_delta_input = st.text_input('Минимална промяна (напр. -5)', value='', help='Ще се показват само училища с промяна над тази стойност.')
 
     with col2:
-        max_delta_input = st.text_input('Максимална промяна (напр. 5)', value='', help='Ще се показват само училища с промяна под тази стойност. Натиснете Enter за да приложите филтъра.')
+        max_delta_input = st.text_input('Максимална промяна (напр. 5)', value='', help='Ще се показват само училища с промяна под тази стойност.')
+
+    with col3:
+        min_score_input = st.text_input('Минимален резултат (напр. 30)', value='', help='Ще се показват само училища с резултат над тази стойност.')
+
+    with col4:
+        max_score_input = st.text_input('Максимален резултат (напр. 50)', value='', help='Ще се показват само училища с резултат под тази стойност.')
 
     # Parse delta boundaries
     min_delta = None
@@ -213,6 +223,22 @@ with st.expander(label='### Визуализация на училищата с�
             max_delta = float(max_delta_input)
     except ValueError:
         st.error('Невалидна стойност за максимална промяна')
+
+    # Parse score boundaries
+    min_score = None
+    max_score = None
+
+    try:
+        if min_score_input.strip():
+            min_score = float(min_score_input)
+    except ValueError:
+        st.error('Невалидна стойност за минимален резултат')
+
+    try:
+        if max_score_input.strip():
+            max_score = float(max_score_input)
+    except ValueError:
+        st.error('Невалидна стойност за максимален резултат')
 
     # Add markers for each school
     for _, row in merged_data.iterrows():
@@ -231,6 +257,14 @@ with st.expander(label='### Визуализация на училищата с�
 
             # Apply max delta filter if specified
             if max_delta is not None and row['delta'] > max_delta:
+                continue
+
+            # Apply min score filter if specified
+            if min_score is not None and row['score'] < min_score:
+                continue
+
+            # Apply max score filter if specified
+            if max_score is not None and row['score'] > max_score:
                 continue
 
         radius = min_radius + (row['abs_delta'] / max_abs_delta) * (max_radius - min_radius)
