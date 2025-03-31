@@ -1,12 +1,10 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import folium
 from streamlit_folium import folium_static
 import branca.colormap as cm
 
 from lib import data
-from lib import chart
 
 st.write('# НВО Данни')
 
@@ -243,7 +241,7 @@ with st.expander(label='### Визуализация на училищата с�
     folium.LayerControl().add_to(m)
 
     # Display the map
-    st.write(f'Карта на промяната в резултатите между {previous_year} и {selected_year} година за {selected_subject}')
+    st.write(f'Карта на промяната на НВО резултатите по {selected_subject} на {selected_grade} клас между {previous_year} и {selected_year} година .')
     folium_static(m, width=1000, height=600)
 
     # Add explanatory text
