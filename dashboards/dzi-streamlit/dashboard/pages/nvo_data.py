@@ -1,12 +1,10 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import folium
 from streamlit_folium import folium_static
 import branca.colormap as cm
 
 from lib import data
-from lib import chart
 
 st.write('# НВО Данни')
 
@@ -166,7 +164,19 @@ with st.expander(label='### Визуализация на училищата с�
 
     # Create feature groups for different school categories
     highlighted_schools = folium.FeatureGroup(name='Училища от интерес')
-    regular_schools = folium.FeatureGroup(name='Всички останали училища')
+
+    # Define bucket size for delta values
+    bucket_size = 20
+
+    # Create buckets for delta values
+    delta_min_rounded = int(delta_min // bucket_size) * bucket_size
+    delta_max_rounded = int(delta_max // bucket_size + 1) * bucket_size
+    delta_buckets = {}
+
+    # Create feature groups for each bucket
+    for i in range(delta_min_rounded, delta_max_rounded + bucket_size, bucket_size):
+        bucket_name = f'Училища с промяна {i} до {i+bucket_size}'
+        delta_buckets[i] = folium.FeatureGroup(name=bucket_name)
 
     # Input field for school IDs to highlight
     school_ids_input = st.text_input(
@@ -233,10 +243,19 @@ with st.expander(label='### Визуализация на училищата с�
         if is_highlighted:
             circle.add_to(highlighted_schools)
         else:
-            circle.add_to(regular_schools)
+            # Find the appropriate bucket for this school based on delta
+            bucket_key = int(row['delta'] // bucket_size) * bucket_size
+            # Ensure the bucket exists (in case of rounding issues)
+            if bucket_key not in delta_buckets:
+                bucket_key = min(delta_buckets.keys(), key=lambda x: abs(x - bucket_key))
+            circle.add_to(delta_buckets[bucket_key])
 
     # Add feature groups to map
-    regular_schools.add_to(m)
+    # Add all delta buckets to the map
+    for bucket_key in sorted(delta_buckets.keys()):
+        delta_buckets[bucket_key].add_to(m)
+
+    # Add highlighted schools last so they appear on top
     highlighted_schools.add_to(m)
 
     # Add layer control
