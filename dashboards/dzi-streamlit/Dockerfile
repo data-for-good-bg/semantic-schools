@@ -12,6 +12,12 @@ RUN useradd -ms /bin/bash streamlit
 
 ADD ./dashboard/*.py /dashboard
 
+RUN mkdir /dashboard/pages \
+    && mkdir /dashboard/lib
+
+ADD ./dashboard/pages/*.py /dashboard/pages
+ADD ./dashboard/lib/*.py /dashboard/lib
+
 USER streamlit
 
 CMD ["./.venv/bin/streamlit", "run", "./dashboard.py"]
