@@ -15,7 +15,7 @@ _SUBJECT_GROUP_TO_SUBJECT_MAPPING = {
                      'РЕ', 'РЕ-Б1', 'РЕ-Б1.1', 'РЕ-Б2',
                      'ФРЕ', 'ФРЕ-Б1', 'ФРЕ-Б1.1', 'ФРЕ-Б2'
                     },
-    'Дипломни прокети': {'ДИППК', 'ДИППК-Д.ПР', 'ДИППК-П.Р', 'ДИППК-ПР', 'ДИППК-ТЕСТ'}
+    'Дипломни проекти': {'ДИППК', 'ДИППК-Д.ПР', 'ДИППК-П.Р', 'ДИППК-ПР', 'ДИППК-ТЕСТ'}
 }
 
 _SUBJECT_TO_GROUP_MAPPING = {
@@ -171,7 +171,7 @@ def group_by_year_subjectgroup(data: pd.DataFrame) -> pd.DataFrame:
     ).reset_index()
 
 
-
+@st.cache_data(ttl='1h')
 def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: list[str]) -> pd.DataFrame:
     """
     The input dataframe should contain the columns pointed in `id_columns` and
@@ -180,14 +180,14 @@ def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: l
     see below.
 
     The assumption is that the total_people value for 'БЕЛ' subject_group
-    represents the total number of studends, thus the function calculates
+    represents the total number of students, thus the function calculates
     ratios against this value.
 
-    The result dataframe will contain data gruped by [*id_columns, 'subject_group']
+    The result dataframe will contain data grouped by [*id_columns, 'subject_group']
     with columns:
     * all columns from `id_columns` list
     * the subject_group column
-    * tatal_people will be the aggregated sum calculated by the group-by
+    * total_people will be the aggregated sum calculated by the group-by
     * total_people_percent will be the percent from subject_group 'БЕЛ'
     * score column will contain the weighted average score for the subject group
 
@@ -249,11 +249,12 @@ def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: l
 # def filter_by_subjectgroup(data: pd.DataFrame, value: str) -> pd.DataFrame:
 #     return data.loc[data['subject_group'] == value]
 
-
+@st.cache_data(ttl='1h')
 def extract_subject_data(raw_data: pd.DataFrame) -> pd.DataFrame:
     return raw_data[['year', 'subject', 'subject_group']].drop_duplicates(ignore_index=True)
 
 
+@st.cache_data(ttl='1h')
 def extract_subjects_of_group_per_years(subject_data: pd.DataFrame, subject_group) -> list[tuple[str, str]]:
 
     subjects_to_years = defaultdict(list)
@@ -268,3 +269,47 @@ def extract_subjects_of_group_per_years(subject_data: pd.DataFrame, subject_grou
         result.append((years_str, subjects_str))
 
     return result
+
+
+@st.cache_data(ttl='1h')
+def create_wide_table(
+    df_input: pd.DataFrame, index_cols: list, value_aggr: dict, subjects: list
+    ) -> pd.DataFrame:
+    """
+    Creates a wide table with values (i.e. scores, number of pupils) split by
+    subject group.
+    """
+    df_long = extract_subjectgroup_aggregated_data(
+        df_input, index_cols
+    )
+
+    df_long = df_long[df_long["subject_group"].isin(subjects)]
+
+    df_long = df_long.groupby(index_cols+["subject_group"]).agg(value_aggr).reset_index()
+
+    df_wide = pd.DataFrame(columns=index_cols)
+    for x in value_aggr.keys():
+        df_pivot = df_long.pivot(index=index_cols, columns='subject_group', values=x)
+        df_pivot.columns = [f'{x}_{col}' for col in df_pivot.columns]
+        df_wide = df_wide.merge(df_pivot.reset_index(), "outer", index_cols)
+
+    return df_wide
+
+
+@st.cache_data(ttl='1h')
+def format_municipal_table(
+    df_region: pd.DataFrame
+    ) -> pd.DataFrame:
+    """Formats the municipality table with some hardcoded rules."""
+    df_format = df_region.rename(columns={
+        "year" : "Година", "region" : "Област", "mun" : "Община",
+        "total_people_БЕЛ" : "Явили се - БЕЛ",
+        "total_people_СТЕМ" : "Явили се - СТЕМ",
+        "score_БЕЛ" : "Оценка - БЕЛ",
+        "score_СТЕМ" : "Оценка - СТЕМ"
+        })
+
+    df_format[["Явили се - БЕЛ", "Явили се - СТЕМ"]] = df_format[["Явили се - БЕЛ", "Явили се - СТЕМ"]].astype(int)
+    df_format[["Година"]] = df_format[["Година"]].astype(str)
+
+    return df_format
