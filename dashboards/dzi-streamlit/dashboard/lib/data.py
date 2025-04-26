@@ -268,3 +268,43 @@ def extract_subjects_of_group_per_years(subject_data: pd.DataFrame, subject_grou
         result.append((years_str, subjects_str))
 
     return result
+
+def create_wide_table(
+    df_input: pd.DataFrame, index_cols: list, value_aggr: dict, subjects: list
+    ) -> pd.DataFrame:
+    """
+    Creates a wide table with values (i.e. scores, number of pupils) split by
+    subject group.
+    """
+    df_long = extract_subjectgroup_aggregated_data(
+        df_input, index_cols
+    )
+
+    df_long = df_long[df_long["subject_group"].isin(subjects)]
+
+    df_long = df_long.groupby(index_cols+["subject_group"]).agg(value_aggr).reset_index()
+
+    df_wide = pd.DataFrame(columns=index_cols)
+    for x in value_aggr.keys():
+        df_pivot = df_long.pivot(index=index_cols, columns='subject_group', values=x)
+        df_pivot.columns = [f'{x}_{col}' for col in df_pivot.columns]
+        df_wide = df_wide.merge(df_pivot.reset_index(), "outer", index_cols)
+
+    return df_wide
+
+def format_municipal_table(
+    df_region: pd.DataFrame
+    ) -> pd.DataFrame:
+    """Formats the municipality table with some hardcoded rules."""
+    df_format = df_region.rename(columns={
+        "year" : "Година", "region" : "Област", "mun" : "Община",
+        "total_people_БЕЛ" : "Явили се - БЕЛ",
+        "total_people_СТЕМ" : "Явили се - СТЕМ",
+        "score_БЕЛ" : "Оценка - БЕЛ",
+        "score_СТЕМ" : "Оценка - СТЕМ"
+        })
+
+    df_format[["Явили се - БЕЛ", "Явили се - СТЕМ"]] = df_format[["Явили се - БЕЛ", "Явили се - СТЕМ"]].astype(int)
+    df_format[["Година"]] = df_format[["Година"]].astype(str)
+
+    return df_format

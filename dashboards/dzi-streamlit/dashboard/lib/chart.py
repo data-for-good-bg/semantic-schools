@@ -42,11 +42,24 @@ def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[Customize
     )
     selection_subject_group = alt.selection_point(fields=['subject_group'], bind=subject_group_dropdown)
 
-    color = alt.condition(
-        selection_subject_group,
-        alt.Color('subject_group:N', title='Вид матура'),
-        alt.value('lightgray')
-    )
+    subject_color_mapping = {
+        'БЕЛ': '#F04500',
+        'СТЕМ': '#00991A',
+        'Чужди езици': '#7F2985',
+        'Дипломни прокети': '#1B40B5', # TODO: Fix проекти
+        'ДРУГИ': '#FFAD00', # TODO: Rename to Други
+        'БЕЗ': '#683501' # TODO: Rename to Неявили се
+    }
+
+    color = alt.Color(
+        'subject_group:N',
+        title=None,
+        scale=alt.Scale(
+            domain=list(subject_color_mapping.keys()),
+            range=list(subject_color_mapping.values())
+            ),
+        legend=alt.Legend(orient='top')
+        )
 
     values_chart = (
         alt.Chart(data)
@@ -56,35 +69,54 @@ def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[Customize
             alt.Y('total_people:Q', axis=alt.Axis(format='.0f'), title='Брой явили се ученици'),
             color=color
         )
-        .add_params(selection_subject_group)
     )
 
     percent_chart = (
-        alt.Chart(data)
-        .mark_line(point=True)
+        alt.Chart(data[data["subject_group"] != "БЕЛ"])
+        .mark_bar()
         .encode(
-            alt.X('year:O', title='Година'),
-            alt.Y('total_people_percent:Q', axis=alt.Axis(format='.0%'), title='Процент от общият брой ученици'),
-            color=color
+            alt.X('year:O', title=None, axis=alt.Axis(labelAngle=0)),
+            alt.Y(
+                'total_people_percent:Q',
+                stack='normalize',
+                axis=alt.Axis(format='.0%', tickCount=5, title=None)
+            ),
+            color=color,
+            tooltip=[
+                alt.Tooltip('year:O', title='Година'),
+                alt.Tooltip('subject_group:N', title='Вид матура'),
+                alt.Tooltip('total_people_percent:Q', title='Процент', format='.1%'),
+                alt.Tooltip('total_people:Q', title='Брой ученици', format=',d')
+            ]
         )
-        .add_params(selection_subject_group)
+        .properties(title='% от общия брой ученици')
     )
 
     score_chart = (
         alt.Chart(data)
-        .mark_line(point=True)
+        .mark_bar()
         .encode(
-            alt.X('year:O', title='Година'),
-            alt.Y('score:Q', axis=alt.Axis(format='.2f'), title='Среден успех', scale=alt.Scale(domainMin=2.0, domainMax=6.0)),
-            color=color
+            alt.X('year:O', title=None, axis=alt.Axis(labelAngle=0)),
+            alt.XOffset('subject_group:N', sort=[
+                s for s in data['subject_group'].unique() if s != 'Дипломни проекти'
+            ] + ['Дипломни проекти']),
+            alt.Y(
+                'score:Q',
+                axis=alt.Axis(tickCount=2, format='.2f'),
+                title=None,
+                scale=alt.Scale(domainMin=0.0, domainMax=6.0)
+            ),
+            color=color,
+            tooltip=[
+                alt.Tooltip('year:O', title='Година'),
+                alt.Tooltip('subject_group:N', title='Вид матура'),
+                alt.Tooltip('score:Q', title='Среден успех', format='.2f')
+            ]
         )
-        .add_params(
-            selection_subject_group
-        )
+        .properties(title='Среден успех')
     )
 
     return _customize(values_chart), _customize(percent_chart), _customize(score_chart)
-
 
 def create_total_people_chart(data: pd.DataFrame) -> alt.Chart:
     years = data['year'].unique().tolist()
