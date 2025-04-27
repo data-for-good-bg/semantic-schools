@@ -3,7 +3,30 @@ import altair as alt
 from typing import Callable, Optional
 
 
+SUBJECT_GROUP_COLOR_MAPPING = {
+    'БЕЛ': '#F04500',
+    'СТЕМ': '#00991A',
+    'Чужди езици': '#7F2985',
+    'Дипломни прокети': '#1B40B5', # TODO: Fix проекти
+    'ДРУГИ': '#FFAD00', # TODO: Rename to Други
+    'БЕЗ': '#683501' # TODO: Rename to Неявили се
+}
+
+
 CustomizeChart = Callable[[alt.Chart], alt.Chart]
+
+
+def get_subject_group_altair_color(**kwargs) -> alt.Color:
+    scale = alt.Scale(
+        domain=list(SUBJECT_GROUP_COLOR_MAPPING.keys()),
+        range=list(SUBJECT_GROUP_COLOR_MAPPING.values()),
+    )
+    return alt.Color(
+        'subject_group:N',
+        scale=scale,
+        **kwargs
+    )
+
 
 def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[CustomizeChart]) -> tuple[alt.Chart, alt.Chart, alt.Chart]:
     """
@@ -32,34 +55,16 @@ def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[Customize
         if customize:
             return customize(chart)
         else:
-            chart
+            return chart
 
-    subject_groups = data['subject_group'].unique().tolist()
-    subject_group_dropdown = alt.binding_select(
-        name='Вид матура ',
-        options=[None, *subject_groups],
-        labels=['Всички', *subject_groups]
-    )
-    selection_subject_group = alt.selection_point(fields=['subject_group'], bind=subject_group_dropdown)
+    subject_groups_sorted = [
+        s for s in data['subject_group'].unique() if s != 'Дипломни проекти'
+    ] + ['Дипломни проекти']
 
-    subject_color_mapping = {
-        'БЕЛ': '#F04500',
-        'СТЕМ': '#00991A',
-        'Чужди езици': '#7F2985',
-        'Дипломни прокети': '#1B40B5', # TODO: Fix проекти
-        'ДРУГИ': '#FFAD00', # TODO: Rename to Други
-        'БЕЗ': '#683501' # TODO: Rename to Неявили се
-    }
-
-    color = alt.Color(
-        'subject_group:N',
+    color = get_subject_group_altair_color(
         title=None,
-        scale=alt.Scale(
-            domain=list(subject_color_mapping.keys()),
-            range=list(subject_color_mapping.values())
-            ),
         legend=alt.Legend(orient='top')
-        )
+    )
 
     values_chart = (
         alt.Chart(data)
@@ -97,9 +102,7 @@ def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[Customize
         .mark_bar()
         .encode(
             alt.X('year:O', title=None, axis=alt.Axis(labelAngle=0)),
-            alt.XOffset('subject_group:N', sort=[
-                s for s in data['subject_group'].unique() if s != 'Дипломни проекти'
-            ] + ['Дипломни проекти']),
+            alt.XOffset('subject_group:N', sort=subject_groups_sorted),
             alt.Y(
                 'score:Q',
                 axis=alt.Axis(tickCount=2, format='.2f'),
@@ -110,7 +113,8 @@ def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[Customize
             tooltip=[
                 alt.Tooltip('year:O', title='Година'),
                 alt.Tooltip('subject_group:N', title='Вид матура'),
-                alt.Tooltip('score:Q', title='Среден успех', format='.2f')
+                alt.Tooltip('score:Q', title='Среден успех', format='.2f'),
+                alt.Tooltip('total_people:Q', title='Брой ученици', format=',d')
             ]
         )
         .properties(title='Среден успех')

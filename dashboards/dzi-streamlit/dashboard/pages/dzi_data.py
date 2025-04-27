@@ -60,62 +60,27 @@ with st.expander(label='**Поглед за цяла Бълагрия**', expand
     st.write((values_chart | percent_chart) & score_chart)
 
 
-with st.expander(label='**Поглед по области**', expanded=False):
-    _write_all_subject_groups()
+with st.expander(label='**Поглед по области**', expanded=True):
+    # _write_all_subject_groups()
 
     aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region'])
 
-    regions = aggregated_data['region'].unique().tolist()
-    st.write('##### Филтър по области')
-    selected_regions = st.multiselect(
-        'Филтър по области',
-        options=regions,
-        default=regions,
-        label_visibility='hidden'
-    )
+    regions = sorted(aggregated_data['region'].unique().tolist())
 
-    st.write('##### Графики')
-    summary_tab, value_tab, percent_tab, score_tab = st.tabs([
-        '1\. Явили се, обща картина',
-        '2\. Явили се ученици, по област, брой',
-        '3\. Явили се ученици, по област, в проценти',
-        '4\. Среден успех, по област'
-    ])
-
-    if selected_regions:
-
-        # filter the data by region
-        aggregated_data = aggregated_data[aggregated_data['region'].isin(selected_regions)]
-
-
-        def _customize(chart: alt.Chart) -> alt.Chart:
-            facet_field_def = alt.FacetFieldDef(
-                field='region', type='nominal',
-                title='Област (осите в различните графики може да имат различен обхват)')
-            facet_columns = 4
-            return (chart
-                .facet(facet=facet_field_def, columns=facet_columns)
-                .resolve_scale(y='independent', x='independent')
+    cols = st.columns(2)
+    for idx, col in enumerate(cols):
+        with col:
+            selected_region = st.selectbox(
+                label=f'Област за сравнение {idx+1}',
+                index=idx,
+                options=regions,
+                placeholder='Изберете област',
             )
+            if selected_region:
+                selected_region_data = aggregated_data[aggregated_data['region'] == selected_region]
+                people_chart, percent_chart, score_chart = chart.create_subjectgroup_charts(selected_region_data, None)
 
-        values_chart, percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data, _customize)
-
-        # selector for subject_group
-        subject_groups = aggregated_data['subject_group'].unique().tolist()
-        selected_subject_group = summary_tab.selectbox(
-            'Вид матура',
-            subject_groups,
-            subject_groups.index('БЕЛ'),
-        )
-
-        summary_chart = chart.create_total_people_chart(
-            aggregated_data[aggregated_data['subject_group'] == selected_subject_group]
-        )
-
-        summary_tab.write(summary_chart)
-        value_tab.write(values_chart)
-        percent_tab.write(percent_chart)
-        score_tab.write(score_chart)
+                st.altair_chart(people_chart & percent_chart & score_chart, use_container_width=True)
 
 
 with st.expander(label='**Карта с училища**', expanded=True):
@@ -209,10 +174,10 @@ with st.expander(label='**Карта с училища**', expanded=True):
         Брой ученици: {int(row['total_people'])}<br>
         Среден успех: {row['avg_score']:.2f}
         """
-        
+
         # Determine if this school should be highlighted
         is_highlighted = str(row['school_id']) in schools_with_special_styling
-        
+
         # Create marker with appropriate styling
         marker_params = {
             'radius': radius,
@@ -223,13 +188,13 @@ with st.expander(label='**Карта с училища**', expanded=True):
             'weight': 2 if is_highlighted else 1,
             'fill_opacity': 0.7,
         }
-        
+
         # Create the circle marker
         circle = folium.CircleMarker(
             location=[row['slatitude'], row['slongitude']],
             **marker_params
         )
-        
+
         # Add to appropriate feature group
         if is_highlighted:
             circle.add_to(highlighted_schools)
