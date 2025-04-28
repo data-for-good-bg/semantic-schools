@@ -82,6 +82,35 @@ with st.expander(label='**Поглед по области**', expanded=True):
 
                 st.altair_chart(people_chart & percent_chart & score_chart, use_container_width=True)
 
+with st.expander(label='**Поглед по общини**', expanded=True):
+    # _write_all_subject_groups()
+
+    aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region', 'mun'])
+
+    regions = sorted(aggregated_data['region'].unique().tolist())
+
+    cols = st.columns(2)
+    for idx, col in enumerate(cols):
+        with col:
+            selected_region = st.selectbox(
+                label=f'Област на община за сравнение {idx+1}',
+                index=0,
+                options=regions,
+                placeholder='Изберете област',
+            )
+            region_data = aggregated_data[aggregated_data['region'] == selected_region]
+            muns = sorted(region_data['mun'].unique().tolist())
+            selected_mun = st.selectbox(
+                label=f'Община за сравнение {idx+1}',
+                index=idx,
+                options=muns
+            )
+            if selected_region and selected_mun:
+                selected_mun_data = region_data[aggregated_data['mun'] == selected_mun]
+                people_chart, percent_chart, score_chart = chart.create_subjectgroup_charts(selected_mun_data, None)
+
+                st.altair_chart(people_chart & percent_chart & score_chart, use_container_width=True)
+
 
 with st.expander(label='**Карта с училища**', expanded=True):
     st.write('### Географско разпределение на училищата спрямо техните резултати от ДЗИ')
