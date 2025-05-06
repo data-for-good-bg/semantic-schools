@@ -53,11 +53,11 @@ with st.expander(label='**Поглед за цяла Бълагрия**', expand
     def _customize(chart: alt.Chart) -> alt.Chart:
         return chart.properties(width=400)
 
-    values_chart, percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data, _customize)
+    percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data, _customize)
 
     _write_all_subject_groups()
 
-    st.write((values_chart | percent_chart) & score_chart)
+    st.write(percent_chart & score_chart)
 
 
 with st.expander(label='**Поглед по области**', expanded=True):
@@ -78,9 +78,9 @@ with st.expander(label='**Поглед по области**', expanded=True):
             )
             if selected_region:
                 selected_region_data = aggregated_data[aggregated_data['region'] == selected_region]
-                people_chart, percent_chart, score_chart = chart.create_subjectgroup_charts(selected_region_data, None)
+                percent_chart, score_chart = chart.create_subjectgroup_charts(selected_region_data, None)
 
-                st.altair_chart(people_chart & percent_chart & score_chart, use_container_width=True)
+                st.altair_chart(percent_chart & score_chart, use_container_width=True)
 
 with st.expander(label='**Поглед по общини**', expanded=True):
     # _write_all_subject_groups()
@@ -107,9 +107,9 @@ with st.expander(label='**Поглед по общини**', expanded=True):
             )
             if selected_region and selected_mun:
                 selected_mun_data = region_data[aggregated_data['mun'] == selected_mun]
-                people_chart, percent_chart, score_chart = chart.create_subjectgroup_charts(selected_mun_data, None)
+                percent_chart, score_chart = chart.create_subjectgroup_charts(selected_mun_data, None)
 
-                st.altair_chart(people_chart & percent_chart & score_chart, use_container_width=True)
+                st.altair_chart(percent_chart & score_chart, use_container_width=True)
 
 
 with st.expander(label='**Карта с училища**', expanded=True):

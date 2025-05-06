@@ -1,5 +1,6 @@
 import pandas as pd
 import altair as alt
+from altair import datum
 from typing import Callable, Optional
 
 
@@ -7,7 +8,7 @@ SUBJECT_GROUP_COLOR_MAPPING = {
     'БЕЛ': '#F04500',
     'СТЕМ': '#00991A',
     'Чужди езици': '#7F2985',
-    'Дипломни прокети': '#1B40B5', # TODO: Fix проекти
+    'Дипломни проекти': '#1B40B5',
     'ДРУГИ': '#FFAD00', # TODO: Rename to Други
     'БЕЗ': '#683501' # TODO: Rename to Неявили се
 }
@@ -63,30 +64,29 @@ def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[Customize
 
     color = get_subject_group_altair_color(
         title=None,
-        legend=alt.Legend(orient='top')
+        legend=alt.Legend(orient='top'),
+        sort=subject_groups_sorted,
     )
 
-    values_chart = (
+    base_year_chart = (
         alt.Chart(data)
-        .mark_line(point=True)
         .encode(
-            alt.X('year:O', title='Година'),
-            alt.Y('total_people:Q', axis=alt.Axis(format='.0f'), title='Брой явили се ученици'),
-            color=color
+            alt.X('year:O', title=None, axis=alt.Axis(labelAngle=0)),
         )
     )
 
-    percent_chart = (
-        alt.Chart(data[data["subject_group"] != "БЕЛ"])
+    percent_bar_chart = (
+        base_year_chart
         .mark_bar()
         .encode(
-            alt.X('year:O', title=None, axis=alt.Axis(labelAngle=0)),
             alt.Y(
                 'total_people_percent:Q',
                 stack='normalize',
-                axis=alt.Axis(format='.0%', tickCount=5, title=None)
+                axis=alt.Axis(format='.0%', tickCount=5, title=None),
             ),
             color=color,
+            # https://stackoverflow.com/questions/66347857/sort-a-normalized-stacked-bar-chart-with-altair
+            order=alt.Order('color_subject_group_sort_index:Q'),
             tooltip=[
                 alt.Tooltip('year:O', title='Година'),
                 alt.Tooltip('subject_group:N', title='Вид матура'),
@@ -94,7 +94,42 @@ def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[Customize
                 alt.Tooltip('total_people:Q', title='Брой ученици', format=',d')
             ]
         )
-        .properties(title='% от общия брой ученици')
+        .transform_filter(
+            datum.subject_group != 'БЕЛ'
+        )
+    )
+
+    count_chart = (
+        base_year_chart
+        .mark_line(point=True)
+        .encode(
+            alt.Y('total_people:Q', title=None),
+            tooltip=[
+                alt.Tooltip('total_people:Q', title='Общ брой ученици')
+            ],
+            color=color,
+            text='total_people:Q'
+        )
+        .transform_filter(
+            datum.subject_group == 'БЕЛ'
+        )
+    )
+
+    count_text_chart = (
+        count_chart
+        .mark_text(
+            align='center',
+            dy=15,
+            fontWeight='bold'
+        )
+    )
+
+    year_chart = (
+        (percent_bar_chart + count_chart + count_text_chart)
+        .resolve_scale(y='independent')
+        .properties(
+            title='% от общия брой ученици'
+        )
     )
 
     score_chart = (
@@ -120,7 +155,7 @@ def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[Customize
         .properties(title='Среден успех')
     )
 
-    return _customize(values_chart), _customize(percent_chart), _customize(score_chart)
+    return _customize(year_chart), _customize(score_chart)
 
 def create_total_people_chart(data: pd.DataFrame) -> alt.Chart:
     years = data['year'].unique().tolist()

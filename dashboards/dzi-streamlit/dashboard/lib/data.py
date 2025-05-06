@@ -15,7 +15,7 @@ _SUBJECT_GROUP_TO_SUBJECT_MAPPING = {
                      'РЕ', 'РЕ-Б1', 'РЕ-Б1.1', 'РЕ-Б2',
                      'ФРЕ', 'ФРЕ-Б1', 'ФРЕ-Б1.1', 'ФРЕ-Б2'
                     },
-    'Дипломни прокети': {'ДИППК', 'ДИППК-Д.ПР', 'ДИППК-П.Р', 'ДИППК-ПР', 'ДИППК-ТЕСТ'}
+    'Дипломни проекти': {'ДИППК', 'ДИППК-Д.ПР', 'ДИППК-П.Р', 'ДИППК-ПР', 'ДИППК-ТЕСТ'}
 }
 
 _SUBJECT_TO_GROUP_MAPPING = {
@@ -180,14 +180,14 @@ def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: l
     see below.
 
     The assumption is that the total_people value for 'БЕЛ' subject_group
-    represents the total number of studends, thus the function calculates
+    represents the total number of students, thus the function calculates
     ratios against this value.
 
-    The result dataframe will contain data gruped by [*id_columns, 'subject_group']
+    The result dataframe will contain data grouped by [*id_columns, 'subject_group']
     with columns:
     * all columns from `id_columns` list
     * the subject_group column
-    * tatal_people will be the aggregated sum calculated by the group-by
+    * total_people will be the aggregated sum calculated by the group-by
     * total_people_percent will be the percent from subject_group 'БЕЛ'
     * score column will contain the weighted average score for the subject group
 
