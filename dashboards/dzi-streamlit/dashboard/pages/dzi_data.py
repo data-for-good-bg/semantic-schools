@@ -1,5 +1,4 @@
 import streamlit as st
-import altair as alt
 from io import StringIO
 import folium
 from streamlit_folium import folium_static
@@ -118,28 +117,34 @@ _divider()
 with st.container():
     st.markdown('### Поглед от близо')
 
-    aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region', 'mun'])
+    all_region_aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region'])
+    all_mun_aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region', 'mun'])
 
-    regions = sorted(aggregated_data['region'].unique().tolist())
+    regions = sorted(all_mun_aggregated_data['region'].unique().tolist())
+
+    all_marker = '-- Всички --'
 
     cols = st.columns(2)
     for idx, col in enumerate(cols):
         with col:
             selected_region = st.selectbox(
-                label=f'Област на община за сравнение {idx+1}',
-                index=0,
+                label=f'Област за сравнение {idx+1}',
+                index=idx,
                 options=regions,
                 placeholder='Изберете област',
             )
-            region_data = aggregated_data[aggregated_data['region'] == selected_region]
-            muns = sorted(region_data['mun'].unique().tolist())
+            select_region_mun_data = all_mun_aggregated_data[all_mun_aggregated_data['region'] == selected_region]
+            muns = [all_marker] + sorted(select_region_mun_data['mun'].unique().tolist())
             selected_mun = st.selectbox(
                 label=f'Община за сравнение {idx+1}',
-                index=idx,
+                index=0,
                 options=muns
             )
             if selected_region and selected_mun:
-                selected_mun_data = region_data[aggregated_data['mun'] == selected_mun]
+                if selected_mun == all_marker:
+                    selected_mun_data = all_region_aggregated_data[all_region_aggregated_data['region'] == selected_region]
+                else:
+                    selected_mun_data = select_region_mun_data[select_region_mun_data['mun'] == selected_mun]
                 percent_chart, score_chart = chart.create_subjectgroup_charts(selected_mun_data, None)
 
                 st.altair_chart(percent_chart & score_chart, use_container_width=True)
