@@ -44,8 +44,8 @@ def _write_all_subject_groups():
     _write_subject_group_data_per_years('ДРУГИ')
 
 
-with st.expander(label='**Поглед за цяла Бълагрия**', expanded=False):
-
+with st.container():
+    st.markdown('### Поглед за цял България')
     aggregated_data = data.extract_subjectgroup_aggregated_data(
         raw_data, ['year']
     )
@@ -55,35 +55,14 @@ with st.expander(label='**Поглед за цяла Бълагрия**', expand
 
     percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data, _customize)
 
-    _write_all_subject_groups()
-
-    st.write(percent_chart & score_chart)
-
-
-with st.expander(label='**Поглед по области**', expanded=True):
     # _write_all_subject_groups()
 
-    aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region'])
+    st.altair_chart(percent_chart | score_chart)
 
-    regions = sorted(aggregated_data['region'].unique().tolist())
+st.divider()
 
-    cols = st.columns(2)
-    for idx, col in enumerate(cols):
-        with col:
-            selected_region = st.selectbox(
-                label=f'Област за сравнение {idx+1}',
-                index=idx,
-                options=regions,
-                placeholder='Изберете област',
-            )
-            if selected_region:
-                selected_region_data = aggregated_data[aggregated_data['region'] == selected_region]
-                percent_chart, score_chart = chart.create_subjectgroup_charts(selected_region_data, None)
-
-                st.altair_chart(percent_chart & score_chart, use_container_width=True)
-
-with st.expander(label='**Поглед по общини**', expanded=True):
-    # _write_all_subject_groups()
+with st.container():
+    st.markdown('### Поглед от близо')
 
     aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region', 'mun'])
 
@@ -111,10 +90,11 @@ with st.expander(label='**Поглед по общини**', expanded=True):
 
                 st.altair_chart(percent_chart & score_chart, use_container_width=True)
 
+st.divider()
 
-with st.expander(label='**Карта с училища**', expanded=True):
-    st.write('### Географско разпределение на училищата спрямо техните резултати от ДЗИ')
-    st.write('Цветът на маркерите показва средния успех, а размерът - броя ученици. Избраните училища са с черна граница.')
+with st.container():
+    st.markdown('### Карта на училищата визуализирани спрямо техните резултати от ДЗИ')
+    st.write('Цветът на маркерите показва средния успех, а размерът - броя ученици')
 
     data = data.load_dzi_data_with_coords()
     grouped = data.groupby(['year', 'region', 'mun', 'place', 'school_id', 'school', 'subject_group', 'slongitude', 'slatitude']).agg(
@@ -122,24 +102,29 @@ with st.expander(label='**Карта с училища**', expanded=True):
         avg_score=('score', 'mean')
     ).reset_index()
 
+    col1, col2 = st.columns(2)
     # Get unique years and create a selector
     years = sorted(grouped['year'].unique().tolist(), reverse=True)
-    selected_year = st.selectbox(
-        'Изберете година',
-        years,
-        0,  # Default to the most recent year (first in the reversed list)
-    )
+
+    with col1:
+        selected_year = st.selectbox(
+            'Изберете година',
+            years,
+            0,  # Default to the most recent year (first in the reversed list)
+        )
 
     # Filter data by selected year
     grouped = grouped[grouped['year'] == selected_year]
 
     # Get unique subject groups and create a selector
     subject_groups = grouped['subject_group'].unique().tolist()
-    selected_subject_group = st.selectbox(
-        'Изберете вид матура',
-        subject_groups,
-        subject_groups.index('БЕЛ') if 'БЕЛ' in subject_groups else 0,
-    )
+
+    with col2:
+        selected_subject_group = st.selectbox(
+            'Изберете вид матура',
+            subject_groups,
+            subject_groups.index('БЕЛ') if 'БЕЛ' in subject_groups else 0,
+        )
 
     # Filter data by selected subject group
     grouped = grouped[grouped['subject_group'] == selected_subject_group]
@@ -169,25 +154,6 @@ with st.expander(label='**Карта с училища**', expanded=True):
     highlighted_schools = folium.FeatureGroup(name='Училища от интерес')
     regular_schools = folium.FeatureGroup(name='Всички останали училища')
 
-    # Input field for school IDs to highlight
-    school_ids_input = st.text_input(
-        'Въведете ID на училища от интерес (разделени със запетая)',
-        value='200112, 100110, 200221, 200234, 200216, 200230, 200605, 1302623, 2400130, 2218071, 2208075, 2212097',
-        help='Пример: 200112, 100110, 200221'
-    )
-
-    # Parse school IDs from input
-    schools_with_special_styling = []
-    if school_ids_input:
-        try:
-            # Split by comma and convert to strings (keeping them as strings since that's how they're stored)
-            schools_with_special_styling = [
-                school_id.strip()
-                for school_id in school_ids_input.split(',') if school_id.strip()
-            ]
-        except:
-            st.error('Невалиден формат на въведените ID-та на училища.')
-
     # Add markers for each school
     for _, row in grouped.iterrows():
         # Scale marker size based on number of students
@@ -204,17 +170,14 @@ with st.expander(label='**Карта с училища**', expanded=True):
         Среден успех: {row['avg_score']:.2f}
         """
 
-        # Determine if this school should be highlighted
-        is_highlighted = str(row['school_id']) in schools_with_special_styling
-
         # Create marker with appropriate styling
         marker_params = {
             'radius': radius,
             'popup': folium.Popup(popup_text, max_width=300),
             'fill': True,
             'fill_color': colormap(row['avg_score']),
-            'color': 'black' if is_highlighted else 'gray',
-            'weight': 2 if is_highlighted else 1,
+            'color': 'gray',
+            'weight': 1,
             'fill_opacity': 0.7,
         }
 
@@ -225,14 +188,10 @@ with st.expander(label='**Карта с училища**', expanded=True):
         )
 
         # Add to appropriate feature group
-        if is_highlighted:
-            circle.add_to(highlighted_schools)
-        else:
-            circle.add_to(regular_schools)
+        circle.add_to(regular_schools)
 
     # Add feature groups to map
     regular_schools.add_to(m)
-    highlighted_schools.add_to(m)
 
     # Add layer control
     folium.LayerControl().add_to(m)
