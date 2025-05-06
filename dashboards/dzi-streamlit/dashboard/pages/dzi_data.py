@@ -22,6 +22,14 @@ subject_data = data.extract_subject_data(raw_data)
 
 st.write('# ДЗИ Данни')
 
+
+def _divider():
+    st.markdown(
+        "<hr style='border: 1px solid #F04500;'/>",
+        unsafe_allow_html=True
+    )
+
+
 def _write_subject_group_data_per_years(subject_group: str):
     html_text = StringIO()
 
@@ -45,21 +53,67 @@ def _write_all_subject_groups():
 
 
 with st.container():
-    st.markdown('### Поглед за цял България')
     aggregated_data = data.extract_subjectgroup_aggregated_data(
         raw_data, ['year']
     )
 
-    def _customize(chart: alt.Chart) -> alt.Chart:
-        return chart.properties(width=400)
+    percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data, customize=None)
 
-    percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data, _customize)
+    st.markdown("""
+    Тук ще живее текст.
+    """)
 
-    # _write_all_subject_groups()
+    # Shares by subject group
+    _divider()
 
-    st.altair_chart(percent_chart | score_chart)
+    col1, col2 = st.columns([1, 2])
 
-st.divider()
+    with col1:
+        st.markdown("""Тук ще живее текст.""")
+
+    with col2:
+        st.altair_chart(percent_chart, use_container_width=True)
+
+    _divider()
+
+    col1, col2 = st.columns([1, 2])
+
+    with col1:
+        st.markdown("""Тук ще живее текст.""")
+
+    with col2:
+        st.altair_chart(score_chart, use_container_width=True)
+
+with st.container():
+    st.markdown("""Тук ще живее текст.""")
+
+    location_data = data.create_wide_table(
+        raw_data, ['year', 'region', 'mun'],
+        {"total_people" : "sum", "score" : "mean"},
+        ['БЕЛ', 'СТЕМ']
+    )
+
+    selected_year = st.selectbox(
+        label=" ",
+        options=sorted(location_data["year"].unique(), reverse=True),
+        label_visibility="collapsed"
+        )
+
+    filtered_data = location_data[location_data["year"] == selected_year].reset_index(drop=True)
+
+    formated_data = data.format_municipal_table(filtered_data)
+
+    styled_df = formated_data.style.set_properties(
+        **{"color": "#000000"}
+    ).format(precision=2, thousands=",")
+
+    st.dataframe(
+        styled_df,
+        use_container_width=True,
+        hide_index=True
+    )
+
+_divider()
 
 with st.container():
     st.markdown('### Поглед от близо')
@@ -90,7 +144,7 @@ with st.container():
 
                 st.altair_chart(percent_chart & score_chart, use_container_width=True)
 
-st.divider()
+_divider()
 
 with st.container():
     st.markdown('### Карта на училищата визуализирани спрямо техните резултати от ДЗИ')
