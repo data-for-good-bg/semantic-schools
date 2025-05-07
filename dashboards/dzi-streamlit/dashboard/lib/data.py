@@ -171,7 +171,7 @@ def group_by_year_subjectgroup(data: pd.DataFrame) -> pd.DataFrame:
     ).reset_index()
 
 
-
+@st.cache_data(ttl='1h')
 def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: list[str]) -> pd.DataFrame:
     """
     The input dataframe should contain the columns pointed in `id_columns` and
@@ -249,11 +249,12 @@ def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: l
 # def filter_by_subjectgroup(data: pd.DataFrame, value: str) -> pd.DataFrame:
 #     return data.loc[data['subject_group'] == value]
 
-
+@st.cache_data(ttl='1h')
 def extract_subject_data(raw_data: pd.DataFrame) -> pd.DataFrame:
     return raw_data[['year', 'subject', 'subject_group']].drop_duplicates(ignore_index=True)
 
 
+@st.cache_data(ttl='1h')
 def extract_subjects_of_group_per_years(subject_data: pd.DataFrame, subject_group) -> list[tuple[str, str]]:
 
     subjects_to_years = defaultdict(list)
@@ -269,6 +270,8 @@ def extract_subjects_of_group_per_years(subject_data: pd.DataFrame, subject_grou
 
     return result
 
+
+@st.cache_data(ttl='1h')
 def create_wide_table(
     df_input: pd.DataFrame, index_cols: list, value_aggr: dict, subjects: list
     ) -> pd.DataFrame:
@@ -292,6 +295,8 @@ def create_wide_table(
 
     return df_wide
 
+
+@st.cache_data(ttl='1h')
 def format_municipal_table(
     df_region: pd.DataFrame
     ) -> pd.DataFrame:

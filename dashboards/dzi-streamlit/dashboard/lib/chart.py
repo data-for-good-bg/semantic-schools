@@ -1,5 +1,6 @@
 import pandas as pd
 import altair as alt
+import streamlit as st
 from altair import datum
 from typing import Callable, Optional
 
@@ -29,7 +30,8 @@ def get_subject_group_altair_color(**kwargs) -> alt.Color:
     )
 
 
-def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[CustomizeChart]) -> tuple[alt.Chart, alt.Chart, alt.Chart]:
+@st.cache_data(ttl='1h')
+def create_subjectgroup_charts(data: pd.DataFrame) -> tuple[alt.Chart, alt.Chart, alt.Chart]:
     """
     The `data` dataframe is expected to contain columns `year`, `subject_group`,
     `total_people`, `total_people_percent` and `score`.
@@ -40,23 +42,11 @@ def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[Customize
      * another mark_line chart representing the average score change over the
        years
 
-    The `customize` callable will be executed on each of the charts,
-    it could be used to apply additional properties, encodings, etc.
-
-    The DataFrame could contain more columns, which means `customize`
-    could also use .facet() or .repeat() to create multiple charts.
-
     All result charts:
      * will display each subject_group with different color.
      * come with a drop-down menu which will highlight
        the selected subject_group.
     """
-
-    def _customize(chart: alt.Chart) -> alt.Chart:
-        if customize:
-            return customize(chart)
-        else:
-            return chart
 
     subject_groups_sorted = [
         s for s in data['subject_group'].unique() if s != 'Дипломни проекти'
@@ -155,7 +145,7 @@ def create_subjectgroup_charts(data: pd.DataFrame, customize: Optional[Customize
         .properties(title='Среден успех')
     )
 
-    return _customize(year_chart), _customize(score_chart)
+    return year_chart, score_chart
 
 def create_total_people_chart(data: pd.DataFrame) -> alt.Chart:
     years = data['year'].unique().tolist()

@@ -56,7 +56,7 @@ with st.container():
         raw_data, ['year']
     )
 
-    percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data, customize=None)
+    percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data)
 
     st.markdown("""
     Тук ще живее текст.
@@ -145,7 +145,7 @@ with st.container():
                     selected_mun_data = all_region_aggregated_data[all_region_aggregated_data['region'] == selected_region]
                 else:
                     selected_mun_data = select_region_mun_data[select_region_mun_data['mun'] == selected_mun]
-                percent_chart, score_chart = chart.create_subjectgroup_charts(selected_mun_data, None)
+                percent_chart, score_chart = chart.create_subjectgroup_charts(selected_mun_data)
 
                 st.altair_chart(percent_chart & score_chart, use_container_width=True)
 
