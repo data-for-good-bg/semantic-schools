@@ -22,10 +22,7 @@ location_data = data.create_wide_table(
     ['БЕЛ', 'СТЕМ']
 )
 
-def _customize(chart: alt.Chart) -> alt.Chart:
-    return chart.properties(width=400)
-
-values_chart, percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data, _customize)
+percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data)
 
 # Title and description
 st.title("Данни за матури")
@@ -34,7 +31,7 @@ st.markdown("""
 Тук ще живее текст.
 """)
 
-# Shares by subject group 
+# Shares by subject group
 st.markdown(
     "<hr style='border: 1px solid #F04500;'/>",
     unsafe_allow_html=True
