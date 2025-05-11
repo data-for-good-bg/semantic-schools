@@ -19,7 +19,7 @@ st.markdown("""
 raw_data = data.load_dzi_data()
 subject_data = data.extract_subject_data(raw_data)
 
-st.write('# ДЗИ Данни')
+st.write('# Данни за матурите')
 
 
 def _divider():
@@ -58,33 +58,57 @@ with st.container():
 
     percent_chart, score_chart = chart.create_subjectgroup_charts(aggregated_data)
 
-    st.markdown("""
-    Тук ще живее текст.
-    """)
+    st.markdown(
+        """Този анализ представя успехите на зрелостниците и предпочитаните предмети за втора матура в страната.
+        Кои са добрите примери сред училищата и общините извън "елитните гимназии" в големите населени места?
+        Има ли промени или тенденции през годините, които заслужават вниманието ни?
+        Това са въпросите, на които графиките по-долу имат за цел да отговорят.
+        Продължи надолу, за да потърсиш отговорите."""
+        )
 
     # Shares by subject group
     _divider()
 
+    st.markdown('### Обща картина за цялата страна')
+
     col1, col2 = st.columns([1, 2])
 
     with col1:
-        st.markdown("""Тук ще живее текст.""")
+        st.markdown("""
+        Матурата по български език и литература (БЕЛ) е задължителна за всички и затова дава общия брой на зрелостници.\n
+        Предметите за втора матура са групирани в три категории - СТЕМ, Чужди езици и Други (виж бележките най-долу за повече детайли).\n
+        СТЕМ предметите са с най-голям дял през 2017, след което отстъпват челната позиция по брой на чуждите езици.\n
+        През 2022 е въведен задължителен изпит за професионална квалификация (Дипломен проект) за учениците от професионални гимназии.
+        Това води да големи промени в броя явили се на втора матура и в избора на предмет.
+        """)
 
     with col2:
         st.altair_chart(percent_chart, use_container_width=True)
 
-    _divider()
-
     col1, col2 = st.columns([1, 2])
 
     with col1:
-        st.markdown("""Тук ще живее текст.""")
+        st.markdown(
+            """Матурите по чужд език бележат най-високи резултати.
+            По-високи от матурата по български език и литература и от другите групи предмети за втора матура."""
+            )
 
     with col2:
         st.altair_chart(score_chart, use_container_width=True)
 
 with st.container():
-    st.markdown("""Тук ще живее текст.""")
+
+    _divider()
+
+    st.markdown('### Поглед отблизо')
+    
+    st.markdown("""
+    Тук можеш да разгледаш резултатите по БЕЛ и втора матура по СТЕМ предмети по община.
+    Таблицата може да бъде сортирана по всяка една от колоните с клик върху името на колоната.\n
+    Например, избери година и сортирай по колоната Явили се - СТЕМ.
+    Откриваш ли общини, където броя зрелостници по СТЕМ е относително голям дял от общия брой зрелостници (=Явили се - БЕЛ)?
+    Какви са средните оценки там спрямо останалите близки общини по това подреждане?
+    """)
 
     location_data = data.create_wide_table(
         raw_data, ['year', 'region', 'mun'],
@@ -115,7 +139,13 @@ with st.container():
 _divider()
 
 with st.container():
-    st.markdown('### Поглед от близо')
+    st.markdown('### Сравнение между области и общини')
+
+    st.markdown("""
+    Сравни представянето на две области или общини.
+    Сравнението между две области става, като се избере стойност --Всички-- в полетата Община за сравнение.
+    Сравнението между общини става, като първо се изберат съответните области.
+    """)
 
     all_region_aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region'])
     all_mun_aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region', 'mun'])
@@ -131,7 +161,7 @@ with st.container():
                 label=f'Област за сравнение {idx+1}',
                 index=idx,
                 options=regions,
-                placeholder='Изберете област',
+                placeholder='Избери област',
             )
             select_region_mun_data = all_mun_aggregated_data[all_mun_aggregated_data['region'] == selected_region]
             muns = [all_marker] + sorted(select_region_mun_data['mun'].unique().tolist())
@@ -152,8 +182,13 @@ with st.container():
 _divider()
 
 with st.container():
-    st.markdown('### Карта на училищата визуализирани спрямо техните резултати от ДЗИ')
-    st.write('Цветът на маркерите показва средния успех, а размерът - броя ученици')
+    st.markdown('### Поглед по училища')
+
+    st.markdown("""
+    Избери година и вид матура. Откриваш ли райони с преобладаващо по-високи резултати (=по-зелени)?
+    Приближи към населено място или училище, което е от интерес. Какво е представянето там?\n
+    Цветът на маркерите показва средния успех, а размерът - броя явили се.
+    """)
 
     data = data.load_dzi_data_with_coords()
     grouped = data.groupby(['year', 'region', 'mun', 'place', 'school_id', 'school', 'subject_group', 'slongitude', 'slatitude']).agg(
@@ -167,7 +202,7 @@ with st.container():
 
     with col1:
         selected_year = st.selectbox(
-            'Изберете година',
+            'Избери година',
             years,
             0,  # Default to the most recent year (first in the reversed list)
         )
@@ -180,7 +215,7 @@ with st.container():
 
     with col2:
         selected_subject_group = st.selectbox(
-            'Изберете вид матура',
+            'Избери вид матура',
             subject_groups,
             subject_groups.index('БЕЛ') if 'БЕЛ' in subject_groups else 0,
         )
@@ -257,3 +292,16 @@ with st.container():
 
     # Display the map
     folium_static(m, width=1000, height=600)
+
+_divider()
+
+with st.container():
+    st.markdown('### Бележки')
+
+    st.markdown("""
+    Този анализ е изготвен от [Данни за добро](https://data-for-good.bg/).\n
+    Данните за броя явили се и оценките от матури са взети от [Портал за отворени данни](https://data.egov.bg/).
+    Данните за адреси на училища са предоставени от Министерство на образованието по Закона за достъп до обществена информация.
+    Данните, събрани, свързани и изчистени, сме направили достъпни в релационна база [тук]().\n
+    В определението СТЕМ сме включили предметите биология, математика, физика и химия.
+    """)
