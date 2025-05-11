@@ -40,5 +40,22 @@ gatherUsageStats = false
 [mapbox]
 
 [theme]
+# TODO: this code duplicates the theme from the config.toml
+#       in dashboard dir.
+#       best case, scenario, we should find a way to support
+#       development and production config.toml files
+#       without duplicating prod and dev
+# Primary accent for interactive elements
+primaryColor = '#F04500'
+# Background color for the main content area
+backgroundColor = '#FEFAEE'
+# Background color for sidebar and most interactive widgets
+secondaryBackgroundColor = '#F04500'
+# Color used for almost all text
+textColor = '#000000'
+# Font family for all text in the app, except code blocks
+# Accepted values (serif | sans serif | monospace)
+# Default: "sans serif"
+font = "sans serif"
 
 [secrets]
