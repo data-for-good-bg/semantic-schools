@@ -15,7 +15,7 @@ _SUBJECT_GROUP_TO_SUBJECT_MAPPING = {
                      'РЕ', 'РЕ-Б1', 'РЕ-Б1.1', 'РЕ-Б2',
                      'ФРЕ', 'ФРЕ-Б1', 'ФРЕ-Б1.1', 'ФРЕ-Б2'
                     },
-    'Дипломни прокети': {'ДИППК', 'ДИППК-Д.ПР', 'ДИППК-П.Р', 'ДИППК-ПР', 'ДИППК-ТЕСТ'}
+    'Дипломни проекти': {'ДИППК', 'ДИППК-Д.ПР', 'ДИППК-П.Р', 'ДИППК-ПР', 'ДИППК-ТЕСТ'}
 }
 
 _SUBJECT_TO_GROUP_MAPPING = {
@@ -79,7 +79,7 @@ order by e."year", region, mun, place, school_id, subject
     conn = st.connection('eddata', type='sql')
 
     raw_data = conn.query(sql, ttl='1h')
-    # raw_data = pd.read_csv('dzi-data.csv')
+
     raw_data['subject_group'] = raw_data['subject'].map(_SUBJECT_TO_GROUP_MAPPING).fillna('ДРУГИ')
 
     # some schools do not have coordinates, they take the coordinates from the place
@@ -98,17 +98,63 @@ order by e."year", region, mun, place, school_id, subject
     raw_data['slongitude'] = raw_data['slongitude'].apply(convert_to_str)
     raw_data['slatitude'] = raw_data['slatitude'].apply(convert_to_str)
 
-    # raw_data['slongitude'] = raw_data['slongitude'].astype(str)
-    # raw_data['slatitude'] = raw_data['slatitude'].as
+    return raw_data
+
+
+def load_nvo_data_with_coords(grade_level: int, subject: str) -> pd.DataFrame:
+    sql = '''
+select e."year", r."name" as region, m."name" as mun, p."name" as place, es.school_id, s."name" as school, es.subject, es.people, es.score,
+r.longitude as rlongitude, r.latitude as rlatitude,
+m.longitude as mlongitude, m.latitude as mlatitude,
+p.longitude as plongitude, p.latitude as platitude,
+s.longitude as slongitude, s.latitude as slatitude
+from examination e
+        inner join examination_score es on e.id = es.examination_id
+        inner join school s on s.id = es.school_id
+        inner join place p on s.place_id = p.id
+        inner join municipality m on p.municipality_id = m.id
+        inner join region r on m.region_id = r.id
+where e."type" = 'НВО' and e.grade_level = :grade_level and es.subject = :subject
+order by e."year", region, mun, place, school_id, subject
+'''
+
+    conn = st.connection('eddata', type='sql')
+
+    params = {'grade_level': grade_level, 'subject': subject}
+    raw_data = conn.query(sql, params=params, ttl='1h')
+
+    raw_data['subject_group'] = raw_data['subject'].map(_SUBJECT_TO_GROUP_MAPPING).fillna('ДРУГИ')
+
+    # some schools do not have coordinates, they take the coordinates from the place
+    raw_data.loc[raw_data['slongitude'].isna() | raw_data['slatitude'].isna(), ['slongitude', 'slatitude']] = \
+        raw_data[['plongitude', 'platitude']].where(raw_data['slongitude'].isna() | raw_data['slatitude'].isna())
+
+
+    for bad_school_id in ['2217151', '2212553', '2208123', '2218071']:
+        raw_data.loc[raw_data['school_id'] == bad_school_id , ['slongitude', 'slatitude']] = \
+            raw_data[['plongitude', 'platitude']].where(raw_data['school_id'] == bad_school_id)
+
+
+    def convert_to_str(v):
+        return float(v)
+
+    raw_data['slongitude'] = raw_data['slongitude'].apply(convert_to_str)
+    raw_data['slatitude'] = raw_data['slatitude'].apply(convert_to_str)
 
     return raw_data
 
 
-# def get_subjects_by_subjectgroup(data: pd.DataFrame, subject_group: str) -> list[str]:
-#     unique_combinations = data[['subject', 'subject_group']].drop_duplicates()
-#     filtered = unique_combinations.loc[unique_combinations['subject_group'] == subject_group]
-#     as_list = sorted(filtered['subject'].unique().tolist())
-#     return as_list
+def load_nvo_examinations() -> pd.DataFrame:
+    sql = '''
+select distinct e."year", e.grade_level, es.subject
+from examination e
+	inner join examination_score es on e.id = es.examination_id
+where e."type" = 'НВО'
+order by e."year" desc, e.grade_level
+'''
+
+    conn = st.connection('eddata', type='sql')
+    return conn.query(sql, ttl='1h')
 
 
 def group_by_year_region_subjectgroup(data: pd.DataFrame) -> pd.DataFrame:
@@ -125,7 +171,7 @@ def group_by_year_subjectgroup(data: pd.DataFrame) -> pd.DataFrame:
     ).reset_index()
 
 
-
+@st.cache_data(ttl='1h')
 def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: list[str]) -> pd.DataFrame:
     """
     The input dataframe should contain the columns pointed in `id_columns` and
@@ -134,14 +180,14 @@ def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: l
     see below.
 
     The assumption is that the total_people value for 'БЕЛ' subject_group
-    represents the total number of studends, thus the function calculates
+    represents the total number of students, thus the function calculates
     ratios against this value.
 
-    The result dataframe will contain data gruped by [*id_columns, 'subject_group']
+    The result dataframe will contain data grouped by [*id_columns, 'subject_group']
     with columns:
     * all columns from `id_columns` list
     * the subject_group column
-    * tatal_people will be the aggregated sum calculated by the group-by
+    * total_people will be the aggregated sum calculated by the group-by
     * total_people_percent will be the percent from subject_group 'БЕЛ'
     * score column will contain the weighted average score for the subject group
 
@@ -203,11 +249,12 @@ def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: l
 # def filter_by_subjectgroup(data: pd.DataFrame, value: str) -> pd.DataFrame:
 #     return data.loc[data['subject_group'] == value]
 
-
+@st.cache_data(ttl='1h')
 def extract_subject_data(raw_data: pd.DataFrame) -> pd.DataFrame:
     return raw_data[['year', 'subject', 'subject_group']].drop_duplicates(ignore_index=True)
 
 
+@st.cache_data(ttl='1h')
 def extract_subjects_of_group_per_years(subject_data: pd.DataFrame, subject_group) -> list[tuple[str, str]]:
 
     subjects_to_years = defaultdict(list)
@@ -222,3 +269,47 @@ def extract_subjects_of_group_per_years(subject_data: pd.DataFrame, subject_grou
         result.append((years_str, subjects_str))
 
     return result
+
+
+@st.cache_data(ttl='1h')
+def create_wide_table(
+    df_input: pd.DataFrame, index_cols: list, value_aggr: dict, subjects: list
+    ) -> pd.DataFrame:
+    """
+    Creates a wide table with values (i.e. scores, number of pupils) split by
+    subject group.
+    """
+    df_long = extract_subjectgroup_aggregated_data(
+        df_input, index_cols
+    )
+
+    df_long = df_long[df_long["subject_group"].isin(subjects)]
+
+    df_long = df_long.groupby(index_cols+["subject_group"]).agg(value_aggr).reset_index()
+
+    df_wide = pd.DataFrame(columns=index_cols)
+    for x in value_aggr.keys():
+        df_pivot = df_long.pivot(index=index_cols, columns='subject_group', values=x)
+        df_pivot.columns = [f'{x}_{col}' for col in df_pivot.columns]
+        df_wide = df_wide.merge(df_pivot.reset_index(), "outer", index_cols)
+
+    return df_wide
+
+
+@st.cache_data(ttl='1h')
+def format_municipal_table(
+    df_region: pd.DataFrame
+    ) -> pd.DataFrame:
+    """Formats the municipality table with some hardcoded rules."""
+    df_format = df_region.rename(columns={
+        "year" : "Година", "region" : "Област", "mun" : "Община",
+        "total_people_БЕЛ" : "Явили се - БЕЛ",
+        "total_people_СТЕМ" : "Явили се - СТЕМ",
+        "score_БЕЛ" : "Оценка - БЕЛ",
+        "score_СТЕМ" : "Оценка - СТЕМ"
+        })
+
+    df_format[["Явили се - БЕЛ", "Явили се - СТЕМ"]] = df_format[["Явили се - БЕЛ", "Явили се - СТЕМ"]].astype(int)
+    df_format[["Година"]] = df_format[["Година"]].astype(str)
+
+    return df_format
