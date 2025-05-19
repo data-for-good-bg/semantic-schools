@@ -5,17 +5,25 @@ import pandas as pd
 from collections import defaultdict
 
 
+SG_BEL = 'БЕЛ'
+SG_STEM = 'СТЕМ'
+SG_FOREIGN_LANGUAGES = 'Чужди езици'
+SG_DIPL = 'Дипломни проекти'
+SG_OTHER = 'Други'
+SG_NO_SECOND_DZI = 'Неявили се на втора матура'
+
+
 _SUBJECT_GROUP_TO_SUBJECT_MAPPING = {
-    'БЕЛ': { 'БЕЛ' },
-    'СТЕМ': { 'БЗО', 'ИНФ', 'ИТ', 'МАТ', 'ФА', 'ХООС' },
-    'Чужди езици': { 'АЕ', 'АЕ-Б1', 'АЕ-Б1.1', 'АЕ-Б2',
+    SG_BEL: { 'БЕЛ' },
+    SG_STEM: { 'БЗО', 'ИНФ', 'ИТ', 'МАТ', 'ФА', 'ХООС' },
+    SG_FOREIGN_LANGUAGES: { 'АЕ', 'АЕ-Б1', 'АЕ-Б1.1', 'АЕ-Б2',
                      'ИСПЕ', 'ИСПЕ-Б1', 'ИСПЕ-Б1.1', 'ИСПЕ-Б2',
                      'ИТЕ', 'ИТЕ-Б1', 'ИТЕ-Б1.1', 'ИТЕ-Б2',
                      'НЕ', 'НЕ-Б1', 'НЕ-Б1.1', 'НЕ-Б2',
                      'РЕ', 'РЕ-Б1', 'РЕ-Б1.1', 'РЕ-Б2',
                      'ФРЕ', 'ФРЕ-Б1', 'ФРЕ-Б1.1', 'ФРЕ-Б2'
                     },
-    'Дипломни проекти': {'ДИППК', 'ДИППК-Д.ПР', 'ДИППК-П.Р', 'ДИППК-ПР', 'ДИППК-ТЕСТ'}
+    SG_DIPL: {'ДИППК', 'ДИППК-Д.ПР', 'ДИППК-П.Р', 'ДИППК-ПР', 'ДИППК-ТЕСТ'}
 }
 
 _SUBJECT_TO_GROUP_MAPPING = {
@@ -23,17 +31,6 @@ _SUBJECT_TO_GROUP_MAPPING = {
     for subject_group, subjects in _SUBJECT_GROUP_TO_SUBJECT_MAPPING.items()
     for subject in subjects
 }
-
-# _SUBJECT_TO_GROUP_MAPPING = {
-#     'БЕЛ': 'БЕЛ',
-
-#     'МАТ': 'СТЕМ',
-#     'БЗО': 'СТЕМ',
-#     'ИНФ': 'СТЕМ',
-#     'ИТ': 'СТЕМ',
-#     'ХООС': 'СТЕМ',
-#     'ФА': 'СТЕМ',
-# }
 
 
 def load_dzi_data() -> pd.DataFrame:
@@ -54,7 +51,7 @@ order by e."year", region, mun, place, school_id, subject
 
     raw_data = conn.query(sql, ttl='1h')
     # raw_data = pd.read_csv('dzi-data.csv')
-    raw_data['subject_group'] = raw_data['subject'].map(_SUBJECT_TO_GROUP_MAPPING).fillna('ДРУГИ')
+    raw_data['subject_group'] = raw_data['subject'].map(_SUBJECT_TO_GROUP_MAPPING).fillna(SG_OTHER)
 
     return raw_data
 
@@ -80,7 +77,7 @@ order by e."year", region, mun, place, school_id, subject
 
     raw_data = conn.query(sql, ttl='1h')
 
-    raw_data['subject_group'] = raw_data['subject'].map(_SUBJECT_TO_GROUP_MAPPING).fillna('ДРУГИ')
+    raw_data['subject_group'] = raw_data['subject'].map(_SUBJECT_TO_GROUP_MAPPING).fillna(SG_OTHER)
 
     # some schools do not have coordinates, they take the coordinates from the place
     raw_data.loc[raw_data['slongitude'].isna() | raw_data['slatitude'].isna(), ['slongitude', 'slatitude']] = \
@@ -123,7 +120,7 @@ order by e."year", region, mun, place, school_id, subject
     params = {'grade_level': grade_level, 'subject': subject}
     raw_data = conn.query(sql, params=params, ttl='1h')
 
-    raw_data['subject_group'] = raw_data['subject'].map(_SUBJECT_TO_GROUP_MAPPING).fillna('ДРУГИ')
+    raw_data['subject_group'] = raw_data['subject'].map(_SUBJECT_TO_GROUP_MAPPING).fillna(SG_OTHER)
 
     # some schools do not have coordinates, they take the coordinates from the place
     raw_data.loc[raw_data['slongitude'].isna() | raw_data['slatitude'].isna(), ['slongitude', 'slatitude']] = \
@@ -179,7 +176,7 @@ def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: l
     any other columns, which will be dropped as part of group-by operation,
     see below.
 
-    The assumption is that the total_people value for 'БЕЛ' subject_group
+    The assumption is that the total_people value for SG_BEL subject_group
     represents the total number of students, thus the function calculates
     ratios against this value.
 
@@ -188,14 +185,14 @@ def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: l
     * all columns from `id_columns` list
     * the subject_group column
     * total_people will be the aggregated sum calculated by the group-by
-    * total_people_percent will be the percent from subject_group 'БЕЛ'
+    * total_people_percent will be the percent from subject_group SG_BEL
     * score column will contain the weighted average score for the subject group
 
     The result dataframe will contain also a new row with
-      `subject_group` equal 'БЕЗ' value for each `id_columns` combination.
-      The `total_people` will be the difference between the value for `БЕЛ`
+      `subject_group` equal SG_NO_SECOND_DZI value for each `id_columns` combination.
+      The `total_people` will be the difference between the value for SG_BEL
       and all other subject groups, the `total_people_percent` will be the
-      corresponding percent from `БЕЛ` value.
+      corresponding percent from SG_BEL value.
 
     """
 
@@ -213,17 +210,17 @@ def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: l
     # pivot subject groups as columns
     data_pivoted_people = data.pivot_table(index=id_columns, columns='subject_group', values='total_people', fill_value=0)
 
-    # add column БЕЗ, this column could be misleading!
-    data_pivoted_people['БЕЗ'] = data_pivoted_people['БЕЛ']
+    # add column 'Неявили се на втора матура', this column could be misleading!
+    data_pivoted_people[SG_NO_SECOND_DZI] = data_pivoted_people[SG_BEL]
     for subject_group in subject_groups:
-        if subject_group != 'БЕЛ':
-            data_pivoted_people['БЕЗ'] = data_pivoted_people['БЕЗ'] - data_pivoted_people[subject_group]
-    data_pivoted_people['БЕЗ'] = data_pivoted_people['БЕЗ'].apply(lambda v: 0 if v < 0 else v)
-    subject_groups.append('БЕЗ')
+        if subject_group != SG_BEL:
+            data_pivoted_people[SG_NO_SECOND_DZI] = data_pivoted_people[SG_NO_SECOND_DZI] - data_pivoted_people[subject_group]
+    data_pivoted_people[SG_NO_SECOND_DZI] = data_pivoted_people[SG_NO_SECOND_DZI].apply(lambda v: 0 if v < 0 else v)
+    subject_groups.append(SG_NO_SECOND_DZI)
 
     # for each subject group add percent column
     for subject_group in subject_groups:
-        data_pivoted_people[f'{subject_group}-ПР'] = data_pivoted_people[subject_group]/data_pivoted_people['БЕЛ']
+        data_pivoted_people[f'{subject_group}-ПР'] = data_pivoted_people[subject_group]/data_pivoted_people[SG_BEL]
 
     data_pivoted_people = data_pivoted_people.reset_index()
 
@@ -242,6 +239,7 @@ def extract_subjectgroup_aggregated_data(input_data: pd.DataFrame, id_columns: l
 
     # merge the two dataframes
     result = data_merged_people.merge(score_data, on=[*id_columns, 'subject_group'], how='left')
+    result['score'] = result['score'].fillna(0)
 
     return result
 
