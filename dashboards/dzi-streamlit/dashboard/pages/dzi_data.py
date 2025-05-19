@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from io import StringIO
 import folium
@@ -7,7 +8,7 @@ import branca.colormap as cm
 from lib.data import (
     create_wide_table, extract_subjects_of_group_per_years, extract_subjectgroup_aggregated_data,
     load_dzi_data_with_coords, load_dzi_data, extract_subject_data, format_municipal_table,
-    SG_BEL, SG_STEM
+    SG_BEL, SG_STEM, SG_FOREIGN_LANGUAGES, SG_OTHER, SG_DIPL
 )
 from lib import chart
 
@@ -31,29 +32,6 @@ def _divider():
         "<hr style='border: 1px solid #F04500;'/>",
         unsafe_allow_html=True
     )
-
-
-def _write_subject_group_data_per_years(subject_group: str):
-    html_text = StringIO()
-
-    html_text.write(f'<ul style="font-size: 12px">{subject_group} предмети са:\n')
-    for years_str, subjects_str in extract_subjects_of_group_per_years(subject_data, subject_group):
-        html_text.write(f'  <li>За години {years_str} : {subjects_str}</li>')
-
-    html_text.write('</ul></span>')
-    st.html(html_text.getvalue())
-
-
-def _write_all_subject_groups():
-    st.markdown((
-        '* _Матурата по БЕЛ е задължителна, поради това може да се приеме, че броят явили се на изпит по БЕЛ представя броят зрелостници._'
-        '\n* _Броят ученици, без допълнителен зрелостен изпит е получен като разликата между броя явили се по БЕЛ и броя явили се по всички други предмети. **Може да е подвеждащ?!**_'
-    ))
-    _write_subject_group_data_per_years('СТЕМ')
-    _write_subject_group_data_per_years('Чужди езици')
-    _write_subject_group_data_per_years('Дипломни проекти')
-    _write_subject_group_data_per_years('ДРУГИ')
-
 
 with st.container():
     aggregated_data = extract_subjectgroup_aggregated_data(
@@ -302,10 +280,25 @@ _divider()
 with st.container():
     st.markdown('### Бележки')
 
+    subject_md = StringIO()
+    subject_md.write('* Матурата по български език и литература (БЕЛ) е задължителна за всички и затова дава общия брой на зрелостници. \n')
+    subject_md.write((
+        '* Броят ученици "Неявили се на втора матура" е получен като разликата между броя явили се '
+        'по БЕЛ и броя явили се по всички други предмети.\n Реалният брой може да е различен, '
+        'тъй като зрелостниците имат право да се явят на повече от един зрелостен изпит.\n'
+    ))
+
+    for subject_group in [SG_STEM, SG_DIPL, SG_FOREIGN_LANGUAGES, SG_OTHER]:
+        subject_md.write(f'* "{subject_group}" предмети включват:\n')
+        for years_str, subjects_str in extract_subjects_of_group_per_years(subject_data, subject_group):
+            subject_md.write(f'  * За години {years_str} : {subjects_str}\n')
+
+    st.markdown(subject_md.getvalue())
+
     st.markdown("""
     Този анализ е изготвен от [Данни за добро](https://data-for-good.bg/).\n
+
     Данните за броя явили се и оценките от матури са взети от [Портал за отворени данни](https://data.egov.bg/).
+
     Данните за адреси на училища са предоставени от Министерство на образованието по Закона за достъп до обществена информация.
-    Данните, събрани, свързани и изчистени, сме направили достъпни в релационна база [тук]().\n
-    В определението СТЕМ сме включили предметите биология, математика, физика и химия.
     """)
