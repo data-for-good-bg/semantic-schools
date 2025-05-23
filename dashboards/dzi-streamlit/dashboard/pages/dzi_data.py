@@ -86,9 +86,13 @@ with st.container():
 
     st.markdown("""
     Тук можеш да разгледаш резултатите по БЕЛ и втора матура по СТЕМ предмети по община.
-    Таблицата може да бъде сортирана по всяка една от колоните с клик върху името на колоната.\n
+
+    Таблицата може да бъде сортирана по всяка една от колоните с клик върху името на колоната.
+
     Например, избери година и сортирай по колоната Явили се - СТЕМ.
-    Откриваш ли общини, където броя зрелостници по СТЕМ е относително голям дял от общия брой зрелостници (=Явили се - БЕЛ)?
+
+    Откриваш ли общини, в които броят зрелостници по СТЕМ е относително голям дял от общия брой зрелостници (=Явили се - БЕЛ)?
+
     Какви са средните оценки там спрямо останалите близки общини по това подреждане?
     """)
 
@@ -98,13 +102,80 @@ with st.container():
         [SG_BEL, SG_STEM]
     )
 
-    selected_year = st.selectbox(
-        label=" ",
-        options=sorted(location_data["year"].unique(), reverse=True),
-        label_visibility="collapsed"
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        selected_year = st.selectbox(
+            label='Година',
+            options=sorted(location_data["year"].unique(), reverse=True),
+            # label_visibility="collapsed"
+            )
+
+    selected_year_data = location_data.loc[
+        (location_data["year"] == selected_year)
+    ]
+
+    total_people_bel_name = 'total_people_БЕЛ'
+    total_people_bel = sorted(selected_year_data[total_people_bel_name].unique().tolist())
+
+    score_bel_name = 'score_БЕЛ'
+    score_bel = sorted(selected_year_data[score_bel_name].unique().tolist())
+    score_bel = list(filter(lambda v: v > 0.0, score_bel))
+
+    total_people_stem_name = 'total_people_СТЕМ'
+    total_people_stem = sorted(selected_year_data[total_people_stem_name].unique().tolist())
+
+    score_stem_name = 'score_СТЕМ'
+    score_stem = sorted(selected_year_data[score_stem_name].unique().tolist())
+    score_stem = list(filter(lambda v: v > 0.0, score_stem))
+
+    with col2:
+        selected_min_total_people_bel, selected_max_total_people_bel = st.slider(
+            'Брой явили се на БЕЛ',
+            min_value=int(total_people_bel[0]),
+            max_value=int(total_people_bel[-1]),
+            value=(int(total_people_bel[0]), int(total_people_bel[-1]))
         )
 
-    filtered_data = location_data[location_data["year"] == selected_year].reset_index(drop=True)
+        selected_min_score_bel, selected_max_score_bel = st.slider(
+            'Среден успех по БЕЛ',
+            min_value=score_bel[0],
+            max_value=score_bel[-1],
+            value=(score_bel[0], score_bel[-1]),
+            step=0.01
+        )
+
+    with col3:
+        selected_min_total_people_stem, selected_max_total_people_stem = st.slider(
+            'Брой явили се на СТЕМ',
+            min_value=int(total_people_stem[0]),
+            max_value=int(total_people_stem[-1]),
+            value=(int(total_people_stem[0]), int(total_people_stem[-1]))
+        )
+        selected_min_score_stem, selected_max_score_stem = st.slider(
+            'Среден успех по СТЕМ',
+            min_value=score_stem[0],
+            max_value=score_stem[-1],
+            value=(score_stem[0], score_stem[-1]),
+            step=0.01
+        )
+
+    filtered_data = location_data.loc[
+        (location_data["year"] == selected_year) &
+
+        (location_data[total_people_bel_name] >= selected_min_total_people_bel) &
+        (location_data[total_people_bel_name] <= selected_max_total_people_bel) &
+
+        (location_data[total_people_stem_name] >= selected_min_total_people_stem) &
+        (location_data[total_people_stem_name] <= selected_max_total_people_stem) &
+
+        (location_data[score_bel_name] >= selected_min_score_bel) &
+        (location_data[score_bel_name] <= selected_max_score_bel) &
+
+        (location_data[score_stem_name] >= selected_min_score_stem) &
+        (location_data[score_stem_name] <= selected_max_score_stem)
+
+    ].reset_index(drop=True)
 
     formated_data = format_municipal_table(filtered_data)
 
@@ -125,7 +196,9 @@ with st.container():
 
     st.markdown("""
     Сравни представянето на две области или общини.
+
     Сравнението между две области става, като се избере стойност --Всички-- в полетата Община за сравнение.
+
     Сравнението между общини става, като първо се изберат съответните области.
     """)
 
@@ -167,8 +240,12 @@ with st.container():
     st.markdown('### Поглед по училища')
 
     st.markdown("""
-    Избери година и вид матура. Откриваш ли райони с преобладаващо по-високи резултати (=по-зелени)?
-    Приближи към населено място или училище, което е от интерес. Какво е представянето там?\n
+    Избери година и вид матура.
+
+    Откриваш ли райони с преобладаващо по-високи резултати (=по-зелени)?
+
+    Приближи към населено място или училище, което е от интерес. Какво е представянето там?
+
     Цветът на маркерите показва средния успех, а размерът - броя явили се.
     """)
 
