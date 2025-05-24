@@ -1,5 +1,6 @@
 # Define the image name
 IMAGE_NAME=data-for-good-bg/eddata
+BRANCH_NAME := $(shell git rev-parse --abbrev-ref HEAD)
 
 # Define the Dockerfile and build context
 DOCKERFILE=Dockerfile
@@ -17,7 +18,7 @@ help:
 
 # Builds production docker image with production tag
 build-prod:
-	@if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then \
+	@if [ "$(BRANCH_NAME)" != "main" ]; then \
 		echo "Error: You must be on the 'main' branch to build the production image."; \
 		exit 1; \
 	fi
