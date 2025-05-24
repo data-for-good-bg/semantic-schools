@@ -2,16 +2,18 @@ import pandas as pd
 import altair as alt
 import streamlit as st
 from altair import datum
-from typing import Callable, Optional
+from typing import Callable
+
+from .data import SG_BEL, SG_STEM, SG_DIPL, SG_FOREIGN_LANGUAGES, SG_OTHER, SG_NO_SECOND_DZI
 
 
 SUBJECT_GROUP_COLOR_MAPPING = {
-    'БЕЛ': '#F04500',
-    'СТЕМ': '#00991A',
-    'Чужди езици': '#7F2985',
-    'Дипломни проекти': '#1B40B5',
-    'ДРУГИ': '#FFAD00', # TODO: Rename to Други
-    'БЕЗ': '#683501' # TODO: Rename to Неявили се
+    SG_BEL: '#F04500',
+    SG_STEM: '#00991A',
+    SG_FOREIGN_LANGUAGES: '#7F2985',
+    SG_DIPL: '#1B40B5',
+    SG_OTHER: '#FFAD00',
+    SG_NO_SECOND_DZI: '#683501'
 }
 
 
@@ -49,8 +51,8 @@ def create_subjectgroup_charts(data: pd.DataFrame) -> tuple[alt.Chart, alt.Chart
     """
 
     subject_groups_sorted = [
-        s for s in data['subject_group'].unique() if s != 'Дипломни проекти'
-    ] + ['Дипломни проекти']
+        s for s in data['subject_group'].unique() if s != SG_DIPL
+    ] + [SG_DIPL]
 
     color = get_subject_group_altair_color(
         title=None,
@@ -85,7 +87,7 @@ def create_subjectgroup_charts(data: pd.DataFrame) -> tuple[alt.Chart, alt.Chart
             ]
         )
         .transform_filter(
-            datum.subject_group != 'БЕЛ'
+            datum.subject_group != SG_BEL
         )
     )
 
@@ -101,7 +103,7 @@ def create_subjectgroup_charts(data: pd.DataFrame) -> tuple[alt.Chart, alt.Chart
             text='total_people:Q'
         )
         .transform_filter(
-            datum.subject_group == 'БЕЛ'
+            datum.subject_group == SG_BEL
         )
     )
 

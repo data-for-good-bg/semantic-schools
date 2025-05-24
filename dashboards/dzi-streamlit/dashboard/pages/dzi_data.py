@@ -1,10 +1,15 @@
+import os
 import streamlit as st
 from io import StringIO
 import folium
 from streamlit_folium import folium_static
 import branca.colormap as cm
 
-from lib import data
+from lib.data import (
+    create_wide_table, extract_subjects_of_group_per_years, extract_subjectgroup_aggregated_data,
+    load_dzi_data_with_coords, load_dzi_data, extract_subject_data, format_municipal_table,
+    SG_BEL, SG_STEM, SG_FOREIGN_LANGUAGES, SG_OTHER, SG_DIPL
+)
 from lib import chart
 
 
@@ -16,8 +21,8 @@ st.markdown("""
     }
 </style>""", unsafe_allow_html=True)
 
-raw_data = data.load_dzi_data()
-subject_data = data.extract_subject_data(raw_data)
+raw_data = load_dzi_data()
+subject_data = extract_subject_data(raw_data)
 
 st.write('# Данни за матурите')
 
@@ -28,31 +33,8 @@ def _divider():
         unsafe_allow_html=True
     )
 
-
-def _write_subject_group_data_per_years(subject_group: str):
-    html_text = StringIO()
-
-    html_text.write(f'<ul style="font-size: 12px">{subject_group} предмети са:\n')
-    for years_str, subjects_str in data.extract_subjects_of_group_per_years(subject_data, subject_group):
-        html_text.write(f'  <li>За години {years_str} : {subjects_str}</li>')
-
-    html_text.write('</ul></span>')
-    st.html(html_text.getvalue())
-
-
-def _write_all_subject_groups():
-    st.markdown((
-        '* _Матурата по БЕЛ е задължителна, поради това може да се приеме, че броят явили се на изпит по БЕЛ представя броят зрелостници._'
-        '\n* _Броят ученици, без допълнителен зрелостен изпит е получен като разликата между броя явили се по БЕЛ и броя явили се по всички други предмети. **Може да е подвеждащ?!**_'
-    ))
-    _write_subject_group_data_per_years('СТЕМ')
-    _write_subject_group_data_per_years('Чужди езици')
-    _write_subject_group_data_per_years('Дипломни проекти')
-    _write_subject_group_data_per_years('ДРУГИ')
-
-
 with st.container():
-    aggregated_data = data.extract_subjectgroup_aggregated_data(
+    aggregated_data = extract_subjectgroup_aggregated_data(
         raw_data, ['year']
     )
 
@@ -101,30 +83,101 @@ with st.container():
     _divider()
 
     st.markdown('### Поглед отблизо')
-    
+
     st.markdown("""
     Тук можеш да разгледаш резултатите по БЕЛ и втора матура по СТЕМ предмети по община.
-    Таблицата може да бъде сортирана по всяка една от колоните с клик върху името на колоната.\n
+
+    Таблицата може да бъде сортирана по всяка една от колоните с клик върху името на колоната.
+
     Например, избери година и сортирай по колоната Явили се - СТЕМ.
-    Откриваш ли общини, където броя зрелостници по СТЕМ е относително голям дял от общия брой зрелостници (=Явили се - БЕЛ)?
+
+    Откриваш ли общини, в които броят зрелостници по СТЕМ е относително голям дял от общия брой зрелостници (=Явили се - БЕЛ)?
+
     Какви са средните оценки там спрямо останалите близки общини по това подреждане?
     """)
 
-    location_data = data.create_wide_table(
+    location_data = create_wide_table(
         raw_data, ['year', 'region', 'mun'],
         {"total_people" : "sum", "score" : "mean"},
-        ['БЕЛ', 'СТЕМ']
+        [SG_BEL, SG_STEM]
     )
 
-    selected_year = st.selectbox(
-        label=" ",
-        options=sorted(location_data["year"].unique(), reverse=True),
-        label_visibility="collapsed"
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        selected_year = st.selectbox(
+            label='Година',
+            options=sorted(location_data["year"].unique(), reverse=True),
+            # label_visibility="collapsed"
+            )
+
+    selected_year_data = location_data.loc[
+        (location_data["year"] == selected_year)
+    ]
+
+    total_people_bel_name = 'total_people_БЕЛ'
+    total_people_bel = sorted(selected_year_data[total_people_bel_name].unique().tolist())
+
+    score_bel_name = 'score_БЕЛ'
+    score_bel = sorted(selected_year_data[score_bel_name].unique().tolist())
+    score_bel = list(filter(lambda v: v > 0.0, score_bel))
+
+    total_people_stem_name = 'total_people_СТЕМ'
+    total_people_stem = sorted(selected_year_data[total_people_stem_name].unique().tolist())
+
+    score_stem_name = 'score_СТЕМ'
+    score_stem = sorted(selected_year_data[score_stem_name].unique().tolist())
+    score_stem = list(filter(lambda v: v > 0.0, score_stem))
+
+    with col2:
+        selected_min_total_people_bel, selected_max_total_people_bel = st.slider(
+            'Брой явили се на БЕЛ',
+            min_value=int(total_people_bel[0]),
+            max_value=int(total_people_bel[-1]),
+            value=(int(total_people_bel[0]), int(total_people_bel[-1]))
         )
 
-    filtered_data = location_data[location_data["year"] == selected_year].reset_index(drop=True)
+        selected_min_score_bel, selected_max_score_bel = st.slider(
+            'Среден успех по БЕЛ',
+            min_value=score_bel[0],
+            max_value=score_bel[-1],
+            value=(score_bel[0], score_bel[-1]),
+            step=0.01
+        )
 
-    formated_data = data.format_municipal_table(filtered_data)
+    with col3:
+        selected_min_total_people_stem, selected_max_total_people_stem = st.slider(
+            'Брой явили се на СТЕМ',
+            min_value=int(total_people_stem[0]),
+            max_value=int(total_people_stem[-1]),
+            value=(int(total_people_stem[0]), int(total_people_stem[-1]))
+        )
+        selected_min_score_stem, selected_max_score_stem = st.slider(
+            'Среден успех по СТЕМ',
+            min_value=score_stem[0],
+            max_value=score_stem[-1],
+            value=(score_stem[0], score_stem[-1]),
+            step=0.01
+        )
+
+    filtered_data = location_data.loc[
+        (location_data["year"] == selected_year) &
+
+        (location_data[total_people_bel_name] >= selected_min_total_people_bel) &
+        (location_data[total_people_bel_name] <= selected_max_total_people_bel) &
+
+        (location_data[total_people_stem_name] >= selected_min_total_people_stem) &
+        (location_data[total_people_stem_name] <= selected_max_total_people_stem) &
+
+        (location_data[score_bel_name] >= selected_min_score_bel) &
+        (location_data[score_bel_name] <= selected_max_score_bel) &
+
+        (location_data[score_stem_name] >= selected_min_score_stem) &
+        (location_data[score_stem_name] <= selected_max_score_stem)
+
+    ].reset_index(drop=True)
+
+    formated_data = format_municipal_table(filtered_data)
 
     styled_df = formated_data.style.set_properties(
         **{"color": "#000000"}
@@ -143,12 +196,14 @@ with st.container():
 
     st.markdown("""
     Сравни представянето на две области или общини.
+
     Сравнението между две области става, като се избере стойност --Всички-- в полетата Община за сравнение.
+
     Сравнението между общини става, като първо се изберат съответните области.
     """)
 
-    all_region_aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region'])
-    all_mun_aggregated_data = data.extract_subjectgroup_aggregated_data(raw_data, ['year', 'region', 'mun'])
+    all_region_aggregated_data = extract_subjectgroup_aggregated_data(raw_data, ['year', 'region'])
+    all_mun_aggregated_data = extract_subjectgroup_aggregated_data(raw_data, ['year', 'region', 'mun'])
 
     regions = sorted(all_mun_aggregated_data['region'].unique().tolist())
 
@@ -185,12 +240,16 @@ with st.container():
     st.markdown('### Поглед по училища')
 
     st.markdown("""
-    Избери година и вид матура. Откриваш ли райони с преобладаващо по-високи резултати (=по-зелени)?
-    Приближи към населено място или училище, което е от интерес. Какво е представянето там?\n
+    Избери година и вид матура.
+
+    Откриваш ли райони с преобладаващо по-високи резултати (=по-зелени)?
+
+    Приближи към населено място или училище, което е от интерес. Какво е представянето там?
+
     Цветът на маркерите показва средния успех, а размерът - броя явили се.
     """)
 
-    data = data.load_dzi_data_with_coords()
+    data = load_dzi_data_with_coords()
     grouped = data.groupby(['year', 'region', 'mun', 'place', 'school_id', 'school', 'subject_group', 'slongitude', 'slatitude']).agg(
         total_people=('people', 'sum'),
         avg_score=('score', 'mean')
@@ -217,7 +276,7 @@ with st.container():
         selected_subject_group = st.selectbox(
             'Избери вид матура',
             subject_groups,
-            subject_groups.index('БЕЛ') if 'БЕЛ' in subject_groups else 0,
+            subject_groups.index(SG_BEL) if SG_BEL in subject_groups else 0,
         )
 
     # Filter data by selected subject group
@@ -298,10 +357,25 @@ _divider()
 with st.container():
     st.markdown('### Бележки')
 
+    subject_md = StringIO()
+    subject_md.write('* Матурата по български език и литература (БЕЛ) е задължителна за всички и затова дава общия брой на зрелостници. \n')
+    subject_md.write((
+        '* Броят ученици "Неявили се на втора матура" е получен като разликата между броя явили се '
+        'по БЕЛ и броя явили се по всички други предмети.\n Реалният брой може да е различен, '
+        'тъй като зрелостниците имат право да се явят на повече от един зрелостен изпит.\n'
+    ))
+
+    for subject_group in [SG_STEM, SG_DIPL, SG_FOREIGN_LANGUAGES, SG_OTHER]:
+        subject_md.write(f'* "{subject_group}" предмети включват:\n')
+        for years_str, subjects_str in extract_subjects_of_group_per_years(subject_data, subject_group):
+            subject_md.write(f'  * За години {years_str} : {subjects_str}\n')
+
+    st.markdown(subject_md.getvalue())
+
     st.markdown("""
     Този анализ е изготвен от [Данни за добро](https://data-for-good.bg/).\n
+
     Данните за броя явили се и оценките от матури са взети от [Портал за отворени данни](https://data.egov.bg/).
+
     Данните за адреси на училища са предоставени от Министерство на образованието по Закона за достъп до обществена информация.
-    Данните, събрани, свързани и изчистени, сме направили достъпни в релационна база [тук]().\n
-    В определението СТЕМ сме включили предметите биология, математика, физика и химия.
     """)
