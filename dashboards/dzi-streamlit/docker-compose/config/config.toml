@@ -29,9 +29,10 @@ runOnSave = false
 
 address = "127.0.0.1"
 
-port = 8502
-
-baseUrlPath = "/dashboards/dzi"
+# NB: These are now configured via env vars from the docker-compose file
+#
+# port = 8502
+# baseUrlPath = "/dashboards/dzi"
 
 [browser]
 
