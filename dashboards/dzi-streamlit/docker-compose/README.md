@@ -1,0 +1,1 @@
+For details about deployment check the README.md in the parent dir.

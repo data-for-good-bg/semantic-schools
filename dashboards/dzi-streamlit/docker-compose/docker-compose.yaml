@@ -1,8 +1,11 @@
 services:
   dashboard:
-    image: "dzi-streamlit"
+    image: "data-for-good-bg/eddata:${IMAGE_TAG}"
+    environment:
+      - STREAMLIT_SERVER_PORT=${SERVER_PORT}
+      - STREAMLIT_SERVER_BASE_URL_PATH=${BASE_URL_PATH}
     ports:
-      - "127.0.0.1:8502:8502"
+      - 127.0.0.1:${SERVER_PORT}:${SERVER_PORT}
     volumes:
       - ./config:/dashboard/.streamlit/
     network_mode: host
