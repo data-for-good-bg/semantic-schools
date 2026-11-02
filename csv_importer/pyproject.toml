@@ -1,7 +1,16 @@
 [project]
 name = "csv-importer"
 version = "0.0.1"
-requires-python = ">= 3.8"
+requires-python = ">= 3.10"
+dependencies = [
+    "alembic==1.13.1",
+    "cache-decorator==2.2.0",
+    "pandas==2.2.2",
+    "psycopg2-binary==2.9.9",
+    "requests==2.31.0",
+    "sparqlwrapper==2.0.0",
+    "sqlalchemy==1.4.52",
+]
 
 [tool.setuptools]
 packages = [ "csv_importer" ]

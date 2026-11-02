@@ -492,6 +492,11 @@ def refine_data(csv_data: StringIO, subject_mapping: dict[str, SubjectItem]) -> 
         if not value:
             return value
 
+        # There are values like ГР.СОФИЯ,КВ.ГОРНА БАНЯ
+        # We care only for the city part
+        if ',' in value:
+            value = value.split(',')[0]
+
         def _upper_first(s: str) -> str:
             if not s:
                 return s
