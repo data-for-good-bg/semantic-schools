@@ -192,14 +192,37 @@ def infer_max_possible_nvo_score(data: pd.DataFrame) -> float:
 
 
 def load_csv(file: str) -> StringIO:
-    # using 'utf-8-sig' encoding to handle the BOM csv files provided
-    # by data.egov.bg
-    # Some of the CSV files contain the BOM mark not only at the beginning
-    # of the file, but also inside the first value on the first line.
-    # That's why below we replace the sequence '\ufeff' everywhere.
-    # https://en.wikipedia.org/wiki/Byte_order_mark
-    # https://docs.python.org/3/howto/unicode.html
-    # https://stackoverflow.com/questions/13590749/reading-unicode-file-data-with-bom-chars-in-python
+    '''
+    This function pre-loads the specified file into StringIO and performs
+    some really basic mechanical changes on the contents.
+
+    1. Using 'utf-8-sig' encoding to handle the BOM csv files provided
+        by data.egov.bg
+        Some of the CSV files contain the BOM mark not only at the beginning
+        of the file, but also inside the first value on the first line.
+        That's why below we replace the sequence '\ufeff' everywhere.
+        https://en.wikipedia.org/wiki/Byte_order_mark
+        https://docs.python.org/3/howto/unicode.html
+        https://stackoverflow.com/questions/13590749/reading-unicode-file-data-with-bom-chars-in-python
+
+    2. It also replaces unusual characters which are found in some of the CSV files
+
+    3. Recent CSV files for DZI data contain new-line character in the CSV column names
+       As result the header line of the CSV file is not a single line,
+       it is spread at multiple lines, it looks like this:
+       ```
+        "Област","Община","Населено място","Училище","Код по НЕИСПУО","Бр.
+        БЕЛ(ООП)
+        З","Ср.усп.
+        БЕЛ(ООП)
+        З","Бр.
+        Мат(ПП)
+        З","Ср.усп.
+        Мат(ПП)
+        З",
+       ```
+       This function converts these many lines into a single line.
+    '''
 
     # The first unicode sequence is the BOM mark,
     # The second one is another weird unicode sequence found in a column name.
@@ -214,20 +237,54 @@ def load_csv(file: str) -> StringIO:
     }
 
     result = StringIO()
+
     with open(file, 'rb') as f:
+        # First loop: find and fix only the header line
+        header_buffer = ''
+        header_written = False
+
         for line in f:
-            line = line.decode('utf-8-sig')
+            # Decode and strip line endings
+            line_str = line.decode('utf-8-sig').rstrip('\n\r')
+
+            # Apply character replacements
             for old_v, new_v in to_replace.items():
-                line = line.replace(old_v, new_v)
+                line_str = line_str.replace(old_v, new_v)
 
-            result.write(line)
+            if header_buffer:
+                header_buffer += ' ' + line_str
+            else:
+                header_buffer = line_str
 
+            # Check if header is complete (even number of quotes)
+            if header_buffer.count('"') % 2 == 0:
+                # Then write the header
+                result.write(header_buffer + '\n')
+                header_buffer = ''
+                header_written = True
+
+                # The current line has already been consumed into header_buffer
+                # We need to add the next lines to remaining_lines
+                break
+
+        # If we exited the loop without finding a complete header
+        if not header_written:
+            raise RuntimeError('Failed to parse CSV header line.')
+
+        # Second loop: write all remaining lines with character replacements only
+        for line in f:
+            line_str = line.decode('utf-8-sig')
+            for old_v, new_v in to_replace.items():
+                line_str = line_str.replace(old_v, new_v)
+            result.write(line_str)
+
+    result.seek(0)
     return result
 
 
 def fill_empty_cells_from_previous(input: list[str]) -> list[str]:
     """
-    Takes a list of strings as input and returns another list in which the
+    Takes a list of strings as input and returns another  assert subject_cols_count > 0list in which the
     where empty elements will be filled with the value from the preceding
     element.
 
@@ -600,6 +657,7 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
     This means tha for every pair (people, score) it generates a line for
     the corresponding school.
     """
+    # breakpoint()
     subject_cols = [c for c in data.columns if is_subject_column(c)]
     subject_cols_count = len(subject_cols)
     assert subject_cols_count > 0, 'Subject columns cannot be zero.'
