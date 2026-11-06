@@ -1,10 +1,52 @@
 # AGENTS.md
 
-Behavioral guidelines to reduce common LLM coding mistakes.
+## Project domain
 
-**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+This is a python project for importing data for schools, aggregated data for
+teachers, studends and results from Bulgarian NVO (Национално външно оценяване)
+and DZI (Държавни зрелостни изпити) examination sessions.
 
-## 1. Think Before Coding
+The project can be started as command line application and or as an Airflow
+DAG.
+
+The database type is PostgreSQL.
+
+The input sources could be different:
+- downloaded files from data.egov.bg or URLs to the site
+- queries made against wiki data
+- other spread sheets obtained via the Bulgarian law for access to public
+  information (ЗДОИ - Закон за достъп до обществена информация)
+
+## Project Setup and Management
+
+- Python is 3.10, because this is what is currently used on the crunch machine
+  where we run the Airflow instance.
+- Dependency management: `uv` and `pyproject.toml` are used
+- Adding new dependency: use `uv add`
+- Running the app can be done with: `uv run python3 -m app ...`
+- Branching: Branch from `main` as `<author-name>/<feature>`
+- Do not commit in `main` open pull requests
+
+## Constraints
+
+- Ask before adding any external dependency.
+
+
+## Ignore
+
+Treat everything in `.gitignore` as off-limits to read or edit.
+On top of that, never open:
+
+- Secrets and `.env` files
+- Large data files unrelated to the current task
+- Vendored or generated code
+
+## Behavioral guidelines
+
+**Tradeoff:** These guidelines bias toward caution over speed.
+For trivial tasks, use judgment.
+
+### 1. Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
 
@@ -14,7 +56,7 @@ Before implementing:
 - If a simpler approach exists, say so. Push back when warranted.
 - If something is unclear, stop. Name what's confusing. Ask.
 
-## 2. Simplicity First
+### 2. Simplicity First
 
 **Minimum code that solves the problem. Nothing speculative.**
 
@@ -26,7 +68,7 @@ Before implementing:
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 
-## 3. Surgical Changes
+### 3. Surgical Changes
 
 **Touch only what you must. Clean up only your own mess.**
 
@@ -49,18 +91,10 @@ The tests:
 * A new change should not bring any unused code
 
 
-## 4. Python
+### 4. Python coding conventions
 
+* Use single quotes for strings, double quotes for python docs
 * Python functions should have type hints.
 * When using type hints avoid using union types, use dedicated types like Optional
 * Avoid using tuples with more than 2 elements for function arguments
   or return types, instead use dataclasses
-* Use single quotes for strings, double quotes for python docs
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
-
-## 5. Repo structure
-
-* The playground directory is a place where one can play around with
-  Jupyter notebooks. It has .venv/ or venv/ sub-dir with python virtual
-  environment
