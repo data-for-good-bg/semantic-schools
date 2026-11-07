@@ -1,9 +1,12 @@
 version: "3"
 
 services:
-  notebook:
-    image: quay.io/jupyter/datascience-notebook:python-3.11.9
+  playground:
+    image: playground
+    build:
+      context: .
+    pull_policy: build
     volumes:
-      - "./work:/home/jovyan/work"
+      - "./work:/work"
     ports:
-      - "8888:8888"
+      - "8080:8080"
