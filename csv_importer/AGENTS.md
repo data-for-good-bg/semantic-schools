@@ -27,6 +27,12 @@ The input sources could be different:
 - Branching: Branch from `main` as `<author-name>/<feature>`
 - Do not commit in `main` open pull requests
 
+## DB schema and migrations
+
+The database schema is defined with SQLAlchemy in `csv_importer/db_models.py`.
+The db migrations are managed with alembic, the `csv_importer/alembic` directory
+contains the migration versions and scripts.
+
 ## Constraints
 
 - Ask before adding any external dependency.
