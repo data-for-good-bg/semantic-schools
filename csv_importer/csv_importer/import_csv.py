@@ -131,7 +131,7 @@ def _import_schools(db: Engine, schools: pd.DataFrame) -> dict[ImportAction, int
     return ops_counts
 
 
-def _import_scores(db: Engine, examination_type: str, year: int, grade: int, scores: pd.DataFrame) -> dict[ImportAction, int]:
+def _import_scores(db: Engine, examination_type: str, year: int, month: str, grade: int, scores: pd.DataFrame) -> dict[ImportAction, int]:
     """
     Imports information for examination and all examination scores.
     """
@@ -139,19 +139,23 @@ def _import_scores(db: Engine, examination_type: str, year: int, grade: int, sco
     ops_count = defaultdict(int)
     with Session(db) as session:
         first_score = scores.loc[0]
-        exam_id, _ = insert_examination(session, examination_type, year, grade, Decimal(str(first_score['max_possible_score'])))
+        exam_id, _ = insert_examination(session, examination_type, year, month, grade)
 
         for i in scores.index:
             score = scores.loc[i]
             subject = score['subject']
 
             r = insert_or_update_score(
-                session,
-                exam_id,
-                score['school_admin_id'],
-                subject,
-                int(score['people']),
-                Decimal(str(score['score'])),
+                session=session,
+                examination_id=exam_id,
+                school_id=score['school_admin_id'],
+                subject=subject,
+                people=int(score['people']),
+                score=Decimal(str(score['score'])),
+                examination_type=score['examination_type'],
+                subject_level=score['level'],
+                preparation_type=score['preparation_type'],
+                with_validation=bool(score['with_validation']),
             )
             ops_count[r] += 1
 
@@ -225,18 +229,18 @@ def import_file(input_file: str, examination_type: str, grade: int, year: int, m
     else:
         raw_data = load_json_to_dataframe(input_file)
         scores_data = extract_scores_dataframe(raw_data)
-        scores_data.write_csv(input_file + '.scores_data.csv')
+        # scores_data.write_csv(input_file + '.scores_data.csv')
         scores_data = expand_subject_column_in_score_dataframe(scores_data)
-        scores_data.write_csv(input_file + '.subject_expanded.csv')
-        return
+        # scores_data.write_csv(input_file + '.subject_expanded.csv')
+        scores_data = scores_data.to_pandas()
 
 
     db = get_db_engine()
 
-    if 'schools' in to_import:
-        schools_ops_count = _import_schools(db, schools_data)
-        logger.info('Operations over school: %s', schools_ops_count)
+    # if 'schools' in to_import:
+    #     schools_ops_count = _import_schools(db, schools_data)
+    #     logger.info('Operations over school: %s', schools_ops_count)
 
     if 'scores' in to_import:
-        scores_ops_count = _import_scores(db, examination_type, year, grade, scores_data)
+        scores_ops_count = _import_scores(db, examination_type, year, month, grade, scores_data)
         logger.info('Operations over examination_score: %s', scores_ops_count)

@@ -3,7 +3,7 @@ from sqlalchemy import insert, select, update, Table
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from collections import OrderedDict
-from typing import Any
+from typing import Any, Optional
 
 from .db_models import Subject, Place, School, Examination, ExaminationScore, EDIT_STAMP
 from .runtime import getLogger, is_dry_run, edit_stamp
@@ -119,8 +119,8 @@ def insert_school(session: Session, place_id: int, school_id: str, school_name: 
     ]))
 
 
-def insert_examination(session: Session, examination_type: str, year: int, grade: int, max_possible_score: float) -> tuple[str, ImportAction]:
-    id = f'{examination_type}-{grade}-{year}'
+def insert_examination(session: Session, examination_type: str, year: int, month: str, grade: int) -> tuple[str, ImportAction]:
+    id = f'{examination_type}-{grade}-{year}-{month}'
     # a bit hacky way to translate, works only for two types
     translated_type = 'НВО' if examination_type == 'nvo' else 'ДЗИ'
 
@@ -129,23 +129,33 @@ def insert_examination(session: Session, examination_type: str, year: int, grade
         (Examination.c.id, id),
         (Examination.c.type, translated_type),
         (Examination.c.year, year),
+        (Examination.c.month, month),
         (Examination.c.grade_level, grade),
-        (Examination.c.max_possible_score, max_possible_score)
     ]))
 
     return id, action
 
 
-def insert_or_update_score(session: Session, examination_id: str, school_id: str, subject: str, people: int, score: float) -> ImportAction:
+def insert_or_update_score(session: Session, examination_id: str, school_id: str, subject: str, people: int, score: float, examination_type: str = '-', subject_level: str = '', preparation_type: Optional[str] = None, with_validation: bool = False) -> ImportAction:
 
     values = OrderedDict([
         (ExaminationScore.c.examination_id, examination_id),
         (ExaminationScore.c.school_id, school_id),
         (ExaminationScore.c.subject, subject),
+        (ExaminationScore.c.examination_type, examination_type),
+        (ExaminationScore.c.subject_level, subject_level),
+        (ExaminationScore.c.preparation_type, preparation_type),
+        (ExaminationScore.c.with_validation, with_validation),
         (ExaminationScore.c.people, people),
         (ExaminationScore.c.score, score),
     ])
-    id_cols = [ExaminationScore.c.examination_id, ExaminationScore.c.school_id, ExaminationScore.c.subject]
+    id_cols = [
+        ExaminationScore.c.examination_id,
+        ExaminationScore.c.school_id,
+        ExaminationScore.c.subject,
+        ExaminationScore.c.examination_type,
+        ExaminationScore.c.subject_level,
+    ]
 
     return insert_or_update_object(
         session, ExaminationScore, id_cols, values

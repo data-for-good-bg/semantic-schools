@@ -219,7 +219,7 @@ def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
     The result dataframe structure will be:
     * column `school_admin_id`
     * column `subject` containing the subject with all possible options
-    * column `count` representing the number of students
+    * column `people` representing the number of students
     * column `score` representing the average score
     """
     school_id_bg_name = 'Код по НЕИСПУО'
@@ -257,7 +257,7 @@ def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
         # pivot the data to dataframe with rows (`school_admin_id`, `subject`, `Бр.`, `Ср.Усп.`)
         .pivot(values='value', index=[school_id, 'subject'], on="metric")
         .rename({
-            'Бр.': 'count',
+            'Бр.': 'people',
             'Ср.усп.': 'score',
         })
     )
@@ -268,7 +268,7 @@ def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataF
     The input dataframe structure should be:
     * column `school_admin_id`
     * column `subject` containing the subject with all possible options
-    * column `count` representing the number of students
+    * column `people` representing the number of students
     * column `score` representing the average score
 
     The function takes the `subject` column and expands it in the following
@@ -296,7 +296,7 @@ def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataF
             pl.col('subject').str.extract(subject_re, 1).alias('subject'),
             pl.col('subject').str.extract(subject_re, 3).alias('preparation_type'),
             pl.col('subject').str.extract(subject_re, 5).is_not_null().alias('with_validation'),
-            pl.col('subject').str.extract(subject_re, 7).alias('level'),
+            pl.col('subject').str.extract(subject_re, 7).alias('level').fill_null(''),
             pl.col('subject').str.extract(subject_re, 8).alias('examination_type'),
         )
     )
