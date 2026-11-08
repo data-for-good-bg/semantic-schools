@@ -33,6 +33,31 @@ The database schema is defined with SQLAlchemy in `csv_importer/db_models.py`.
 The db migrations are managed with alembic, the `csv_importer/alembic` directory
 contains the migration versions and scripts.
 
+### Generating db migrations
+
+NB: All these actions are applied on the DB specified in the `sqlalchemy.url`
+in `csv_importer/alembic.ini` file.
+
+The process of generating new DB migrations consists of these steps:
+* Ensure your development DB is up to date with current set of DB migrations
+  by calling this command:
+
+```
+cd csv_importer/csv_importer/
+alembic upgrade head
+```
+
+* Change db_models.py (add/remove models, columns, indices, etc),
+  then call this command to generate the new migration file:
+
+```
+cd csv_importer/csv_importer/
+alembic revision --autogenerate -m '<migration description>'
+```
+
+Then to apply the new migrations on your DB run `alembic upgrade head` again.
+
+
 ## Constraints
 
 - Ask before adding any external dependency.

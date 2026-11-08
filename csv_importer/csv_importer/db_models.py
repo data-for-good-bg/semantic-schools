@@ -12,7 +12,7 @@ didn't have any knowledge about SQLAlchemy.
 
 from sqlalchemy import (
     MetaData, Table, Column,
-    Integer, String, ForeignKey, Numeric
+    Integer, String, ForeignKey, Numeric, Boolean, text
 )
 
 Models = MetaData()
@@ -121,13 +121,16 @@ Examination: Table = Table(
     'examination',
     Models,
     # id will be in the form: nvo-4-2022
-    Column('id', String(15), primary_key=True),
+    # newer ids could contain also the month ->
+    #  dzi-12-2026-june
+    #  dzi-12-2026-sept
+    Column('id', String(30), primary_key=True),
 
     # type will be НВО or ДЗИ
     Column('type', String(5)),
     Column('year', Integer),
+    Column('month', String(20)),
     Column('grade_level', Integer),
-    Column('max_possible_score', Numeric),
     Column(EDIT_STAMP, EditStampType)
 )
 
@@ -144,11 +147,20 @@ ExaminationScore: Table = Table(
     'examination_score',
     Models,
 
-    Column('examination_id', ForeignKey('examination.id'), nullable=False, primary_key=True),
-    Column('school_id', ForeignKey('school.id'), nullable=False, primary_key=True),
+    Column('examination_id', ForeignKey('examination.id',ondelete='CASCADE'), nullable=False, primary_key=True),
+    Column('school_id', ForeignKey('school.id',ondelete='CASCADE'), nullable=False, primary_key=True),
 
     # subject will be МАТ, БЕЛ,...
     Column('subject', String(10), nullable=False, primary_key=True),
+    # З or И or - (`Задължителен` or `Избираем` or `-` /for old values/ )
+    # NB: `default` is applied by SQLAlchemy on insert, `server_default` is
+    # the DDL DEFAULT - it is what backfills existing rows in migrations.
+    Column('examination_type', String(5), nullable=False, primary_key=True, default='-', server_default=text("'-'")),
+    Column('subject_level', String(10), nullable=False, primary_key=True, default='', server_default=text("''")),
+    # ООП ор ПП
+    Column('preparation_type', String(5), nullable=True),
+    # С или без валидация
+    Column('with_validation', Boolean, nullable=False, default=False, server_default=text('false')),
 
     Column('people', Integer),
     Column('score', Numeric),
