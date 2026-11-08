@@ -20,7 +20,9 @@ from .db_manage import load_subject_abbr_map
 from .runtime import getLogger
 from .refine_csv import (
     load_csv, refine_csv_column_names, refine_data,
-    extract_school_data, extract_scores_data
+    extract_school_data, extract_scores_data,
+    load_json_to_dataframe, extract_scores_dataframe,
+    expand_subject_column_in_score_dataframe
 )
 
 from .db_models import Place, Municipality, Region
@@ -156,7 +158,7 @@ def _import_scores(db: Engine, examination_type: str, year: int, grade: int, sco
     return ops_count
 
 
-def _validate_args(csv_file: str, examination_type: str, grade: int, year: int):
+def _validate_args(csv_file: str, examination_type: str, grade: int, month: str):
     if not os.path.exists(csv_file):
         raise ValueError(f'Filepath {csv_file} does not exist.')
 
@@ -168,8 +170,10 @@ def _validate_args(csv_file: str, examination_type: str, grade: int, year: int):
 
     if examination_type == 'nvo':
         supported_grades = [4, 7, 10]
+        supported_month = ['june']
     else:
         supported_grades = [12]
+        supported_month = ['june', 'september']
 
     if grade not in supported_grades:
         raise ValueError((
@@ -177,29 +181,55 @@ def _validate_args(csv_file: str, examination_type: str, grade: int, year: int):
             f'grades for examination type {examination_type}: {supported_grades}'
         ))
 
+    if month not in supported_month:
+        raise ValueError((
+            f'The month {month} is not supported for examination type '
+            f'{examination_type}. Supported months are: {supported_month}'
+        ))
 
-def import_file(csv_file: str, examination_type: str, grade: int, year: int, to_import=SUPPORTED_IMPORT_CSV_TYPES):
+
+def import_file(input_file: str, examination_type: str, grade: int, year: int, month: str, to_import=SUPPORTED_IMPORT_CSV_TYPES):
     """
-    Imports CSV file containing NVO or DZI data.
+    Imports CSV/JSON file containing NVO or DZI data.
 
-    This function is used applications - CLI or DAGs.
+    :param input_file - path to csv or json file
+    :param examination_type - it should be `nvo` or `dzi`
+    :param grade - the grade of students for which the imported date is about
+                   it should be 12 for dzi and 4, 8 or 10 for nvo
+    :param year  - the year for which the imported data is about
+    :param month  - the month of the year for which the imported data is about
+                    TODO: establish convention
+    :param to_import - for development/testing purposes - one can select
+                       which subset of data to be imported
+
+
     """
 
-    _validate_args(csv_file, examination_type, grade, year)
+    _validate_args(input_file, examination_type, grade, month)
 
-    logger.info('Importing file %s', csv_file)
-    raw_data = load_csv(csv_file)
-    raw_data = refine_csv_column_names(raw_data)
+    logger.info('Importing file %s', input_file)
 
-    subject_mapping = load_subject_abbr_map()
-    refined_data = refine_data(raw_data, subject_mapping)
-    logger.info('CSV file successfully loaded')
+    if input_file.endswith('.csv'):
+        raw_data = load_csv(input_file)
+        raw_data = refine_csv_column_names(raw_data)
 
-    schools_data = extract_school_data(refined_data)
-    logger.info('Successfully extracted school data.')
+        subject_mapping = load_subject_abbr_map()
+        refined_data = refine_data(raw_data, subject_mapping)
+        logger.info('CSV file successfully loaded')
 
-    scores_data = extract_scores_data(refined_data)
-    logger.info('Successfully extracted scores data.')
+        schools_data = extract_school_data(refined_data)
+        logger.info('Successfully extracted school data.')
+
+        scores_data = extract_scores_data(refined_data)
+        logger.info('Successfully extracted scores data.')
+    else:
+        raw_data = load_json_to_dataframe(input_file)
+        scores_data = extract_scores_dataframe(raw_data)
+        scores_data.write_csv(input_file + '.scores_data.csv')
+        scores_data = expand_subject_column_in_score_dataframe(scores_data)
+        scores_data.write_csv(input_file + '.subject_expanded.csv')
+        return
+
 
     db = get_db_engine()
 

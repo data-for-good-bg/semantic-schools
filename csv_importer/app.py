@@ -41,8 +41,9 @@ def parse_args():
 
     # Subparser for import-dzi
     parser_dzi = subparsers.add_parser('import-dzi', help='Import DZI data')
-    parser_dzi.add_argument('--csv', type=str, required=True, help='Path to the CSV file')
+    parser_dzi.add_argument('--path', type=str, required=True, help='Path to the CSV or JSON file')
     parser_dzi.add_argument('--year', type=int, required=True, help='Year')
+    parser_dzi.add_argument('--month', type=str, required=True, help='Month')
     parser_dzi.add_argument('--to-import', type=str, nargs='*', default=default_csv_to_import, help=help_csv_to_import)
     parser_dzi.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
     parser_dzi.add_argument('-n', '--dry-run', action='store_true', help='Perform a dry run without making changes')
@@ -105,9 +106,9 @@ def main():
         enable_dry_run()
 
     if args.command == 'import-dzi':
-        import_file(args.csv, 'dzi', 12, args.year, args.to_import)
+        import_file(args.path, 'dzi', 12, args.year, args.month, args.to_import)
     elif args.command == 'import-nvo':
-        import_file(args.csv, 'nvo', args.grade, args.year, args.to_import)
+        import_file(args.csv, 'nvo', args.grade, args.year, args.month, args.to_import)
     elif args.command == 'init-db':
         init_db()
     elif args.command == 'list-examinations':

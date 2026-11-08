@@ -12,10 +12,12 @@ dev use case - it calls all main functions on the provided CSV file.
 """
 
 import pandas as pd
+import polars as pl
 import sys
 import logging
 import os
 import re
+import json
 
 from io import StringIO
 
@@ -189,6 +191,115 @@ def infer_max_possible_nvo_score(data: pd.DataFrame) -> float:
         return 65.00
 
     return 100.00
+
+
+def load_json_to_dataframe(input_file: str) -> pl.DataFrame:
+    """
+    Loads an input file as json into a polars dataframe.
+    The first line is treated as column names.
+    """
+    with open(input_file, 'rt') as f:
+        raw_data = json.load(f)
+
+    header, *rows = raw_data
+    header = [
+        # the column names in the json file contain newline character, replace it
+        h.replace('\n', '_')
+        for h in header
+    ]
+
+    return pl.DataFrame(rows, schema=header, orient="row")
+
+
+def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    The input dataframe is assumed to be the raw data right after it was
+    loaded from json.
+
+    The result dataframe structure will be:
+    * column `school_admin_id`
+    * column `subject` containing the subject with all possible options
+    * column `count` representing the number of students
+    * column `score` representing the average score
+    """
+    school_id_bg_name = 'Код по НЕИСПУО'
+    school_id = 'school_admin_id'
+
+    columns = [
+        c
+        for c in input_df.columns
+        if c == school_id_bg_name or c.startswith('Бр.') or c.startswith('Ср.усп.')
+    ]
+
+    scores_data_wide = (
+        input_df
+        .select(columns)
+        .rename({school_id_bg_name: school_id})
+    )
+
+    return (
+        # unpivot the data to structure where there's row (`school_admin_id`, `col`, `value`)
+        # for each `Бр....` or `Ср.Усп...` column
+        scores_data_wide.unpivot(
+            index=school_id,
+            on=[c for c in scores_data_wide.columns if c != school_id],
+            variable_name='col',
+            value_name='value',
+        )
+        # add columns `metric` and `subject` to each row, extract their from
+        # the value of column `col` with regex
+        # `Бр._БЕЛ(ООП)_З` will become (metric=`Бр.`, subject=`БЕЛ(ООП)_З`)
+        # `Ср.усп._ГИ(ПП)_З` will become (metric=`Ср.усп.`, subject=`ГИ(ПП)_З`)
+        .with_columns(
+            pl.col('col').str.extract(r'^(Бр.|Ср.усп.)_(.*)$', 1).alias('metric'),
+            pl.col('col').str.extract(r'^(Бр.|Ср.усп.)_(.*)$', 2).alias('subject'),
+        )
+        # pivot the data to dataframe with rows (`school_admin_id`, `subject`, `Бр.`, `Ср.Усп.`)
+        .pivot(values='value', index=[school_id, 'subject'], on="metric")
+        .rename({
+            'Бр.': 'count',
+            'Ср.усп.': 'score',
+        })
+    )
+
+
+def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    The input dataframe structure should be:
+    * column `school_admin_id`
+    * column `subject` containing the subject with all possible options
+    * column `count` representing the number of students
+    * column `score` representing the average score
+
+    The function takes the `subject` column and expands it in the following
+    columns:
+    * `subject` - the abbreviation of the subject - МАТ, БЕЛ, АЕ, ФА, ....
+    * `preparation_type` - `ООП` or `ПП` (`Общообразователна подготовка` или `Профилирана подготовка`)
+    * `with_validation` - boolean (when В /Cyrillic/ for "Валидация" is matched)
+    * `level` - currently used only for foreign language subjects,
+                possible values (latin chars) `B1`, `B1.1`, `B2`
+    * `examination_type` - `З` or `И` - (`Задължителен` или `Избираем`)
+
+    These columns are extracted from the value of the `subject` column which
+    carries the additional classification values.
+    """
+
+    # This regex matches the following values:
+    # * БЕЛ(ООП)_З -> (БЕЛ, ООП, false, none, З)
+    # * ФЕ(ПП)_B1-З -> (ФЕ, ПП, false, B1, З)
+    # * ХООС(ПП)_З -> (ХООС, ПП, false, none, З)
+    # * ДИППК-Д.Пр_З -> (ДИППК-Д.Пр, none, false, none, З)
+    # * Пр(ПП)-В_И -> (Пр, ПП, true, none, И)
+    subject_re = r'^([А-Яа-я-\.]+)(\((ПП|ООП)\))?(-(В))?_((B1|B1.1|B2)-)?(З|И)$'
+    return (
+        input_df.with_columns(
+            pl.col('subject').str.extract(subject_re, 1).alias('subject'),
+            pl.col('subject').str.extract(subject_re, 3).alias('preparation_type'),
+            pl.col('subject').str.extract(subject_re, 5).is_not_null().alias('with_validation'),
+            pl.col('subject').str.extract(subject_re, 7).alias('level'),
+            pl.col('subject').str.extract(subject_re, 8).alias('examination_type'),
+        )
+    )
 
 
 def load_csv(file: str) -> StringIO:
