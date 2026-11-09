@@ -131,9 +131,9 @@ class ExpectedSubjectParts:
         ('БЕЛ(ООП)_З', ExpectedSubjectParts('БЕЛ', 'ООП', False, '', 'З')),
         ('Мат(ПП)_З', ExpectedSubjectParts('Мат', 'ПП', False, '', 'З')),
         ('ХООС(ПП)_З', ExpectedSubjectParts('ХООС', 'ПП', False, '', 'З')),
-        ('АЕ(ООП)_B1-И', ExpectedSubjectParts('АЕ', 'ООП', False, 'B1', 'И')),
-        ('ФЕ(ПП)_B1.1-З', ExpectedSubjectParts('ФЕ', 'ПП', False, 'B1.1', 'З')),
-        ('НЕ(ООП)_B2-И', ExpectedSubjectParts('НЕ', 'ООП', False, 'B2', 'И')),
+        ('АЕ(ООП)_B1-И', ExpectedSubjectParts('АЕ', 'ООП', False, 'Б1', 'И')),
+        ('ФЕ(ПП)_B1.1-З', ExpectedSubjectParts('ФЕ', 'ПП', False, 'Б1.1', 'З')),
+        ('НЕ(ООП)_B2-И', ExpectedSubjectParts('НЕ', 'ООП', False, 'Б2', 'И')),
         ('Пр(ПП)-В_И', ExpectedSubjectParts('Пр', 'ПП', True, '', 'И')),
         ('ДИППК-Д.Пр_З', ExpectedSubjectParts('ДИППК-Д.Пр', '-', False, '', 'З')),
     ],
@@ -182,7 +182,7 @@ def test_expand_subject_column_multiple_rows() -> None:
         'score': ['5.50', '3.75', '6.00'],
         'preparation_type': ['ООП', 'ООП', 'ПП'],
         'with_validation': [False, False, True],
-        'level': ['', 'B1', ''],
+        'level': ['', 'Б1', ''],
         'examination_type': ['З', 'И', 'И'],
     })
     assert_frame_equal(result, expected)

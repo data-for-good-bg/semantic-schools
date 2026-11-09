@@ -288,7 +288,7 @@ def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataF
     * `preparation_type` - `ООП` or `ПП` (`Общообразователна подготовка` или `Профилирана подготовка`)
     * `with_validation` - boolean (when В /Cyrillic/ for "Валидация" is matched)
     * `level` - currently used only for foreign language subjects,
-                possible values (latin chars) `B1`, `B1.1`, `B2`
+                possible values (cyrillic chars) `Б1`, `Б1.1`, `Б2`
     * `examination_type` - `З` or `И` - (`Задължителен` или `Избираем`)
 
     These columns are extracted from the value of the `subject` column which
@@ -297,7 +297,7 @@ def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataF
 
     # This regex matches the following values:
     # * БЕЛ(ООП)_З -> (БЕЛ, ООП, false, none, З)
-    # * ФЕ(ПП)_B1-З -> (ФЕ, ПП, false, B1, З)
+    # * ФЕ(ПП)_B1-З -> (ФЕ, ПП, false, Б1, З)
     # * ХООС(ПП)_З -> (ХООС, ПП, false, none, З)
     # * ДИППК-Д.Пр_З -> (ДИППК-Д.Пр, none, false, none, З)
     # * Пр(ПП)-В_И -> (Пр, ПП, true, none, И)
@@ -307,7 +307,7 @@ def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataF
             pl.col('subject').str.extract(subject_re, 1).alias('subject'),
             pl.col('subject').str.extract(subject_re, 3).fill_null('-').alias('preparation_type'),
             pl.col('subject').str.extract(subject_re, 5).is_not_null().alias('with_validation'),
-            pl.col('subject').str.extract(subject_re, 7).alias('level').fill_null(''),
+            pl.col('subject').str.extract(subject_re, 7).fill_null('').str.replace('B', 'Б', literal=True).alias('level'),
             pl.col('subject').str.extract(subject_re, 8).alias('examination_type'),
         )
     )
