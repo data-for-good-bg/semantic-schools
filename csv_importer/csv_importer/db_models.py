@@ -11,8 +11,8 @@ didn't have any knowledge about SQLAlchemy.
 """
 
 from sqlalchemy import (
-    MetaData, Table, Column,
-    Integer, String, ForeignKey, Numeric
+    MetaData, Table, Column, Index,
+    Integer, String, ForeignKey, Numeric, Boolean, text
 )
 
 Models = MetaData()
@@ -114,20 +114,19 @@ School: Table = Table(
 #   * for DZI the value is always 12
 # * max_possible_score - describes the max possible score, it could be 6
 #   for DZI and 65 or 100 for NVO.
-
-# The id is a string in the form '<type>-<year>-<grade_level>'
 #
 Examination: Table = Table(
     'examination',
     Models,
-    # id will be in the form: nvo-4-2022
-    Column('id', String(15), primary_key=True),
+    # id is an autoincremented integer (serial in postgres), the session is
+    # identified by the combination of type, year, month and grade_level
+    Column('id', Integer, primary_key=True, autoincrement=True),
 
     # type will be НВО or ДЗИ
     Column('type', String(5)),
     Column('year', Integer),
+    Column('month', String(20)),
     Column('grade_level', Integer),
-    Column('max_possible_score', Numeric),
     Column(EDIT_STAMP, EditStampType)
 )
 
@@ -144,15 +143,36 @@ ExaminationScore: Table = Table(
     'examination_score',
     Models,
 
-    Column('examination_id', ForeignKey('examination.id'), nullable=False, primary_key=True),
-    Column('school_id', ForeignKey('school.id'), nullable=False, primary_key=True),
+    # id is an autoincremented integer (serial in postgres)
+    Column('id', Integer, primary_key=True, autoincrement=True),
+
+    Column('examination_id', ForeignKey('examination.id',ondelete='CASCADE'), nullable=False),
+    Column('school_id', ForeignKey('school.id',ondelete='CASCADE'), nullable=False),
 
     # subject will be МАТ, БЕЛ,...
-    Column('subject', String(10), nullable=False, primary_key=True),
+    Column('subject', String(10), nullable=False),
+    # З or И or - (`Задължителен` or `Избираем` or `-` /for old values/ )
+    # NB: `default` is applied by SQLAlchemy on insert, `server_default` is
+    # the DDL DEFAULT - it is what backfills existing rows in migrations.
+    Column('examination_type', String(5), nullable=False, default='-', server_default=text("'-'")),
+    Column('subject_level', String(10), nullable=False, default='', server_default=text("''")),
+    # ООП or ПП, '-' for old values without preparation type info
+    Column('preparation_type', String(5), nullable=False, default='-', server_default=text("'-'")),
+    # С или без валидация
+    Column('with_validation', Boolean, nullable=False, default=False, server_default=text('false')),
 
     Column('people', Integer),
     Column('score', Numeric),
-    Column(EDIT_STAMP, EditStampType)
+    Column(EDIT_STAMP, EditStampType),
+
+    # the former compound primary key is now a unique index, extended with
+    # preparation_type and with_validation
+    Index(
+        'ix_examination_score_unique',
+        'examination_id', 'school_id', 'subject', 'examination_type',
+        'subject_level', 'with_validation', 'preparation_type',
+        unique=True
+    )
 )
 
 

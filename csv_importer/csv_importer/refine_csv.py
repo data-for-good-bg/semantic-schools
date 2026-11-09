@@ -12,10 +12,12 @@ dev use case - it calls all main functions on the provided CSV file.
 """
 
 import pandas as pd
+import polars as pl
 import sys
 import logging
 import os
 import re
+import json
 
 from io import StringIO
 
@@ -191,15 +193,147 @@ def infer_max_possible_nvo_score(data: pd.DataFrame) -> float:
     return 100.00
 
 
+def load_json_to_dataframe(input_file: str) -> pl.DataFrame:
+    """
+    Loads an input file as json into a polars dataframe.
+    The first line is treated as column names.
+    """
+    with open(input_file, 'rt') as f:
+        raw_data = json.load(f)
+
+    header, *rows = raw_data
+    header = [
+        # the column names in the json file contain newline character, replace it
+        h.replace('\n', '_')
+        for h in header
+    ]
+
+    return pl.DataFrame(rows, schema=header, orient="row")
+
+
+def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    The input dataframe is assumed to be the raw data right after it was
+    loaded from json.
+
+    The result dataframe structure will be:
+    * column `school_admin_id`
+    * column `subject` containing the subject with all possible options
+    * column `people` representing the number of students
+    * column `score` representing the average score
+    """
+    school_id_bg_name = 'Код по НЕИСПУО'
+    school_id = 'school_admin_id'
+
+    columns = [
+        c
+        for c in input_df.columns
+        if c == school_id_bg_name or c.startswith('Бр.') or c.startswith('Ср.усп.')
+    ]
+
+    scores_data_wide = (
+        input_df
+        .select(columns)
+        .rename({school_id_bg_name: school_id})
+    )
+
+    return (
+        # unpivot the data to structure where there's row (`school_admin_id`, `col`, `value`)
+        # for each `Бр....` or `Ср.Усп...` column
+        scores_data_wide.unpivot(
+            index=school_id,
+            on=[c for c in scores_data_wide.columns if c != school_id],
+            variable_name='col',
+            value_name='value',
+        )
+        # add columns `metric` and `subject` to each row, extract their from
+        # the value of column `col` with regex
+        # `Бр._БЕЛ(ООП)_З` will become (metric=`Бр.`, subject=`БЕЛ(ООП)_З`)
+        # `Ср.усп._ГИ(ПП)_З` will become (metric=`Ср.усп.`, subject=`ГИ(ПП)_З`)
+        .with_columns(
+            pl.col('col').str.extract(r'^(Бр.|Ср.усп.)_(.*)$', 1).alias('metric'),
+            pl.col('col').str.extract(r'^(Бр.|Ср.усп.)_(.*)$', 2).alias('subject'),
+        )
+        # pivot the data to dataframe with rows (`school_admin_id`, `subject`, `Бр.`, `Ср.Усп.`)
+        .pivot(values='value', index=[school_id, 'subject'], on="metric")
+        .rename({
+            'Бр.': 'people',
+            'Ср.усп.': 'score',
+        })
+    )
+
+
+def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    The input dataframe structure should be:
+    * column `school_admin_id`
+    * column `subject` containing the subject with all possible options
+    * column `people` representing the number of students
+    * column `score` representing the average score
+
+    The function takes the `subject` column and expands it in the following
+    columns:
+    * `subject` - the abbreviation of the subject - МАТ, БЕЛ, АЕ, ФА, ....
+    * `preparation_type` - `ООП` or `ПП` (`Общообразователна подготовка` или `Профилирана подготовка`)
+    * `with_validation` - boolean (when В /Cyrillic/ for "Валидация" is matched)
+    * `level` - currently used only for foreign language subjects,
+                possible values (latin chars) `B1`, `B1.1`, `B2`
+    * `examination_type` - `З` or `И` - (`Задължителен` или `Избираем`)
+
+    These columns are extracted from the value of the `subject` column which
+    carries the additional classification values.
+    """
+
+    # This regex matches the following values:
+    # * БЕЛ(ООП)_З -> (БЕЛ, ООП, false, none, З)
+    # * ФЕ(ПП)_B1-З -> (ФЕ, ПП, false, B1, З)
+    # * ХООС(ПП)_З -> (ХООС, ПП, false, none, З)
+    # * ДИППК-Д.Пр_З -> (ДИППК-Д.Пр, none, false, none, З)
+    # * Пр(ПП)-В_И -> (Пр, ПП, true, none, И)
+    subject_re = r'^([А-Яа-я-\.]+)(\((ПП|ООП)\))?(-(В))?_((B1|B1.1|B2)-)?(З|И)$'
+    return (
+        input_df.with_columns(
+            pl.col('subject').str.extract(subject_re, 1).alias('subject'),
+            pl.col('subject').str.extract(subject_re, 3).alias('preparation_type'),
+            pl.col('subject').str.extract(subject_re, 5).is_not_null().alias('with_validation'),
+            pl.col('subject').str.extract(subject_re, 7).alias('level').fill_null(''),
+            pl.col('subject').str.extract(subject_re, 8).alias('examination_type'),
+        )
+    )
+
+
 def load_csv(file: str) -> StringIO:
-    # using 'utf-8-sig' encoding to handle the BOM csv files provided
-    # by data.egov.bg
-    # Some of the CSV files contain the BOM mark not only at the beginning
-    # of the file, but also inside the first value on the first line.
-    # That's why below we replace the sequence '\ufeff' everywhere.
-    # https://en.wikipedia.org/wiki/Byte_order_mark
-    # https://docs.python.org/3/howto/unicode.html
-    # https://stackoverflow.com/questions/13590749/reading-unicode-file-data-with-bom-chars-in-python
+    '''
+    This function pre-loads the specified file into StringIO and performs
+    some really basic mechanical changes on the contents.
+
+    1. Using 'utf-8-sig' encoding to handle the BOM csv files provided
+        by data.egov.bg
+        Some of the CSV files contain the BOM mark not only at the beginning
+        of the file, but also inside the first value on the first line.
+        That's why below we replace the sequence '\ufeff' everywhere.
+        https://en.wikipedia.org/wiki/Byte_order_mark
+        https://docs.python.org/3/howto/unicode.html
+        https://stackoverflow.com/questions/13590749/reading-unicode-file-data-with-bom-chars-in-python
+
+    2. It also replaces unusual characters which are found in some of the CSV files
+
+    3. Recent CSV files for DZI data contain new-line character in the CSV column names
+       As result the header line of the CSV file is not a single line,
+       it is spread at multiple lines, it looks like this:
+       ```
+        "Област","Община","Населено място","Училище","Код по НЕИСПУО","Бр.
+        БЕЛ(ООП)
+        З","Ср.усп.
+        БЕЛ(ООП)
+        З","Бр.
+        Мат(ПП)
+        З","Ср.усп.
+        Мат(ПП)
+        З",
+       ```
+       This function converts these many lines into a single line.
+    '''
 
     # The first unicode sequence is the BOM mark,
     # The second one is another weird unicode sequence found in a column name.
@@ -214,20 +348,54 @@ def load_csv(file: str) -> StringIO:
     }
 
     result = StringIO()
+
     with open(file, 'rb') as f:
+        # First loop: find and fix only the header line
+        header_buffer = ''
+        header_written = False
+
         for line in f:
-            line = line.decode('utf-8-sig')
+            # Decode and strip line endings
+            line_str = line.decode('utf-8-sig').rstrip('\n\r')
+
+            # Apply character replacements
             for old_v, new_v in to_replace.items():
-                line = line.replace(old_v, new_v)
+                line_str = line_str.replace(old_v, new_v)
 
-            result.write(line)
+            if header_buffer:
+                header_buffer += ' ' + line_str
+            else:
+                header_buffer = line_str
 
+            # Check if header is complete (even number of quotes)
+            if header_buffer.count('"') % 2 == 0:
+                # Then write the header
+                result.write(header_buffer + '\n')
+                header_buffer = ''
+                header_written = True
+
+                # The current line has already been consumed into header_buffer
+                # We need to add the next lines to remaining_lines
+                break
+
+        # If we exited the loop without finding a complete header
+        if not header_written:
+            raise RuntimeError('Failed to parse CSV header line.')
+
+        # Second loop: write all remaining lines with character replacements only
+        for line in f:
+            line_str = line.decode('utf-8-sig')
+            for old_v, new_v in to_replace.items():
+                line_str = line_str.replace(old_v, new_v)
+            result.write(line_str)
+
+    result.seek(0)
     return result
 
 
 def fill_empty_cells_from_previous(input: list[str]) -> list[str]:
     """
-    Takes a list of strings as input and returns another list in which the
+    Takes a list of strings as input and returns another  assert subject_cols_count > 0list in which the
     where empty elements will be filled with the value from the preceding
     element.
 
@@ -600,6 +768,7 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
     This means tha for every pair (people, score) it generates a line for
     the corresponding school.
     """
+    # breakpoint()
     subject_cols = [c for c in data.columns if is_subject_column(c)]
     subject_cols_count = len(subject_cols)
     assert subject_cols_count > 0, 'Subject columns cannot be zero.'
