@@ -32,6 +32,12 @@ The input sources could be different:
 - Branching: Branch from `main` as `<author-name>/<feature>`
 - Do not commit in `main` open pull requests
 
+## Unit tests
+
+- pytest is used for unit testing
+- the tests should be added in the `tests/` subfolder
+- the tests can be started with `uv run pytest`
+
 ## DB schema and migrations
 
 The database schema is defined with SQLAlchemy in `csv_importer/db_models.py`.
