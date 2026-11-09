@@ -119,24 +119,41 @@ def insert_school(session: Session, place_id: int, school_id: str, school_name: 
     ]))
 
 
-def insert_examination(session: Session, examination_type: str, year: int, month: str, grade: int) -> tuple[str, ImportAction]:
-    id = f'{examination_type}-{grade}-{year}-{month}'
+def insert_examination(session: Session, examination_type: str, year: int, month: str, grade: int) -> tuple[Optional[int], ImportAction]:
     # a bit hacky way to translate, works only for two types
     translated_type = 'НВО' if examination_type == 'nvo' else 'ДЗИ'
 
-
-    action = insert_or_update_object(session, Examination, Examination.c.id, OrderedDict([
-        (Examination.c.id, id),
+    # the id is an autoincremented integer, the session is identified by
+    # the combination of type, year, month and grade_level
+    id_cols = [
+        Examination.c.type,
+        Examination.c.year,
+        Examination.c.month,
+        Examination.c.grade_level,
+    ]
+    values = OrderedDict([
         (Examination.c.type, translated_type),
         (Examination.c.year, year),
         (Examination.c.month, month),
         (Examination.c.grade_level, grade),
-    ]))
+    ])
 
-    return id, action
+    action = insert_or_update_object(session, Examination, id_cols, values)
+
+    where_filters = [
+        col == values[col]
+        for col in id_cols
+    ]
+    row = session.execute(
+        select(Examination.c.id).where(*where_filters)
+    ).first()
+
+    # in dry run mode nothing is inserted, so no id could be found
+    examination_id = row[0] if row else None
+    return examination_id, action
 
 
-def insert_or_update_score(session: Session, examination_id: str, school_id: str, subject: str, people: int, score: float, examination_type: str = '-', subject_level: str = '', preparation_type: Optional[str] = None, with_validation: bool = False) -> ImportAction:
+def insert_or_update_score(session: Session, examination_id: int, school_id: str, subject: str, people: int, score: float, examination_type: str = '-', subject_level: str = '', preparation_type: str = '-', with_validation: bool = False) -> ImportAction:
 
     values = OrderedDict([
         (ExaminationScore.c.examination_id, examination_id),
@@ -149,12 +166,15 @@ def insert_or_update_score(session: Session, examination_id: str, school_id: str
         (ExaminationScore.c.people, people),
         (ExaminationScore.c.score, score),
     ])
+    # the id columns follow the ix_examination_score_unique unique index
     id_cols = [
         ExaminationScore.c.examination_id,
         ExaminationScore.c.school_id,
         ExaminationScore.c.subject,
         ExaminationScore.c.examination_type,
         ExaminationScore.c.subject_level,
+        ExaminationScore.c.with_validation,
+        ExaminationScore.c.preparation_type,
     ]
 
     return insert_or_update_object(

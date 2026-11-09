@@ -294,7 +294,7 @@ def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataF
     return (
         input_df.with_columns(
             pl.col('subject').str.extract(subject_re, 1).alias('subject'),
-            pl.col('subject').str.extract(subject_re, 3).alias('preparation_type'),
+            pl.col('subject').str.extract(subject_re, 3).fill_null('-').alias('preparation_type'),
             pl.col('subject').str.extract(subject_re, 5).is_not_null().alias('with_validation'),
             pl.col('subject').str.extract(subject_re, 7).alias('level').fill_null(''),
             pl.col('subject').str.extract(subject_re, 8).alias('examination_type'),
