@@ -237,7 +237,7 @@ def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
         .rename({school_id_bg_name: school_id})
     )
 
-    return (
+    result = (
         # unpivot the data to structure where there's row (`school_admin_id`, `col`, `value`)
         # for each `Бр....` or `Ср.Усп...` column
         scores_data_wide.unpivot(
@@ -256,11 +256,22 @@ def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
         )
         # pivot the data to dataframe with rows (`school_admin_id`, `subject`, `Бр.`, `Ср.Усп.`)
         .pivot(values='value', index=[school_id, 'subject'], on="metric")
-        .rename({
-            'Бр.': 'people',
-            'Ср.усп.': 'score',
-        })
     )
+
+    # when the input data contains no columns starting with `Бр.` the pivot
+    # above does not produce a `Бр.` column - in that case no people attended
+    # the examinations, so the result gets a `people` column with value 0
+    rename_map = {
+        'Бр.': 'people',
+        'Ср.усп.': 'score',
+    }
+    result = result.rename({
+        metric: name for metric, name in rename_map.items() if metric in result.columns
+    })
+    if 'people' not in result.columns:
+        result = result.with_columns(pl.lit(0).alias('people'))
+
+    return result
 
 
 def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
