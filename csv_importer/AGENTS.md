@@ -1,5 +1,10 @@
 # AGENTS.md
 
+## Rule of thumb
+
+If something is unclear, then ask!
+Never assume!
+
 ## Project domain
 
 This is a python project for importing data for schools, aggregated data for
