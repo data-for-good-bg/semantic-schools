@@ -739,7 +739,6 @@ def refine_data(csv_data: StringIO, subject_mapping: dict[str, SubjectItem]) -> 
     # Now we'll re-map subject abbreviations to IDs from Subject table
     # The subject abbreviations are lowercased. The keys in map below loaded
     # with load_subject_abbr_map are also lowercased.
-    # The IDs are uppercased.
     #
     # The loop below:
     # 1. Builds a dictionary with column new->old names.

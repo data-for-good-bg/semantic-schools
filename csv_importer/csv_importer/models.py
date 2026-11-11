@@ -41,9 +41,6 @@ class SubjectItem:
     name: str
     abbreviations: list[str]
 
-    def __post_init__(self):
-        self.id = self.id.upper()
-
     def raw_strings(self):
         result = []
         for a in [self.id, *self.abbreviations]:
@@ -129,7 +126,7 @@ def get_default_subjects() -> list[SubjectItem]:
         *_lang_variations(SubjectItem(id='АрЕ', abbreviations=[], name='Арабски език')),
         SubjectItem(id='БЕЛ', abbreviations=[], name='Български език и литература'),
         SubjectItem(id='БЗО', abbreviations=[], name='Биология и здравно образование'),
-        SubjectItem(id='ГЕО', abbreviations=['ГИ'], name='География и икономика'),
+        SubjectItem(id='ГИ', abbreviations=[], name='География и икономика'),
         SubjectItem(id='ДИППК', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация'),
         SubjectItem(id='ДИППК-п.р', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - писмена работа по теория на професията + практика'),
         SubjectItem(id='ДИППК-тест', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - писмен тест по теория на професията + практика'),
@@ -137,24 +134,24 @@ def get_default_subjects() -> list[SubjectItem]:
         SubjectItem(id='ДИППК-пр', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - практика '),
         *_lang_variations(SubjectItem(id='Ивр', abbreviations=[], name='Иврит')),
         SubjectItem(id='ИИ', abbreviations=[], name='Изобразително изкуство'),
-        SubjectItem(id='ИНФ', abbreviations=[], name='Информатика'),
-        *_lang_variations(SubjectItem(id='ИспЕ', abbreviations=['ИЕ', 'ИсЕ'], name='Испански език')),
-        SubjectItem(id='ИСТ', abbreviations=['ИЦ'], name='История и цивилизация'),
+        SubjectItem(id='Инф', abbreviations=[], name='Информатика'),
+        *_lang_variations(SubjectItem(id='ИсЕ', abbreviations=[], name='Испански език')),
+        SubjectItem(id='Ист', abbreviations=['ИЦ'], name='История и цивилизация'),
         *_lang_variations(SubjectItem(id='ИтЕ', abbreviations=[], name='Италиански език')),
         SubjectItem(id='ИТ', abbreviations=[], name='Информационни технологии'),
         *_lang_variations(SubjectItem(id='КитЕ', abbreviations=[], name='Китайски език')),
         *_lang_variations(SubjectItem(id='КорЕ', abbreviations=[], name='Корейски език')),
         *_lang_variations(SubjectItem(id='ЛатЕ', abbreviations=[], name='Латински език')),
         SubjectItem(id='МУЗ', abbreviations=[], name='Музика'),
-        SubjectItem(id='МАТ', abbreviations=[], name='Математика'),
+        SubjectItem(id='Мат', abbreviations=[], name='Математика'),
         *_lang_variations(SubjectItem(id='НЕ', abbreviations=[], name='Немски език')),
         *_lang_variations(SubjectItem(id='ПЕ', abbreviations=[], name='Португалски език')),
-        SubjectItem(id='ПР', abbreviations=[], name='Предприемачество'),
+        SubjectItem(id='Пр', abbreviations=[], name='Предприемачество'),
         *_lang_variations(SubjectItem(id='РЕ', abbreviations=[], name='Руски език')),
         *_lang_variations(SubjectItem(id='РуЕ', abbreviations=[], name='Румънски език')),
         SubjectItem(id='ФА', abbreviations=[], name='Физика и астрономия'),
-        SubjectItem(id='ФИЛ', abbreviations=[], name='Философия'),
-        *_lang_variations(SubjectItem(id='ФрЕ', abbreviations=['ФЕ'], name='Френски език')),
+        SubjectItem(id='Фил', abbreviations=[], name='Философия'),
+        *_lang_variations(SubjectItem(id='ФЕ', abbreviations=[], name='Френски език')),
         SubjectItem(id='ХООС', abbreviations=[], name='Химия и опазване на околната среда'),
         SubjectItem(id='ЧО', abbreviations=[], name='Човекът и обществото'),
         SubjectItem(id='ЧП', abbreviations=[], name='Човекът и природата'),
