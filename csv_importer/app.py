@@ -10,7 +10,7 @@ import sys
 import os
 import argparse
 
-from csv_importer.import_csv import import_file, SUPPORTED_IMPORT_CSV_TYPES
+from csv_importer.import_csv import import_file, SUPPORTED_IMPORT_CSV_TYPES, list_subjects
 from csv_importer.runtime import enable_verbose_logging, enable_dry_run
 from csv_importer.db_manage import list_examinations, delete_examination, init_db
 from csv_importer.db import DEFAULT_DB_URL
@@ -80,6 +80,12 @@ def parse_args():
     parser_import_from_wikidata.add_argument('-n', '--dry-run', action='store_true', help='Perform a dry run without making changes')
     parser_import_from_wikidata.add_argument('--to-import', type=str, nargs='*', default=default_wikidata_to_import, help=help_wikidata_to_import)
 
+    # Subparser for list-dzi-subjects
+    parser_list_dzi_subjects = subparsers.add_parser('list-subjects', help='List subjects from a NVO or DZI file')
+    parser_list_dzi_subjects.add_argument('--path', type=str, required=True, help='Path to the NVO or DZI CSV or JSON file')
+    parser_list_dzi_subjects.add_argument('-v', '--verbose', action='store_true', help='Enable verbose output')
+    parser_list_dzi_subjects.add_argument('-n', '--dry-run', action='store_true', help='Perform a dry run without making changes')
+
 
     args = parser.parse_args()
     if 'to_import' in args:
@@ -117,6 +123,8 @@ def main():
         delete_examination(args.id)
     elif args.command == 'import-from-wikidata':
         import_from_wikidata(args.to_import)
+    elif args.command == 'list-subjects':
+        list_subjects(args.path)
     else:
         raise RuntimeError(f'Unsupported command: {args.command}')
 

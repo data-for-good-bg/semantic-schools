@@ -22,7 +22,8 @@ from .refine_csv import (
     load_csv, refine_csv_column_names, refine_data,
     extract_school_data, extract_scores_data,
     load_json_to_dataframe, extract_scores_dataframe,
-    expand_subject_column_in_score_dataframe
+    expand_subject_column_in_score_dataframe,
+    get_unique_subjects
 )
 
 from .db_models import Place, Municipality, Region
@@ -190,6 +191,19 @@ def _validate_args(csv_file: str, examination_type: str, grade: int, month: str)
             f'The month {month} is not supported for examination type '
             f'{examination_type}. Supported months are: {supported_month}'
         ))
+
+
+def list_subjects(input_file: str) -> None:
+    # TODO: validation
+
+    raw_data = load_json_to_dataframe(input_file)
+    scores_data = extract_scores_dataframe(raw_data)
+    # scores_data.write_csv(input_file + '.scores_data.csv')
+    scores_data = expand_subject_column_in_score_dataframe(scores_data)
+
+    subjects = get_unique_subjects(scores_data)
+    for s in subjects:
+        print(s)
 
 
 def import_file(input_file: str, examination_type: str, grade: int, year: int, month: str, to_import=SUPPORTED_IMPORT_CSV_TYPES):

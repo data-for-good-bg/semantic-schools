@@ -85,8 +85,39 @@ def test_extract_scores_dataframe_missing_school_id_column_raises() -> None:
         'Ср.усп._Мат(ООП)_И': ['4.42'],
     })
 
-    with pytest.raises(pl.exceptions.ColumnNotFoundError):
+    with pytest.raises(ValueError):
         extract_scores_dataframe(input_df)
+
+
+# the school id column names supported by extract_scores_dataframe,
+# add new supported names to this list
+SCHOOL_ID_COLUMN_NAMES = ['Код по НЕИСПУО', 'Код по Админ']
+
+
+@pytest.mark.parametrize('school_id_column', SCHOOL_ID_COLUMN_NAMES)
+def test_extract_scores_dataframe_school_id_column(school_id_column: str) -> None:
+    input_df = pl.DataFrame({
+        'Област': ['София', 'Пловдив'],
+        school_id_column: ['102004', '105201'],
+        'Бр._Мат(ООП)_И': ['3', '0'],
+        'Ср.усп._Мат(ООП)_И': ['4.42', '0'],
+        'Бр._БЕЛ(ООП)_З': ['5', '7'],
+        'Ср.усп._БЕЛ(ООП)_З': ['5.50', '6.00'],
+    })
+
+    result = extract_scores_dataframe(input_df)
+
+    assert result.columns == ['school_admin_id', 'subject', 'people', 'score']
+    expected = pl.DataFrame({
+        'school_admin_id': ['102004', '102004', '105201', '105201'],
+        'subject': ['БЕЛ(ООП)_З', 'Мат(ООП)_И', 'БЕЛ(ООП)_З', 'Мат(ООП)_И'],
+        'people': ['5', '3', '7', '0'],
+        'score': ['5.50', '4.42', '6.00', '0'],
+    })
+    assert_frame_equal(
+        result.sort(['school_admin_id', 'subject']),
+        expected.sort(['school_admin_id', 'subject']),
+    )
 
 
 def test_extract_scores_dataframe_from_json_file(tmp_path: Path) -> None:

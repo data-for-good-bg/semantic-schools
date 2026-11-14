@@ -80,6 +80,8 @@ SUBJECTS_TO_REMOVE = ['2дзи', 'общо']
 SBJ_IDX = 0
 ATTR_IDX = 1
 
+C_SCHOOL_ID = 'school_admin_id'
+
 
 def refine_original_col_name(value: str) -> str:
     """
@@ -211,6 +213,35 @@ def load_json_to_dataframe(input_file: str) -> pl.DataFrame:
     return pl.DataFrame(rows, schema=header, orient="row")
 
 
+def _rename_school_id_column(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    The input dataframe should contain a column named as one of
+    the supported names for school id.
+
+    The result dataframe will have the matched column renamed to `school_id`
+    """
+    school_id_bg_name = ['Код по НЕИСПУО', 'Код по Админ']
+    C_SCHOOL_ID = 'school_admin_id'
+
+    school_id_column_match = (
+        set(school_id_bg_name).intersection(
+            set(input_df.columns)
+        )
+    )
+    if len(school_id_column_match) != 1:
+        raise ValueError((
+            f'Cannot identify school id column. The input dataframe should '
+            f' have a column with one of these names: {school_id_bg_name}'
+            f' The following matches were found: {school_id_column_match}.'
+        ))
+
+
+    return (
+        input_df
+        .rename({ school_id_column_match.pop() : C_SCHOOL_ID })
+    )
+
+
 def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
     """
     The input dataframe is assumed to be the raw data right after it was
@@ -222,27 +253,26 @@ def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
     * column `people` representing the number of students
     * column `score` representing the average score
     """
-    school_id_bg_name = 'Код по НЕИСПУО'
-    school_id = 'school_admin_id'
+
+    input_df = _rename_school_id_column(input_df)
 
     columns = [
         c
         for c in input_df.columns
-        if c == school_id_bg_name or c.startswith('Бр.') or c.startswith('Ср.усп.')
+        if c == C_SCHOOL_ID or c.startswith('Бр.') or c.startswith('Ср.усп.')
     ]
 
     scores_data_wide = (
         input_df
         .select(columns)
-        .rename({school_id_bg_name: school_id})
     )
 
     result = (
         # unpivot the data to structure where there's row (`school_admin_id`, `col`, `value`)
         # for each `Бр....` or `Ср.Усп...` column
         scores_data_wide.unpivot(
-            index=school_id,
-            on=[c for c in scores_data_wide.columns if c != school_id],
+            index=C_SCHOOL_ID,
+            on=[c for c in scores_data_wide.columns if c != C_SCHOOL_ID],
             variable_name='col',
             value_name='value',
         )
@@ -255,7 +285,7 @@ def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
             pl.col('col').str.extract(r'^(Бр.|Ср.усп.)_(.*)$', 2).alias('subject'),
         )
         # pivot the data to dataframe with rows (`school_admin_id`, `subject`, `Бр.`, `Ср.Усп.`)
-        .pivot(values='value', index=[school_id, 'subject'], on="metric")
+        .pivot(values='value', index=[C_SCHOOL_ID, 'subject'], on="metric")
     )
 
     # when the input data contains no columns starting with `Бр.` the pivot
@@ -310,6 +340,17 @@ def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataF
             pl.col('subject').str.extract(subject_re, 7).fill_null('').str.replace('B', 'Б', literal=True).alias('level'),
             pl.col('subject').str.extract(subject_re, 8).alias('examination_type'),
         )
+    )
+
+
+def get_unique_subjects(input_df: pl.DataFrame) -> list[str]:
+    return (
+        input_df.select(
+            pl.col('subject').unique()
+        )
+        .to_series()
+        .sort()
+        .to_list()
     )
 
 
