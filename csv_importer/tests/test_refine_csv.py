@@ -23,7 +23,11 @@ from csv_importer.refine_csv import (
     C_REGION,
     C_SCHOOL_ID,
     C_SCHOOL_NAME,
-    _rename_columns,
+    _beautify_place_column,
+    _fill_empty_mun_and_place,
+    _fill_school_id_special_cases,
+    _refine_data,
+    _unify_foreign_region,
     _rename_school_columns,
     expand_subject_column_in_score_dataframe,
     extract_scores_dataframe,
@@ -124,7 +128,7 @@ def test_rename_columns_delegates_to_rename_school_columns() -> None:
         'Бр._БЕЛ(ООП)_З': ['5'],
     })
 
-    result = _rename_columns(input_df)
+    result = _refine_data(input_df)
 
     assert C_REGION in result.columns
     assert C_MUN in result.columns
@@ -133,6 +137,157 @@ def test_rename_columns_delegates_to_rename_school_columns() -> None:
     assert C_SCHOOL_ID in result.columns
     # subject columns are passed through unchanged
     assert 'Бр._БЕЛ(ООП)_З' in result.columns
+
+
+# ---------------------------------------------------------------------------
+# _fill_empty_mun_and_place
+# ---------------------------------------------------------------------------
+
+def test_fill_empty_mun_and_place_fills_empty_strings_with_region() -> None:
+    input_df = pl.DataFrame({
+        C_REGION: ['София', 'Пловдив'],
+        C_MUN: ['', 'Пловдив'],
+        C_PLACE: ['', 'Пловдив'],
+        C_SCHOOL_NAME: ['РУО София', 'ПГ'],
+        C_SCHOOL_ID: ['0', '105201'],
+    })
+
+    result = _fill_empty_mun_and_place(input_df)
+
+    assert result.row(0, named=True)[C_MUN] == 'София'
+    assert result.row(0, named=True)[C_PLACE] == 'София'
+    # non-empty values are kept unchanged
+    assert result.row(1, named=True)[C_MUN] == 'Пловдив'
+    assert result.row(1, named=True)[C_PLACE] == 'Пловдив'
+
+
+def test_fill_empty_mun_and_place_fills_nulls_with_region() -> None:
+    input_df = pl.DataFrame({
+        C_REGION: ['София'],
+        C_MUN: [None],
+        C_PLACE: [None],
+    })
+
+    result = _fill_empty_mun_and_place(input_df)
+
+    assert result.row(0, named=True)[C_MUN] == 'София'
+    assert result.row(0, named=True)[C_PLACE] == 'София'
+
+
+def test_refine_data_fills_empty_mun_and_place() -> None:
+    input_df = pl.DataFrame({
+        'Област': ['София'],
+        'Община': [''],
+        'Населено място': [''],
+        'Училище': ['РУО София'],
+        'Код по НЕИСПУО': ['0'],
+    })
+
+    result = _refine_data(input_df)
+
+    assert result.row(0, named=True)[C_MUN] == 'София'
+    assert result.row(0, named=True)[C_PLACE] == 'София'
+
+
+# ---------------------------------------------------------------------------
+# _fill_school_id_special_cases
+# ---------------------------------------------------------------------------
+
+def test_fill_school_id_special_cases_fills_ruo_ids() -> None:
+    input_df = pl.DataFrame({
+        C_REGION: ['Велико Търново', 'Пазарджик', 'София', 'София'],
+        C_MUN: ['Велико Търново', 'Пазарджик', 'Столична', 'Столична'],
+        C_PLACE: ['Велико Търново', 'Пазарджик', 'София', 'София'],
+        C_SCHOOL_NAME: ['РУО Велико Търново', 'РУО Пазарджик', 'СМГ', 'РУО София'],
+        C_SCHOOL_ID: ['', None, '102004', ''],
+    })
+
+    result = _fill_school_id_special_cases(input_df)
+
+    assert result[C_SCHOOL_ID].to_list() == ['3400', '1300', '102004', '']
+
+
+def test_refine_data_fills_school_id_special_cases() -> None:
+    # mimics a dzi-2017 РУО row: no municipality, place and school id
+    input_df = pl.DataFrame({
+        'Област': ['Велико Търново'],
+        'Община': [''],
+        'Населено място': [''],
+        'Училище': ['РУО Велико Търново'],
+        'Код по НЕИСПУО': [''],
+    })
+
+    result = _refine_data(input_df)
+
+    row = result.row(0, named=True)
+    # the place is filled from the region and then beautified
+    assert row[C_PLACE] == 'Велико Търново'
+    assert row[C_SCHOOL_ID] == '3400'
+
+
+# ---------------------------------------------------------------------------
+# _unify_foreign_region
+# ---------------------------------------------------------------------------
+
+def test_unify_foreign_region_unifies_chuzhbina_variations() -> None:
+    input_df = pl.DataFrame({
+        C_REGION: ['ЧУЖБИНА', 'чужбина', 'софия', None],
+        C_MUN: ['Чужбина - чужбина', 'СТОЛИЧНА', 'столична', 'Пловдив'],
+        C_PLACE: ['Чужбина', 'София', 'София', 'Пловдив'],
+    })
+
+    result = _unify_foreign_region(input_df)
+
+    assert result[C_REGION].to_list() == ['Чужбина', 'Чужбина', 'София', None]
+    assert result[C_MUN].to_list() == ['Чужбина', 'Столична', 'Столична', 'Пловдив']
+    # place column is not touched
+    assert result[C_PLACE].to_list() == ['Чужбина', 'София', 'София', 'Пловдив']
+
+
+def test_refine_data_unifies_foreign_region() -> None:
+    input_df = pl.DataFrame({
+        'Област': ['чужбина'],
+        'Община': ['ЧУЖБИНА'],
+        'Населено място': ['Чужбина'],
+        'Училище': ['140. училище'],
+        'Код по НЕИСПУО': ['1400001'],
+    })
+
+    result = _refine_data(input_df)
+
+    row = result.row(0, named=True)
+    assert row[C_REGION] == 'Чужбина'
+    assert row[C_MUN] == 'Чужбина'
+
+
+# ---------------------------------------------------------------------------
+# _beutify_place_column
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    'place_value, expected',
+    [
+        ('ГР.СОФИЯ,КВ.ГОРНА БАНЯ', 'гр. София'),
+        ('с.баня', 'с. Баня'),
+        (' гр.софия ', 'гр. София'),
+        ('София', 'София'),
+        ('ВЕЛИКО ТЪРНОВО', 'Велико Търново'),
+        ('Пловдив', 'Пловдив'),
+        ('', ''),
+        (None, None),
+    ],
+)
+def test_beutify_place_column(place_value: Optional[str], expected: Optional[str]) -> None:
+    input_df = pl.DataFrame({
+        C_REGION: ['София'],
+        C_PLACE: [place_value],
+    })
+
+    result = _beautify_place_column(input_df)
+
+    assert result.row(0, named=True)[C_PLACE] == expected
+    # other columns are not touched
+    assert result.row(0, named=True)[C_REGION] == 'София'
 
 
 # ---------------------------------------------------------------------------

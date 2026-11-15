@@ -24,7 +24,7 @@ from io import StringIO
 
 from .runtime import getLogger
 from .db_manage import load_subject_abbr_map
-from .models import SubjectItem
+from .models import SubjectItem, FOREIGN_COUNTRY
 
 
 logger = getLogger(__name__)
@@ -218,7 +218,7 @@ def load_json_to_dataframe(input_file: str) -> pl.DataFrame:
 
     raw_data = pl.DataFrame(rows, schema=header, orient="row")
 
-    return _rename_columns(raw_data)
+    return _refine_data(raw_data)
 
 
 def _rename_school_columns(input_df: pl.DataFrame) -> pl.DataFrame:
@@ -262,29 +262,130 @@ def _rename_school_columns(input_df: pl.DataFrame) -> pl.DataFrame:
     return result
 
 
-def _rename_columns(input_df: pl.DataFrame) -> pl.DataFrame:
+def _fill_empty_mun_and_place(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Some of the input files contain results not for a school, but for РУО -
+    Регионално управление на образованието.
+    These lines could have empty municipality and place columns.
+    This function fills them with the value of the region or municipality.
+    """
+
+    # fill empty municipality from region
+    mun_filled = input_df.with_columns(
+        pl.when(pl.col(C_MUN).is_null() | (pl.col(C_MUN).cast(pl.String).str.strip_chars() == ''))
+        .then(pl.col(C_REGION))
+        .otherwise(pl.col(C_MUN))
+        .alias(C_MUN)
+    )
+
+    # fill empty place from municipality
+    place_filled = mun_filled.with_columns(
+        pl.when(pl.col(C_PLACE).is_null() | (pl.col(C_PLACE).cast(pl.String).str.strip_chars() == ''))
+        .then(pl.col(C_MUN))
+        .otherwise(pl.col(C_PLACE))
+        .alias(C_PLACE)
+    )
+
+    return place_filled
+
+
+def _fill_school_id_special_cases(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    In the DZI CSV for 2017 there are results for two РУО without school_admin_id
+    This function fills the school_admin_id, because we know it from other years.
+
+    РУО Велико Търново id is 3400
+    РУО Пазарджик id is 1300
+    """
+    school_id_missing = (
+        pl.col(C_SCHOOL_ID).is_null()
+        | (pl.col(C_SCHOOL_ID).cast(pl.String).str.strip_chars() == '')
+    )
+
+    return input_df.with_columns(
+        pl.when(school_id_missing & (pl.col(C_PLACE) == 'Велико Търново'))
+        .then(pl.lit('3400'))
+        .when(school_id_missing & (pl.col(C_PLACE) == 'Пазарджик'))
+        .then(pl.lit('1300'))
+        .otherwise(pl.col(C_SCHOOL_ID))
+        .alias(C_SCHOOL_ID)
+    )
+
+
+def _unify_foreign_region(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    There are rows which are for region Чужбина, which in different files
+    is written in different way.
+    This function unifies all its possible values in the columns region and
+    municipality.
+    """
+    return input_df.with_columns([
+        pl.when(pl.col(col).cast(pl.String).str.to_lowercase().str.contains('чужбина'))
+        .then(pl.lit(FOREIGN_COUNTRY))
+        .otherwise(pl.col(col))
+        .str.to_titlecase()
+        .alias(col)
+        for col in (C_REGION, C_MUN)
+    ])
+
+
+def _beautify_place_column(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    Formats the place column in a standard way:
+    * values like ГР.СОФИЯ,КВ.ГОРНА БАНЯ are reduced to the city part
+    * values with a prefix like 'гр.'/'с.' are formatted as 'гр. София'
+    * all other values get only their first letter upper-cased
+    """
+    # values like ГР.СОФИЯ,КВ.ГОРНА БАНЯ -> keep only the city part
+    place = pl.col(C_PLACE).cast(pl.String).str.split(',').list.first()
+
+    # split `гр.София` or `с.Баня` into `гр`, `София` or `с`, `Баня`
+    parts = place.str.split('.')
+
+    # ensure prefix is always lowercased
+    prefix_part = parts.list.first().str.strip_chars().str.to_lowercase()
+
+    # make the name part title-case (TITLE CASE -> "Title Case")
+    name_part = parts.list.get(1).str.strip_chars().str.to_titlecase()
+
+    # make the name-only case also title-case
+    name_only = place.str.strip_chars().str.to_titlecase()
+
+    return input_df.with_columns(
+        pl.when(place.str.contains('.', literal=True))
+        .then(prefix_part + pl.lit('. ') + name_part)
+        .otherwise(name_only)
+        .alias(C_PLACE)
+    )
+
+
+def _refine_data(input_df: pl.DataFrame) -> pl.DataFrame:
     """
     The input_df is assumed to be the raw dataframe after the raw json was
     loaded.
-    The function take cares to rename the input columns to standardized names,
-    which will be used in the later processing of the data.
+    The function take cares to do different column renamings, data formatting
+    which make later data processing easier.
     """
 
     input_df = _rename_school_columns(input_df)
+    input_df = _fill_empty_mun_and_place(input_df)
+    input_df = _fill_school_id_special_cases(input_df)
+    input_df = _unify_foreign_region(input_df)
+    input_df = _beautify_place_column(input_df)
 
     return input_df
 
 
 def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
     """
-    The input dataframe is assumed to be the one after the renaming of the columns
-    of the raw json was made -> it should be with C_SCHOOL_ID column and in
+    The input dataframe is assumed to be the one after refining the raw data
+    loaded from json/csv.
+    It should be with C_SCHOOL_ID column and to be in
     the "wide" form, where there's a pair of columns for each subject - one
     for the number of attended students and one for the average score.
 
     There's an exception: the August-September DZI session does not contain
     column for the number of students.
-
 
     The result dataframe structure will be in the following "long" form:
     * column `subject` containing the subject with all possible attributes,
@@ -343,6 +444,21 @@ def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
         result = result.with_columns(pl.lit(0).alias(C_PEOPLE))
 
     return result
+
+
+def extract_schools_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    The input dataframe is assumed to be the one after refining the raw data
+    loaded from json/csv.
+    """
+
+    return input_df.select(
+        C_SCHOOL_ID,
+        C_SCHOOL_NAME,
+        C_REGION,
+        C_MUN,
+        C_PLACE
+    )
 
 
 def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:

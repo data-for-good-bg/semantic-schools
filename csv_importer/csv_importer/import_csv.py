@@ -23,7 +23,7 @@ from .refine_csv import (
     extract_school_data, extract_scores_data,
     load_json_to_dataframe, extract_scores_dataframe,
     expand_subject_column_in_score_dataframe,
-    get_unique_subjects
+    get_unique_subjects, extract_schools_dataframe
 )
 
 from .db_models import Place, Municipality, Region
@@ -243,17 +243,18 @@ def import_file(input_file: str, examination_type: str, grade: int, year: int, m
     else:
         raw_data = load_json_to_dataframe(input_file)
         scores_data = extract_scores_dataframe(raw_data)
-        # scores_data.write_csv(input_file + '.scores_data.csv')
         scores_data = expand_subject_column_in_score_dataframe(scores_data)
-        # scores_data.write_csv(input_file + '.subject_expanded.csv')
         scores_data = scores_data.to_pandas()
+
+        schools_data = extract_schools_dataframe(raw_data)
+        schools_data = schools_data.to_pandas()
 
 
     db = get_db_engine()
 
-    # if 'schools' in to_import:
-    #     schools_ops_count = _import_schools(db, schools_data)
-    #     logger.info('Operations over school: %s', schools_ops_count)
+    if 'schools' in to_import:
+        schools_ops_count = _import_schools(db, schools_data)
+        logger.info('Operations over school: %s', schools_ops_count)
 
     if 'scores' in to_import:
         scores_ops_count = _import_scores(db, examination_type, year, month, grade, scores_data)
