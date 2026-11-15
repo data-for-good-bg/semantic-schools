@@ -1,9 +1,11 @@
 """
-Unit tests for csv_importer.refine_csv.extract_scores_dataframe.
+Unit tests for csv_importer.refine_csv.
 
-The input data frames mimic the frames produced by load_json_to_dataframe:
-column names contain '_' where the original JSON header had a newline
-(e.g. 'Бр.\nМат(ООП)\nИ' becomes 'Бр._Мат(ООП)_И') and all values are strings.
+The input data frames for extract_scores_dataframe mimic the frames produced
+by load_json_to_dataframe after column renaming: the school columns have
+English names (school_admin_id, region, municipality, place, school) and
+subject column names contain '_' where the original JSON header had a newline
+(e.g. 'Бр.\\nМат(ООП)\\nИ' becomes 'Бр._Мат(ООП)_И'). All values are strings.
 """
 
 import json
@@ -16,18 +18,186 @@ import pytest
 from polars.testing import assert_frame_equal
 
 from csv_importer.refine_csv import (
+    C_MUN,
+    C_PLACE,
+    C_REGION,
+    C_SCHOOL_ID,
+    C_SCHOOL_NAME,
+    _rename_columns,
+    _rename_school_columns,
     expand_subject_column_in_score_dataframe,
     extract_scores_dataframe,
     load_json_to_dataframe,
 )
 
 
+# All five school-related columns that _rename_school_columns expects and
+# renames, with sample values used across tests.
+SCHOOL_COLUMNS_BG = ['Област', 'Община', 'Населено място', 'Училище']
+SCHOOL_COLUMNS_EN = [C_REGION, C_MUN, C_PLACE, C_SCHOOL_NAME]
+
+
+def _school_columns_row(region: str, mun: str, place: str, school: str) -> list[str]:
+    return [region, mun, place, school]
+
+
+# ---------------------------------------------------------------------------
+# _rename_school_columns / _rename_columns
+# ---------------------------------------------------------------------------
+
+def test_rename_school_columns_renames_all_columns() -> None:
+    input_df = pl.DataFrame({
+        'Област': ['София'],
+        'Община': ['Столична'],
+        'Населено място': ['София'],
+        'Училище': ['СМГ'],
+        'Код по НЕИСПУО': ['102004'],
+    })
+
+    result = _rename_school_columns(input_df)
+
+    assert set(result.columns) == {C_REGION, C_MUN, C_PLACE, C_SCHOOL_NAME, C_SCHOOL_ID}
+    assert result.row(0, named=True) == {
+        C_REGION: 'София',
+        C_MUN: 'Столична',
+        C_PLACE: 'София',
+        C_SCHOOL_NAME: 'СМГ',
+        C_SCHOOL_ID: '102004',
+    }
+
+
+# the school id column names supported by _rename_school_columns,
+# add new supported names to this list
+SCHOOL_ID_COLUMN_NAMES = ['Код по НЕИСПУО', 'Код по Админ']
+
+
+@pytest.mark.parametrize('school_id_column', SCHOOL_ID_COLUMN_NAMES)
+def test_rename_school_columns_school_id_column(school_id_column: str) -> None:
+    input_df = pl.DataFrame({
+        'Област': ['София'],
+        'Община': ['Столична'],
+        'Населено място': ['София'],
+        'Училище': ['СМГ'],
+        school_id_column: ['102004'],
+    })
+
+    result = _rename_school_columns(input_df)
+
+    assert C_SCHOOL_ID in result.columns
+    assert result.row(0, named=True)[C_SCHOOL_ID] == '102004'
+
+
+def test_rename_school_columns_region_variant() -> None:
+    input_df = pl.DataFrame({
+        'Регион': ['София'],
+        'Община': ['Столична'],
+        'Населено място': ['София'],
+        'Училище': ['СМГ'],
+        'Код по НЕИСПУО': ['102004'],
+    })
+
+    result = _rename_school_columns(input_df)
+
+    assert C_REGION in result.columns
+    assert result.row(0, named=True)[C_REGION] == 'София'
+
+
+def test_rename_school_columns_missing_expected_column_raises() -> None:
+    # missing 'Училище' and school id column
+    input_df = pl.DataFrame({
+        'Област': ['София'],
+        'Община': ['Столична'],
+        'Населено място': ['София'],
+    })
+
+    with pytest.raises(RuntimeError, match='not found Bulgarian matchings'):
+        _rename_school_columns(input_df)
+
+
+def test_rename_columns_delegates_to_rename_school_columns() -> None:
+    input_df = pl.DataFrame({
+        'Област': ['София'],
+        'Община': ['Столична'],
+        'Населено място': ['София'],
+        'Училище': ['СМГ'],
+        'Код по НЕИСПУО': ['102004'],
+        'Бр._БЕЛ(ООП)_З': ['5'],
+    })
+
+    result = _rename_columns(input_df)
+
+    assert C_REGION in result.columns
+    assert C_MUN in result.columns
+    assert C_PLACE in result.columns
+    assert C_SCHOOL_NAME in result.columns
+    assert C_SCHOOL_ID in result.columns
+    # subject columns are passed through unchanged
+    assert 'Бр._БЕЛ(ООП)_З' in result.columns
+
+
+# ---------------------------------------------------------------------------
+# load_json_to_dataframe
+# ---------------------------------------------------------------------------
+
+def test_load_json_to_dataframe_renames_columns(tmp_path: Path) -> None:
+    header = [
+        'Област', 'Община', 'Населено място', 'Училище', 'Код по НЕИСПУО',
+        'Бр.\nМат(ООП)\nИ', 'Ср.усп.\nМат(ООП)\nИ',
+    ]
+    rows = [
+        ['София', 'Столична', 'София', 'СМГ', '102004', '3', '4.42'],
+        ['Пловдив', 'Пловдив', 'Пловдив', 'ПГ', '105201', '0', '0'],
+    ]
+    json_file = tmp_path / 'dzi-test.json'
+    with open(json_file, 'w', encoding='utf-8') as f:
+        json.dump([header, *rows], f, ensure_ascii=False)
+
+    result = load_json_to_dataframe(str(json_file))
+
+    assert result.columns == [
+        C_REGION, C_MUN, C_PLACE, C_SCHOOL_NAME, C_SCHOOL_ID,
+        'Бр._Мат(ООП)_И', 'Ср.усп._Мат(ООП)_И',
+    ]
+
+
+@pytest.mark.parametrize('school_id_column', SCHOOL_ID_COLUMN_NAMES)
+def test_load_json_to_dataframe_school_id_column(tmp_path: Path, school_id_column: str) -> None:
+    header = [
+        'Област', 'Община', 'Населено място', 'Училище', school_id_column,
+        'Бр.\nБЕЛ(ООП)\nЗ', 'Ср.усп.\nБЕЛ(ООП)\nЗ',
+    ]
+    rows = [
+        ['София', 'Столична', 'София', 'СМГ', '102004', '5', '5.50'],
+    ]
+    json_file = tmp_path / 'dzi-test.json'
+    with open(json_file, 'w', encoding='utf-8') as f:
+        json.dump([header, *rows], f, ensure_ascii=False)
+
+    result = load_json_to_dataframe(str(json_file))
+
+    assert C_SCHOOL_ID in result.columns
+    assert result.row(0, named=True)[C_SCHOOL_ID] == '102004'
+
+
+def test_load_json_to_dataframe_missing_school_columns_raises(tmp_path: Path) -> None:
+    # missing Община, Населено място, Училище, and school id
+    header = ['Област', 'Бр.\nБЕЛ(ООП)\nЗ']
+    rows = [['София', '5']]
+    json_file = tmp_path / 'dzi-test.json'
+    with open(json_file, 'w', encoding='utf-8') as f:
+        json.dump([header, *rows], f, ensure_ascii=False)
+
+    with pytest.raises(RuntimeError, match='not found Bulgarian matchings'):
+        load_json_to_dataframe(str(json_file))
+
+
+# ---------------------------------------------------------------------------
+# extract_scores_dataframe
+# ---------------------------------------------------------------------------
+
 def test_extract_scores_dataframe_happy_path() -> None:
     input_df = pl.DataFrame({
-        'Област': ['София', 'Пловдив'],
-        'Община': ['Столична', 'Пловдив'],
-        'Училище': ['СМГ', 'ПГ'],
-        'Код по НЕИСПУО': ['102004', '105201'],
+        'school_admin_id': ['102004', '105201'],
         'Бр._Мат(ООП)_И': ['3', '0'],
         'Ср.усп._Мат(ООП)_И': ['4.42', '0'],
         'Бр._БЕЛ(ООП)_З': ['5', '7'],
@@ -51,7 +221,7 @@ def test_extract_scores_dataframe_happy_path() -> None:
 
 def test_extract_scores_dataframe_parses_subject_names() -> None:
     input_df = pl.DataFrame({
-        'Код по НЕИСПУО': ['102004'],
+        'school_admin_id': ['102004'],
         'Бр._Мат(ООП)_И': ['3'],
         'Ср.усп._Мат(ООП)_И': ['4.42'],
         'Бр._БЕЛ(ООП)_З': ['5'],
@@ -68,7 +238,7 @@ def test_extract_scores_dataframe_parses_subject_names() -> None:
 
 def test_extract_scores_dataframe_without_people_columns_adds_zero_people() -> None:
     input_df = pl.DataFrame({
-        'Код по НЕИСПУО': ['102004', '105201'],
+        'school_admin_id': ['102004', '105201'],
         'Ср.усп._Мат(ООП)_И': ['4.42', '5.00'],
     })
 
@@ -79,59 +249,24 @@ def test_extract_scores_dataframe_without_people_columns_adds_zero_people() -> N
     assert set(result['score']) == {'4.42', '5.00'}
 
 
-def test_extract_scores_dataframe_missing_school_id_column_raises() -> None:
-    input_df = pl.DataFrame({
-        'Бр._Мат(ООП)_И': ['3'],
-        'Ср.усп._Мат(ООП)_И': ['4.42'],
-    })
-
-    with pytest.raises(ValueError):
-        extract_scores_dataframe(input_df)
-
-
-# the school id column names supported by extract_scores_dataframe,
-# add new supported names to this list
-SCHOOL_ID_COLUMN_NAMES = ['Код по НЕИСПУО', 'Код по Админ']
-
-
-@pytest.mark.parametrize('school_id_column', SCHOOL_ID_COLUMN_NAMES)
-def test_extract_scores_dataframe_school_id_column(school_id_column: str) -> None:
-    input_df = pl.DataFrame({
-        'Област': ['София', 'Пловдив'],
-        school_id_column: ['102004', '105201'],
-        'Бр._Мат(ООП)_И': ['3', '0'],
-        'Ср.усп._Мат(ООП)_И': ['4.42', '0'],
-        'Бр._БЕЛ(ООП)_З': ['5', '7'],
-        'Ср.усп._БЕЛ(ООП)_З': ['5.50', '6.00'],
-    })
-
-    result = extract_scores_dataframe(input_df)
-
-    assert result.columns == ['school_admin_id', 'subject', 'people', 'score']
-    expected = pl.DataFrame({
-        'school_admin_id': ['102004', '102004', '105201', '105201'],
-        'subject': ['БЕЛ(ООП)_З', 'Мат(ООП)_И', 'БЕЛ(ООП)_З', 'Мат(ООП)_И'],
-        'people': ['5', '3', '7', '0'],
-        'score': ['5.50', '4.42', '6.00', '0'],
-    })
-    assert_frame_equal(
-        result.sort(['school_admin_id', 'subject']),
-        expected.sort(['school_admin_id', 'subject']),
-    )
-
-
 def test_extract_scores_dataframe_from_json_file(tmp_path: Path) -> None:
-    header = ['Област', 'Код по НЕИСПУО', 'Бр.\nМат(ООП)\nИ', 'Ср.усп.\nМат(ООП)\nИ']
+    header = [
+        'Област', 'Община', 'Населено място', 'Училище', 'Код по НЕИСПУО',
+        'Бр.\nМат(ООП)\nИ', 'Ср.усп.\nМат(ООП)\nИ',
+    ]
     rows = [
-        ['София', '102004', '3', '4.42'],
-        ['Пловдив', '105201', '0', '0'],
+        ['София', 'Столична', 'София', 'СМГ', '102004', '3', '4.42'],
+        ['Пловдив', 'Пловдив', 'Пловдив', 'ПГ', '105201', '0', '0'],
     ]
     json_file = tmp_path / 'dzi-test.json'
     with open(json_file, 'w', encoding='utf-8') as f:
         json.dump([header, *rows], f, ensure_ascii=False)
 
     raw_data = load_json_to_dataframe(str(json_file))
-    assert raw_data.columns == ['Област', 'Код по НЕИСПУО', 'Бр._Мат(ООП)_И', 'Ср.усп._Мат(ООП)_И']
+    assert raw_data.columns == [
+        C_REGION, C_MUN, C_PLACE, C_SCHOOL_NAME, C_SCHOOL_ID,
+        'Бр._Мат(ООП)_И', 'Ср.усп._Мат(ООП)_И',
+    ]
 
     result = extract_scores_dataframe(raw_data)
 
@@ -146,6 +281,10 @@ def test_extract_scores_dataframe_from_json_file(tmp_path: Path) -> None:
         expected.sort('school_admin_id'),
     )
 
+
+# ---------------------------------------------------------------------------
+# expand_subject_column_in_score_dataframe
+# ---------------------------------------------------------------------------
 
 @dataclass
 class ExpectedSubjectParts:

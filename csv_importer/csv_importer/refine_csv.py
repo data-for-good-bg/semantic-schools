@@ -81,6 +81,12 @@ SBJ_IDX = 0
 ATTR_IDX = 1
 
 C_SCHOOL_ID = 'school_admin_id'
+C_SCHOOL_NAME = 'school'
+C_REGION = 'region'
+C_MUN = 'municipality'
+C_PLACE = 'place'
+C_PEOPLE = 'people'
+C_SCORE = 'score'
 
 
 def refine_original_col_name(value: str) -> str:
@@ -210,51 +216,83 @@ def load_json_to_dataframe(input_file: str) -> pl.DataFrame:
         for h in header
     ]
 
-    return pl.DataFrame(rows, schema=header, orient="row")
+    raw_data = pl.DataFrame(rows, schema=header, orient="row")
+
+    return _rename_columns(raw_data)
 
 
-def _rename_school_id_column(input_df: pl.DataFrame) -> pl.DataFrame:
+def _rename_school_columns(input_df: pl.DataFrame) -> pl.DataFrame:
     """
-    The input dataframe should contain a column named as one of
-    the supported names for school id.
-
-    The result dataframe will have the matched column renamed to `school_id`
+    Renames the columns for region, municipality, place (city/village),
+    and school name and school id from Bulgarian to English.
     """
-    school_id_bg_name = ['Код по НЕИСПУО', 'Код по Админ']
-    C_SCHOOL_ID = 'school_admin_id'
 
-    school_id_column_match = (
-        set(school_id_bg_name).intersection(
-            set(input_df.columns)
-        )
-    )
-    if len(school_id_column_match) != 1:
-        raise ValueError((
-            f'Cannot identify school id column. The input dataframe should '
-            f' have a column with one of these names: {school_id_bg_name}'
-            f' The following matches were found: {school_id_column_match}.'
+    mapping = {
+        'Област': C_REGION,
+        'Регион': C_REGION,
+
+        'Община': C_MUN,
+
+        'Населено място': C_PLACE,
+        'Населено  място': C_PLACE,
+
+        'Училище': C_SCHOOL_NAME,
+
+        'Код по НЕИСПУО': C_SCHOOL_ID,
+        'Код по Админ': C_SCHOOL_ID
+    }
+
+    # only rename columns that actually exist (polars rename requires all
+    # mapping keys to be present)
+    existing_mapping = {
+        k: v for k, v in mapping.items() if k in input_df.columns
+    }
+    result = input_df.rename(existing_mapping)
+
+    expected_columns = set([C_REGION, C_MUN, C_PLACE, C_SCHOOL_NAME, C_SCHOOL_ID])
+
+    not_found_columns = expected_columns - set(result.columns)
+    if not_found_columns:
+        raise RuntimeError((
+            'The input dataframe is expected to contain columns in Bulgarian'
+            ' which will be translated to English. For the following '
+            f' columns were not found Bulgarian matchings: {not_found_columns}'
         ))
 
+    return result
 
-    return (
-        input_df
-        .rename({ school_id_column_match.pop() : C_SCHOOL_ID })
-    )
+
+def _rename_columns(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    The input_df is assumed to be the raw dataframe after the raw json was
+    loaded.
+    The function take cares to rename the input columns to standardized names,
+    which will be used in the later processing of the data.
+    """
+
+    input_df = _rename_school_columns(input_df)
+
+    return input_df
 
 
 def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
     """
-    The input dataframe is assumed to be the raw data right after it was
-    loaded from json.
+    The input dataframe is assumed to be the one after the renaming of the columns
+    of the raw json was made -> it should be with C_SCHOOL_ID column and in
+    the "wide" form, where there's a pair of columns for each subject - one
+    for the number of attended students and one for the average score.
 
-    The result dataframe structure will be:
-    * column `school_admin_id`
-    * column `subject` containing the subject with all possible options
-    * column `people` representing the number of students
+    There's an exception: the August-September DZI session does not contain
+    column for the number of students.
+
+
+    The result dataframe structure will be in the following "long" form:
+    * column `subject` containing the subject with all possible attributes,
+      examples are БЕЛ(ООП)-З, АЕ-(ПП)-B1-З, ..
+    * column `people` representing the number of students; it will be always
+      zero for the August-September DZI sessions
     * column `score` representing the average score
     """
-
-    input_df = _rename_school_id_column(input_df)
 
     columns = [
         c
@@ -292,14 +330,17 @@ def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
     # above does not produce a `Бр.` column - in that case no people attended
     # the examinations, so the result gets a `people` column with value 0
     rename_map = {
-        'Бр.': 'people',
-        'Ср.усп.': 'score',
+        'Бр.': C_PEOPLE,
+        'Ср.усп.': C_SCORE,
     }
     result = result.rename({
         metric: name for metric, name in rename_map.items() if metric in result.columns
     })
-    if 'people' not in result.columns:
-        result = result.with_columns(pl.lit(0).alias('people'))
+
+    # fill in C_PEOPLE column for the August-September DZI sessions when
+    # there's no information for the number of students
+    if C_PEOPLE not in result.columns:
+        result = result.with_columns(pl.lit(0).alias(C_PEOPLE))
 
     return result
 
