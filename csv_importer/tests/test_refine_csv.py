@@ -17,6 +17,7 @@ import polars as pl
 import pytest
 from polars.testing import assert_frame_equal
 
+from csv_importer.models import SubjectItem, get_default_subjects
 from csv_importer.refine_csv import (
     C_MUN,
     C_PLACE,
@@ -26,10 +27,12 @@ from csv_importer.refine_csv import (
     _beautify_place_column,
     _fill_empty_mun_and_place,
     _fill_school_id_special_cases,
+    _map_subjects,
     _refine_data,
     _unify_foreign_region,
     _rename_school_columns,
-    expand_subject_column_in_score_dataframe,
+    _expand_subject_column_in_score_dataframe,
+    _extract_long_scores_dataframe,
     extract_scores_dataframe,
     load_json_to_dataframe,
 )
@@ -359,7 +362,7 @@ def test_extract_scores_dataframe_happy_path() -> None:
         'Ср.усп._БЕЛ(ООП)_З': ['5.50', '6.00'],
     })
 
-    result = extract_scores_dataframe(input_df)
+    result = _extract_long_scores_dataframe(input_df)
 
     assert result.columns == ['school_admin_id', 'subject', 'people', 'score']
     expected = pl.DataFrame({
@@ -385,7 +388,7 @@ def test_extract_scores_dataframe_parses_subject_names() -> None:
         'Ср.усп._АЕ(ООП)_B1-И': ['3.75'],
     })
 
-    result = extract_scores_dataframe(input_df)
+    result = _extract_long_scores_dataframe(input_df)
 
     assert set(result['subject']) == {'Мат(ООП)_И', 'БЕЛ(ООП)_З', 'АЕ(ООП)_B1-И'}
     assert result.height == 3
@@ -397,7 +400,7 @@ def test_extract_scores_dataframe_without_people_columns_adds_zero_people() -> N
         'Ср.усп._Мат(ООП)_И': ['4.42', '5.00'],
     })
 
-    result = extract_scores_dataframe(input_df)
+    result = _extract_long_scores_dataframe(input_df)
 
     assert set(result.columns) == {'school_admin_id', 'subject', 'score', 'people'}
     assert result['people'].to_list() == [0, 0]
@@ -423,7 +426,7 @@ def test_extract_scores_dataframe_from_json_file(tmp_path: Path) -> None:
         'Бр._Мат(ООП)_И', 'Ср.усп._Мат(ООП)_И',
     ]
 
-    result = extract_scores_dataframe(raw_data)
+    result = _extract_long_scores_dataframe(raw_data)
 
     expected = pl.DataFrame({
         'school_admin_id': ['102004', '105201'],
@@ -435,6 +438,51 @@ def test_extract_scores_dataframe_from_json_file(tmp_path: Path) -> None:
         result.select('school_admin_id', 'subject', 'people', 'score').sort('school_admin_id'),
         expected.sort('school_admin_id'),
     )
+
+
+def test_extract_scores_dataframe_removes_rows_where_score_and_people_are_nan_or_zero() -> None:
+    input_df = pl.DataFrame({
+        'school_admin_id': ['102004', '105201', '100190', '103001'],
+        'Бр._БЕЛ(ООП)_З': ['5', '0', '3', '0'],
+        'Ср.усп._БЕЛ(ООП)_З': ['5.50', '0', None, '4.00'],
+    })
+
+    result = extract_scores_dataframe(input_df).sort('school_admin_id')
+
+    # the row for 105201 (people=0 and score=0) is removed; rows where only
+    # one of the two columns is NaN or zero are kept
+    assert result['school_admin_id'].to_list() == ['100190', '102004', '103001']
+    assert result['subject'].to_list() == ['БЕЛ', 'БЕЛ', 'БЕЛ']
+    assert result['people'].to_list() == ['3', '5', '0']
+    assert result['score'].to_list() == [None, '5.50', '4.00']
+
+
+def test_extract_scores_dataframe_removes_rows_with_nan_score_and_zero_people() -> None:
+    input_df = pl.DataFrame({
+        'school_admin_id': ['102004', '105201'],
+        'Бр._БЕЛ(ООП)_З': pl.Series([5, 0], dtype=pl.Int64),
+        'Ср.усп._БЕЛ(ООП)_З': pl.Series([5.5, float('nan')], dtype=pl.Float64),
+    })
+
+    result = extract_scores_dataframe(input_df)
+
+    assert result['school_admin_id'].to_list() == ['102004']
+    assert result['score'].to_list() == [5.5]
+
+
+def test_extract_scores_dataframe_keeps_zero_people_rows_when_score_is_present() -> None:
+    # the August-September DZI sessions have no `Бр.` columns, so `people`
+    # is 0 for all rows while `score` carries real values - these rows stay
+    input_df = pl.DataFrame({
+        'school_admin_id': ['102004', '105201'],
+        'Ср.усп._БЕЛ(ООП)_З': ['5.50', '0'],
+    })
+
+    result = extract_scores_dataframe(input_df).sort('school_admin_id')
+
+    assert result['school_admin_id'].to_list() == ['102004']
+    assert result['people'].to_list() == [0]
+    assert result['score'].to_list() == ['5.50']
 
 
 # ---------------------------------------------------------------------------
@@ -473,7 +521,7 @@ def test_expand_subject_column_parses_subject_value(
         'score': ['5.50'],
     })
 
-    result = expand_subject_column_in_score_dataframe(input_df)
+    result = _expand_subject_column_in_score_dataframe(input_df)
 
     assert result.columns == [
         'school_admin_id', 'subject', 'people', 'score',
@@ -498,7 +546,7 @@ def test_expand_subject_column_multiple_rows() -> None:
         'score': ['5.50', '3.75', '6.00'],
     })
 
-    result = expand_subject_column_in_score_dataframe(input_df)
+    result = _expand_subject_column_in_score_dataframe(input_df)
 
     expected = pl.DataFrame({
         'school_admin_id': ['102004', '105201', '100190'],
@@ -523,7 +571,7 @@ def test_expand_subject_column_unmatched_subject_value_yields_nulls() -> None:
         'score': ['3.75'],
     })
 
-    result = expand_subject_column_in_score_dataframe(input_df)
+    result = _expand_subject_column_in_score_dataframe(input_df)
 
     row = result.row(0, named=True)
     assert row['subject'] is None
@@ -531,3 +579,58 @@ def test_expand_subject_column_unmatched_subject_value_yields_nulls() -> None:
     assert row['with_validation'] is False
     assert row['level'] == ''
     assert row['examination_type'] is None
+
+
+# ---------------------------------------------------------------------------
+# _map_subjects
+# ---------------------------------------------------------------------------
+
+def _default_subject_mapping() -> dict[str, SubjectItem]:
+    mapping: dict[str, SubjectItem] = {}
+    for item in get_default_subjects():
+        for raw_str in item.raw_strings():
+            mapping[raw_str] = item
+    return mapping
+
+
+def test_map_subjects_maps_abbreviations_to_subject_ids() -> None:
+    # 'Мат' has no mapping of its own - it maps to 'МАТ'; 'ГИ' and 'ФЕ' are
+    # abbreviations of 'ГЕО' and 'ФрЕ' respectively
+    input_df = pl.DataFrame({
+        'school_admin_id': ['102004', '105201', '100190', '103001'],
+        'subject': ['Мат', 'ГИ', 'ФЕ', 'БЕЛ'],
+        'people': ['3', '1', '2', '5'],
+        'score': ['4.42', '5.10', '3.75', '5.50'],
+    })
+
+    result = _map_subjects(input_df, _default_subject_mapping())
+
+    expected = input_df.with_columns(
+        pl.Series('subject', ['МАТ', 'ГЕО', 'ФРЕ', 'БЕЛ'])
+    )
+    assert_frame_equal(result, expected)
+
+
+def test_map_subjects_unknown_abbreviation_raises_value_error() -> None:
+    input_df = pl.DataFrame({
+        'school_admin_id': ['102004'],
+        'subject': ['НЕИЗВЕСТЕН'],
+        'people': ['3'],
+        'score': ['4.42'],
+    })
+
+    with pytest.raises(ValueError, match='НЕИЗВЕСТЕН'):
+        _map_subjects(input_df, _default_subject_mapping())
+
+
+@pytest.mark.parametrize('empty_value', [None, '', '   '])
+def test_map_subjects_empty_subject_value_raises_value_error(empty_value: Optional[str]) -> None:
+    input_df = pl.DataFrame({
+        'school_admin_id': ['102004', '105201'],
+        'subject': ['БЕЛ', empty_value],
+        'people': ['5', '3'],
+        'score': ['5.50', '4.42'],
+    })
+
+    with pytest.raises(ValueError, match='null or empty'):
+        _map_subjects(input_df, _default_subject_mapping())

@@ -20,7 +20,7 @@ def load_subject_abbr_map() -> dict[str, SubjectItem]:
     """
     Returns a mapping where the keys are subject abbreviations and the
     values are SubjectItem instances. Since one subject could have multiple
-    abbreviations, the same SubjectItem could participate in multiple paris
+    abbreviations, the same SubjectItem could participate in multiple pairs
     in the result dictionary.
 
     The abbreviations (the keys) are lowercased.
@@ -30,7 +30,7 @@ def load_subject_abbr_map() -> dict[str, SubjectItem]:
     db = get_db_engine()
     with Session(db) as session:
         records = session.execute(select(Subject))
-        subject_items = []
+        subject_items : list[SubjectItem] = []
         for r in records:
             abbreviations = [] if not r[2] else r[2].split(',')
             subject_items.append(SubjectItem(

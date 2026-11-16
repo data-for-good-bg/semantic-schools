@@ -22,7 +22,7 @@ from .refine_csv import (
     load_csv, refine_csv_column_names, refine_data,
     extract_school_data, extract_scores_data,
     load_json_to_dataframe, extract_scores_dataframe,
-    expand_subject_column_in_score_dataframe,
+    _expand_subject_column_in_score_dataframe,
     get_unique_subjects, extract_schools_dataframe
 )
 
@@ -197,9 +197,9 @@ def list_subjects(input_file: str) -> None:
     # TODO: validation
 
     raw_data = load_json_to_dataframe(input_file)
-    scores_data = extract_scores_dataframe(raw_data)
+    scores_data = _extract_long_scores_dataframe(raw_data)
     # scores_data.write_csv(input_file + '.scores_data.csv')
-    scores_data = expand_subject_column_in_score_dataframe(scores_data)
+    scores_data = _expand_subject_column_in_score_dataframe(scores_data)
 
     subjects = get_unique_subjects(scores_data)
     for s in subjects:
@@ -227,11 +227,12 @@ def import_file(input_file: str, examination_type: str, grade: int, year: int, m
 
     logger.info('Importing file %s', input_file)
 
+    subject_mapping = load_subject_abbr_map()
+
     if input_file.endswith('.csv'):
         raw_data = load_csv(input_file)
         raw_data = refine_csv_column_names(raw_data)
 
-        subject_mapping = load_subject_abbr_map()
         refined_data = refine_data(raw_data, subject_mapping)
         logger.info('CSV file successfully loaded')
 
@@ -242,8 +243,7 @@ def import_file(input_file: str, examination_type: str, grade: int, year: int, m
         logger.info('Successfully extracted scores data.')
     else:
         raw_data = load_json_to_dataframe(input_file)
-        scores_data = extract_scores_dataframe(raw_data)
-        scores_data = expand_subject_column_in_score_dataframe(scores_data)
+        scores_data = extract_scores_dataframe(raw_data, subject_mapping)
         scores_data = scores_data.to_pandas()
 
         schools_data = extract_schools_dataframe(raw_data)

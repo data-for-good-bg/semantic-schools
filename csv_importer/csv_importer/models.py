@@ -115,7 +115,7 @@ def get_default_subjects() -> list[SubjectItem]:
         SubjectItem(id='ДИППК-п.р', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - писмена работа по теория на професията + практика'),
         SubjectItem(id='ДИППК-тест', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - писмен тест по теория на професията + практика'),
         SubjectItem(id='ДИППК-Д.Пр', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - дипломен проект'),
-        SubjectItem(id='ДИППК-пр', abbreviations=[], name='Държавен изпит за придобиване на професионална квалификация - практика '),
+        SubjectItem(id='ДИППК-пр', abbreviations=['ДИППК-пр.'], name='Държавен изпит за придобиване на професионална квалификация - практика '),
         SubjectItem(id='Ивр', abbreviations=[], name='Иврит'),
         SubjectItem(id='ИИ', abbreviations=[], name='Изобразително изкуство'),
         SubjectItem(id='ИНФ', abbreviations=[], name='Информатика'),

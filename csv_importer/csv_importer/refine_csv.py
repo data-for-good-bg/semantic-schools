@@ -20,11 +20,12 @@ import re
 import json
 
 from io import StringIO
+from typing import Optional
 
 
 from .runtime import getLogger
 from .db_manage import load_subject_abbr_map
-from .models import SubjectItem, FOREIGN_COUNTRY
+from .models import SubjectItem, FOREIGN_COUNTRY, get_default_subjects
 
 
 logger = getLogger(__name__)
@@ -376,7 +377,7 @@ def _refine_data(input_df: pl.DataFrame) -> pl.DataFrame:
     return input_df
 
 
-def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
+def _extract_long_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
     """
     The input dataframe is assumed to be the one after refining the raw data
     loaded from json/csv.
@@ -446,22 +447,7 @@ def extract_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
     return result
 
 
-def extract_schools_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
-    """
-    The input dataframe is assumed to be the one after refining the raw data
-    loaded from json/csv.
-    """
-
-    return input_df.select(
-        C_SCHOOL_ID,
-        C_SCHOOL_NAME,
-        C_REGION,
-        C_MUN,
-        C_PLACE
-    )
-
-
-def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
+def _expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
     """
     The input dataframe structure should be:
     * column `school_admin_id`
@@ -498,6 +484,107 @@ def expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.DataF
             pl.col('subject').str.extract(subject_re, 8).alias('examination_type'),
         )
     )
+
+
+def _map_subjects(input_df: pl.DataFrame, subject_mapping: dict[str, SubjectItem]) -> pl.DataFrame:
+    """
+    The input dataframe should have a `subject` column which contains only subject
+    abbreviation (no other subject attributes).
+    The subject_mapping represents mapping between all known subject abbreviations
+    and the corresponding subject (SubjectItem object).
+
+    The function will first check if the input dataframe contains a subject
+    abbreviation which is not found in the subject_mapping and will raise
+    a ValueError in this case. It will also raise a ValueError if the
+    `subject` column contains null or empty values.
+
+    After that the function will map the subject abbreviation to the corresponding
+    SubjectItem.id.
+    """
+    # the keys of subject_mapping are lowercased abbreviations, while the
+    # values in the `subject` column keep their original case
+    unique_subjects = input_df.get_column('subject').unique().to_list()
+
+    if any(s is None or not s.strip() for s in unique_subjects):
+        raise ValueError('The subject column contains null or empty values.')
+
+    unknown_subjects = sorted(s for s in unique_subjects if s.lower() not in subject_mapping)
+    if unknown_subjects:
+        raise ValueError(f'Cannot find subjects for abbreviations {unknown_subjects}.')
+
+    abbr_to_id = {abbr: item.id for abbr, item in subject_mapping.items()}
+    return input_df.with_columns(
+        pl.col('subject')
+        .str.to_lowercase()
+        .replace_strict(abbr_to_id, return_dtype=pl.String)
+        .alias('subject')
+    )
+
+
+def extract_scores_dataframe(input_df: pl.DataFrame, subject_mapping: Optional[dict[str, SubjectItem]] = None) -> pl.DataFrame:
+    """
+    The input dataframe is assumed to be the one after refining the raw data
+    loaded from json/csv.
+
+    The output dataframe will be in the long form with the following columns:
+
+    * `school_admin_id`
+    * `subject` name of the subject
+    * `preparation_type` - `ООП` or `ПП` (`Общообразователна подготовка` или `Профилирана подготовка`)
+    * `with_validation` - boolean (when В /Cyrillic/ for "Валидация" is matched)
+    * `level` - currently used only for foreign language subjects,
+                possible values (cyrillic chars) `Б1`, `Б1.1`, `Б2`
+    * `examination_type` - `З` or `И` - (`Задължителен` или `Избираем`)
+    * `people` representing the number of students
+    * `score` representing the average score
+
+    From the result dataframe will be removed all rows where score and people
+    columns are NaN or zero.
+
+    The function will raise a ValueError exception in case there's subject
+    which cannot be recognized or in case the `subject` column contains
+    null or empty values.
+
+    """
+    if subject_mapping is None:
+        subject_mapping = {}
+        for item in get_default_subjects():
+            for raw_str in item.raw_strings():
+                subject_mapping[raw_str] = item
+
+    scores_data = _extract_long_scores_dataframe(input_df)
+    scores_data = _expand_subject_column_in_score_dataframe(scores_data)
+    scores_data = _map_subjects(scores_data, subject_mapping)
+
+    # remove the rows where both `score` and `people` are NaN or zero -
+    # such rows carry no examination information; the cast to float makes
+    # the check work for string values ('0', '4.42') as well
+    score = pl.col(C_SCORE).cast(pl.Float64, strict=False)
+    people = pl.col(C_PEOPLE).cast(pl.Float64, strict=False)
+    scores_data = scores_data.filter(
+        ~(
+            (score.is_null() | score.is_nan() | (score == 0))
+            & (people.is_null() | people.is_nan() | (people == 0))
+        )
+    )
+
+    return scores_data
+
+
+def extract_schools_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
+    """
+    The input dataframe is assumed to be the one after refining the raw data
+    loaded from json/csv.
+    """
+
+    return input_df.select(
+        C_SCHOOL_ID,
+        C_SCHOOL_NAME,
+        C_REGION,
+        C_MUN,
+        C_PLACE
+    )
+
 
 
 def get_unique_subjects(input_df: pl.DataFrame) -> list[str]:
