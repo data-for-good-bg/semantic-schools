@@ -213,7 +213,7 @@ def load_json_to_dataframe(input_file: str) -> pl.DataFrame:
     header, *rows = raw_data
     header = [
         # the column names in the json file contain newline character, replace it
-        h.replace('\n', '_')
+        h.replace('\n', ' ')
         for h in header
     ]
 
@@ -421,8 +421,8 @@ def _extract_long_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
         # `Бр._БЕЛ(ООП)_З` will become (metric=`Бр.`, subject=`БЕЛ(ООП)_З`)
         # `Ср.усп._ГИ(ПП)_З` will become (metric=`Ср.усп.`, subject=`ГИ(ПП)_З`)
         .with_columns(
-            pl.col('col').str.extract(r'^(Бр.|Ср.усп.)_(.*)$', 1).alias('metric'),
-            pl.col('col').str.extract(r'^(Бр.|Ср.усп.)_(.*)$', 2).alias('subject'),
+            pl.col('col').str.extract(r'^(Бр.|Ср.усп.)[ ]*(.*)$', 1).alias('metric'),
+            pl.col('col').str.extract(r'^(Бр.|Ср.усп.)[ ]*(.*)$', 2).alias('subject'),
         )
         # pivot the data to dataframe with rows (`school_admin_id`, `subject`, `Бр.`, `Ср.Усп.`)
         .pivot(values='value', index=[C_SCHOOL_ID, 'subject'], on="metric")
@@ -442,7 +442,15 @@ def _extract_long_scores_dataframe(input_df: pl.DataFrame) -> pl.DataFrame:
     # fill in C_PEOPLE column for the August-September DZI sessions when
     # there's no information for the number of students
     if C_PEOPLE not in result.columns:
-        result = result.with_columns(pl.lit(0).alias(C_PEOPLE))
+        result = result.with_columns(pl.lit('').alias(C_PEOPLE))
+
+    result = result.with_columns(
+        pl.when(pl.col(C_PEOPLE).str.strip_chars().is_in(['', '-']))
+        .then(pl.lit(0))
+        .otherwise(pl.col(C_PEOPLE))
+        .cast(pl.Int64, strict=True)
+        .alias(C_PEOPLE)
+    )
 
     return result
 
@@ -467,6 +475,15 @@ def _expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.Data
     These columns are extracted from the value of the `subject` column which
     carries the additional classification values.
     """
+    rows_with_empty_subject = input_df.filter(
+        pl.col('subject').is_null() | (pl.col('subject').cast(pl.String).str.strip_chars() == '')
+    )
+    if rows_with_empty_subject.height > 0:
+        raise ValueError(
+            'The subject column contains null or empty values. '
+            f'Sample rows: {rows_with_empty_subject.head(5)}'
+        )
+
 
     # This regex matches the following values:
     # * БЕЛ(ООП)_З -> (БЕЛ, ООП, false, none, З)
@@ -474,16 +491,33 @@ def _expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.Data
     # * ХООС(ПП)_З -> (ХООС, ПП, false, none, З)
     # * ДИППК-Д.Пр_З -> (ДИППК-Д.Пр, none, false, none, З)
     # * Пр(ПП)-В_И -> (Пр, ПП, true, none, И)
-    subject_re = r'^([А-Яа-я-\.]+)(\((ПП|ООП)\))?(-(В))?_((B1|B1.1|B2)-)?(З|И)$'
-    return (
+    subject_re = r'^([А-Яа-я-\.]+)[ ]*(\((ПП|ООП)\))?(-(В))? ((A2|B1|B1.1|B2|B2.1)-)?(З|И)$'
+
+    subject_match = pl.col('subject').str.extract(subject_re, 1)
+    subject_expr = (
+        pl.when(subject_match.is_null())
+        .then(pl.lit('ERR ') + pl.col('subject'))
+        .otherwise(subject_match)
+    )
+
+    result = (
         input_df.with_columns(
-            pl.col('subject').str.extract(subject_re, 1).alias('subject'),
+            subject_expr.alias('subject'),
             pl.col('subject').str.extract(subject_re, 3).fill_null('-').alias('preparation_type'),
             pl.col('subject').str.extract(subject_re, 5).is_not_null().alias('with_validation'),
-            pl.col('subject').str.extract(subject_re, 7).fill_null('').str.replace('B', 'Б', literal=True).alias('level'),
+            pl.col('subject').str.extract(subject_re, 7).fill_null('').str.replace('B', 'Б', literal=True).str.replace('A', 'А', literal=True).alias('level'),
             pl.col('subject').str.extract(subject_re, 8).alias('examination_type'),
         )
     )
+
+    rows_with_err = result.filter(pl.col('subject').str.starts_with('ERR '))
+    if rows_with_err.height > 0:
+        raise ValueError(
+            'Cannot parse subject for the following rows. '
+            f'Sample rows: {rows_with_err.head(5)}'
+        )
+
+    return result
 
 
 def _map_subjects(input_df: pl.DataFrame, subject_mapping: dict[str, SubjectItem]) -> pl.DataFrame:
@@ -504,9 +538,6 @@ def _map_subjects(input_df: pl.DataFrame, subject_mapping: dict[str, SubjectItem
     # the keys of subject_mapping are lowercased abbreviations, while the
     # values in the `subject` column keep their original case
     unique_subjects = input_df.get_column('subject').unique().to_list()
-
-    if any(s is None or not s.strip() for s in unique_subjects):
-        raise ValueError('The subject column contains null or empty values.')
 
     unknown_subjects = sorted(s for s in unique_subjects if s.lower() not in subject_mapping)
     if unknown_subjects:
@@ -560,11 +591,9 @@ def extract_scores_dataframe(input_df: pl.DataFrame, subject_mapping: Optional[d
     # such rows carry no examination information; the cast to float makes
     # the check work for string values ('0', '4.42') as well
     score = pl.col(C_SCORE).cast(pl.Float64, strict=False)
-    people = pl.col(C_PEOPLE).cast(pl.Float64, strict=False)
     scores_data = scores_data.filter(
         ~(
             (score.is_null() | score.is_nan() | (score == 0))
-            & (people.is_null() | people.is_nan() | (people == 0))
         )
     )
 
@@ -1063,7 +1092,6 @@ def extract_scores_data(data: pd.DataFrame) -> pd.DataFrame:
     This means tha for every pair (people, score) it generates a line for
     the corresponding school.
     """
-    # breakpoint()
     subject_cols = [c for c in data.columns if is_subject_column(c)]
     subject_cols_count = len(subject_cols)
     assert subject_cols_count > 0, 'Subject columns cannot be zero.'

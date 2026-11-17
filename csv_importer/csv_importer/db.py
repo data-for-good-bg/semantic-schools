@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 KNOWN_ALEMBIC_VERSION = '964f79162b24'
 
+# DEFAULT_DB_URL = 'postgresql://postgres:data-for-good@localhost/eddata2026'
 DEFAULT_DB_URL = 'postgresql://postgres:data-for-good@localhost/eddata'
 
 
