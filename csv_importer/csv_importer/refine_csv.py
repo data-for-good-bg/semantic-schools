@@ -491,7 +491,9 @@ def _expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.Data
     # * ХООС(ПП)_З -> (ХООС, ПП, false, none, З)
     # * ДИППК-Д.Пр_З -> (ДИППК-Д.Пр, none, false, none, З)
     # * Пр(ПП)-В_И -> (Пр, ПП, true, none, И)
-    subject_re = r'^([А-Яа-я-\.]+)[ ]*(\((ПП|ООП)\))?(-(В))? ((A2|B1|B1.1|B2|B2.1)-)?(З|И)$'
+    # Using non-capturing groups where if don't need it in the result groups,
+    # this way the groups of interest are with sequential indexes.
+    subject_re = r'^([А-Яа-я-\.]+)[ ]*(?:\((ПП|ООП)\))?(?:-(В))? (?:([ABC][12](?:\.[12])?)-)?(З|И)$'
 
     subject_match = pl.col('subject').str.extract(subject_re, 1)
     subject_expr = (
@@ -503,10 +505,10 @@ def _expand_subject_column_in_score_dataframe(input_df: pl.DataFrame) -> pl.Data
     result = (
         input_df.with_columns(
             subject_expr.alias('subject'),
-            pl.col('subject').str.extract(subject_re, 3).fill_null('-').alias('preparation_type'),
-            pl.col('subject').str.extract(subject_re, 5).is_not_null().alias('with_validation'),
-            pl.col('subject').str.extract(subject_re, 7).fill_null('').str.replace('B', 'Б', literal=True).str.replace('A', 'А', literal=True).alias('level'),
-            pl.col('subject').str.extract(subject_re, 8).alias('examination_type'),
+            pl.col('subject').str.extract(subject_re, 2).fill_null('-').alias('preparation_type'),
+            pl.col('subject').str.extract(subject_re, 3).is_not_null().alias('with_validation'),
+            pl.col('subject').str.extract(subject_re, 4).fill_null('').str.replace_many({'A': 'А', 'B': 'Б', 'C': 'С'}).alias('level'),
+            pl.col('subject').str.extract(subject_re, 5).alias('examination_type'),
         )
     )
 
