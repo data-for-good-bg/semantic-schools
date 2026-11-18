@@ -89,6 +89,14 @@ def upgrade() -> None:
     op.create_foreign_key('examination_score_examination_id_fkey', 'examination_score', 'examination', ['examination_id'], ['id'], ondelete='CASCADE')
     op.create_foreign_key('examination_score_school_id_fkey', 'examination_score', 'school', ['school_id'], ['id'], ondelete='CASCADE')
 
+    # backfill the new columns for the existing DZI sessions with the
+    # month=june and mandatory (З) examination_type
+    op.execute('UPDATE examination SET month = \'june\' WHERE type = \'ДЗИ\'')
+    op.execute(
+        'UPDATE examination_score es SET examination_type = \'З\' '
+        'FROM examination e WHERE es.examination_id = e.id AND e.type = \'ДЗИ\''
+    )
+
     # new autoincremented surrogate primary key for examination_score
     op.execute('CREATE SEQUENCE examination_score_id_seq')
     op.add_column('examination_score', sa.Column('id', sa.Integer(), nullable=True))
