@@ -290,6 +290,30 @@ def _fill_empty_mun_and_place(input_df: pl.DataFrame) -> pl.DataFrame:
     return place_filled
 
 
+def _validate_non_empty_columns(input_df: pl.DataFrame) -> None:
+    """
+    Validates that certain columns are non-empty.
+    Raises RuntimeError listing the offending columns otherwise.
+    """
+    samples: list[str] = []
+    for col in (C_REGION, C_MUN, C_PLACE, C_SCHOOL_ID, C_SCHOOL_NAME):
+        is_empty = (
+            pl.col(col).is_null()
+            | (pl.col(col).cast(pl.String).str.strip_chars() == '')
+        )
+        filtered_df = input_df.filter(is_empty)
+        if filtered_df.height > 0:
+            samples.append(f'Column {col} is empty in some rows, samples are: {filtered_df.head()}')
+
+    if samples:
+        samples_str = '\n'.join(samples)
+        raise RuntimeError(
+            'The input dataframe is expected to contain non-empty values in '
+            'the region, municipality and place columns, but empty values '
+            f'were found in, check this: \n {samples_str}'
+        )
+
+
 def _fill_school_id_special_cases(input_df: pl.DataFrame) -> pl.DataFrame:
     """
     In the DZI CSV for 2017 there are results for two РУО without school_admin_id
@@ -373,6 +397,8 @@ def _refine_data(input_df: pl.DataFrame) -> pl.DataFrame:
     input_df = _fill_school_id_special_cases(input_df)
     input_df = _unify_foreign_region(input_df)
     input_df = _beautify_place_column(input_df)
+
+    _validate_non_empty_columns(input_df)
 
     return input_df
 
@@ -589,7 +615,7 @@ def extract_scores_dataframe(input_df: pl.DataFrame, subject_mapping: Optional[d
     scores_data = _expand_subject_column_in_score_dataframe(scores_data)
     scores_data = _map_subjects(scores_data, subject_mapping)
 
-    # remove the rows where both `score` and `people` are NaN or zero -
+    # remove the rows where both `score` is NaN or zero -
     # such rows carry no examination information; the cast to float makes
     # the check work for string values ('0', '4.42') as well
     score = pl.col(C_SCORE).cast(pl.Float64, strict=False)

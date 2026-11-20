@@ -31,6 +31,7 @@ from csv_importer.refine_csv import (
     _map_subjects,
     _refine_data,
     _unify_foreign_region,
+    _validate_non_empty_columns,
     _rename_school_columns,
     _expand_subject_column_in_score_dataframe,
     _extract_long_scores_dataframe,
@@ -186,6 +187,78 @@ def test_refine_data_fills_empty_mun_and_place() -> None:
 
     assert result.row(0, named=True)[C_MUN] == 'София'
     assert result.row(0, named=True)[C_PLACE] == 'София'
+
+
+# ---------------------------------------------------------------------------
+# _validate_non_empty_columns
+# ---------------------------------------------------------------------------
+
+VALID_SCHOOL_COLUMNS = {
+    C_REGION: 'София',
+    C_MUN: 'Столична',
+    C_PLACE: 'София',
+    C_SCHOOL_NAME: 'СМГ',
+    C_SCHOOL_ID: '102004',
+}
+
+
+def test_validate_non_empty_columns_passes_on_non_empty_values() -> None:
+    input_df = pl.DataFrame({col: [value] for col, value in VALID_SCHOOL_COLUMNS.items()})
+
+    _validate_non_empty_columns(input_df)  # should not raise
+
+
+@pytest.mark.parametrize('empty_col', [C_REGION, C_MUN, C_PLACE, C_SCHOOL_NAME, C_SCHOOL_ID])
+def test_validate_non_empty_columns_raises_on_empty_column(empty_col: str) -> None:
+    input_df = pl.DataFrame({
+        col: ['' if col == empty_col else value]
+        for col, value in VALID_SCHOOL_COLUMNS.items()
+    })
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _validate_non_empty_columns(input_df)
+
+    assert f'Column {empty_col}' in str(exc_info.value)
+
+
+def test_validate_non_empty_columns_raises_on_null_values() -> None:
+    input_df = pl.DataFrame({
+        col: [None if col == C_REGION else value]
+        for col, value in VALID_SCHOOL_COLUMNS.items()
+    })
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _validate_non_empty_columns(input_df)
+
+    assert f'Column {C_REGION}' in str(exc_info.value)
+
+
+def test_validate_non_empty_columns_raises_on_whitespace_only_values() -> None:
+    input_df = pl.DataFrame({
+        col: ['   ' if col == C_MUN else value]
+        for col, value in VALID_SCHOOL_COLUMNS.items()
+    })
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _validate_non_empty_columns(input_df)
+
+    assert f'Column {C_MUN}' in str(exc_info.value)
+
+
+def test_refine_data_raises_on_empty_region() -> None:
+    # the non-empty columns validation runs at the end of _refine_data
+    input_df = pl.DataFrame({
+        'Област': [''],
+        'Община': ['Столична'],
+        'Населено място': ['София'],
+        'Училище': ['СМГ'],
+        'Код по НЕИСПУО': ['102004'],
+    })
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _refine_data(input_df)
+
+    assert f'Column {C_REGION}' in str(exc_info.value)
 
 
 # ---------------------------------------------------------------------------
