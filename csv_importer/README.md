@@ -164,5 +164,5 @@ ssh -L 5435:127.0.0.1:5432 root@crunch.data-for-good.bg
 
 Then before executing the app.py export DB_URL variable like this:
 ```
-export DB_URL="postgresql://eddata-writer:<password-goes-here>@localhost:5435/eddata"
+export DB_URL="postgresql://eddata-writer:$PGPW@localhost:5435/eddata"
 ```
